@@ -37,6 +37,35 @@
       font-size: 12px;
     }
     footer a { color: #86868b; text-decoration: none; }
+    /* The wordmark floats: a slow 7s drift of a few pixels, with a soft
+       contact shadow underneath that tightens as the word rises. */
+    .lift {
+      position: relative;
+      display: inline-block;
+      animation: hover 7s ease-in-out infinite;
+    }
+    .ground {
+      position: absolute;
+      left: 12%; right: 12%;
+      bottom: -0.55em;
+      height: 0.22em;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(23, 26, 32, 0.20), rgba(23, 26, 32, 0));
+      filter: blur(6px);
+      animation: ground 7s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes hover {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+    @keyframes ground {
+      0%, 100% { transform: translateY(0) scaleX(1);    opacity: 1; }
+      50%      { transform: translateY(6px) scaleX(0.9); opacity: 0.65; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lift, .ground { animation: none; }
+    }
     h1 {
       margin: 0;
       /* Panchang is a wide face, so it runs smaller than a normal sans would
@@ -46,12 +75,19 @@
       letter-spacing: 0;
       line-height: 1.05;
       white-space: nowrap;
+      text-shadow:
+        0 1px 0 rgba(23, 26, 32, 0.28),
+        0 2px 1px rgba(23, 26, 32, 0.14),
+        0 8px 18px rgba(23, 26, 32, 0.10);
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>NOHM it.</h1>
+    <div class="lift">
+      <h1>NOHM it.</h1>
+      <span class="ground" aria-hidden="true"></span>
+    </div>
   </main>
   <footer>
     <a href="/privacy">Privacy</a>
