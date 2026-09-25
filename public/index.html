@@ -6,13 +6,23 @@
   <title>NOHM</title>
   <meta name="description" content="It's always something. NOHM it." />
   <meta name="theme-color" content="#ffffff" />
+  <link rel="preload" href="/fonts/onest-500.woff2" as="font" type="font/woff2" crossorigin />
   <style>
+    /* Onest (SIL Open Font License) — the closest free match to Tesla's
+       Universal Sans, which is proprietary to Tesla. Self-hosted. */
+    @font-face {
+      font-family: "Onest";
+      src: url("/fonts/onest-500.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: #fff; }
     body {
-      font-family: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+      font-family: "Onest", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
-      color: #000;
+      color: #171a20; /* Tesla's near-black */
     }
     main {
       min-height: 100svh;
@@ -25,10 +35,11 @@
     }
     h1 {
       margin: 0;
-      font-size: clamp(56px, 12vw, 128px);
-      font-weight: 800;
-      letter-spacing: -0.045em;
-      line-height: 1;
+      /* Tesla sets titles at medium weight, not bold. */
+      font-size: clamp(44px, 8vw, 84px);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      line-height: 1.05;
     }
   </style>
 </head>
