@@ -1,0 +1,63 @@
+/* Shared by /privacy, /terms and /support. Tesla/Starlink house style:
+   white ground, charcoal body text, medium-weight headings, 4px corners. */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #393c41;
+  font-size: 15px;
+  line-height: 1.7;
+}
+a { color: #356CA3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.bar { padding: 22px 24px; }
+.mark {
+  font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600; font-size: 20px; color: #171a20; letter-spacing: 0;
+}
+.mark:hover { text-decoration: none; }
+
+.doc { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 {
+  font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
+  color: #171a20;
+  font-weight: 600; font-size: clamp(26px, 6vw, 40px); line-height: 1.1;
+  margin: 0 0 12px;
+}
+h2 { font-size: 22px; font-weight: 500; color: #171a20; margin: 48px 0 12px; letter-spacing: -0.005em; }
+h3 { font-size: 16px; font-weight: 500; color: #171a20; margin: 30px 0 6px; }
+p, ul { margin: 0 0 14px; }
+ul { padding-left: 22px; }
+li { margin: 0 0 6px; }
+.meta { color: #86868b; font-size: 14px; margin-bottom: 28px; }
+.lede { font-size: 17px; color: #393c41; }
+.warn { font-weight: 700; letter-spacing: 0.01em; }
+.clause strong { font-weight: 700; }
+
+/* Support */
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 28px 0 8px; }
+.card { background: #F4F4F4; border-radius: 4px; padding: 20px; }
+.card b { display: block; font-size: 12px; letter-spacing: 0.1em; color: #5c5e62; font-weight: 500; margin-bottom: 8px; }
+.card a, .card strong { font-size: 17px; font-weight: 500; color: #171a20; }
+.card p { font-size: 14px; color: #5c5e62; margin: 8px 0 0; line-height: 1.5; }
+.alert { background: #F4F4F4; border-left: 3px solid #171a20; border-radius: 4px; padding: 18px 20px; margin: 28px 0; }
+.alert strong { display: block; margin-bottom: 4px; color: #171a20; font-weight: 500; }
+details { border-bottom: 1px solid rgba(0,0,0,0.09); }
+summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-weight: 500; color: #171a20; position: relative; }
+summary::-webkit-details-marker { display: none; }
+summary::after {
+  content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px;
+  border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62;
+  transform: translateY(-70%) rotate(45deg); transition: transform 0.2s ease;
+}
+details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+details p { margin: 0 0 18px; color: #393c41; }
+
+.foot {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px;
+  padding: 28px 24px 40px; border-top: 1px solid rgba(0,0,0,0.07);
+  font-size: 12px; color: #5c5e62;
+}
+.foot a { color: #5c5e62; }

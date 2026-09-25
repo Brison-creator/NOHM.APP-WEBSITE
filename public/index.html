@@ -29,6 +29,14 @@
       padding-left: 24px;
       padding-right: 24px;
     }
+    footer {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      display: flex; justify-content: center; gap: 22px;
+      padding: 18px 24px calc(18px + env(safe-area-inset-bottom));
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      font-size: 12px;
+    }
+    footer a { color: #86868b; text-decoration: none; }
     h1 {
       margin: 0;
       /* Panchang is a wide face, so it runs smaller than a normal sans would
@@ -45,5 +53,10 @@
   <main>
     <h1>NOHM it.</h1>
   </main>
+  <footer>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
 </body>
 </html>
