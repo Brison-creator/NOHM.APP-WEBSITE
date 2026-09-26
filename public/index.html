@@ -12,6 +12,8 @@
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+        integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <style>
@@ -116,6 +118,39 @@
     .standard p { margin: 16px auto 28px; max-width: 620px; font-size: clamp(16px, 1.4vw, 19px); line-height: 1.55; color: #393c41; }
     .standard .btn.plain { border: 1px solid #d0d1d2; }
 
+    /* Find Your Pro, laid out like Tesla's Find Your Charge: a gray map with
+       a Find Me button, then a big left-aligned title, two big numbers and
+       a black and a light-gray button. */
+    .find { max-width: 1200px; margin: 0 auto; }
+    .map-wrap { position: relative; height: 44svh; min-height: 300px; background: #e9e9e9; }
+    #map { position: absolute; inset: 0; }
+    #map .leaflet-tile-pane { filter: grayscale(1) contrast(0.9) brightness(1.06); }
+    .findme {
+      position: absolute; z-index: 500; left: 16px; bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+      height: 44px; padding: 0 16px; border: 0; border-radius: 4px;
+      background: #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.14);
+      font: 500 15px -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: #171a20; cursor: pointer;
+    }
+    .town-dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #356CA3; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+    .you-dot { width: 14px; height: 14px; border-radius: 50%; background: #171a20; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(23, 26, 32, 0.15); }
+    .find .words { padding: 32px 24px 48px; }
+    .find h2 { margin: 0; font-size: clamp(38px, 4.4vw, 56px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+    .find .lede2 { margin: 12px 0 30px; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.45; color: #393c41; max-width: 640px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 34px; max-width: 560px; }
+    .stat b { display: flex; align-items: center; gap: 10px; font-size: clamp(46px, 5vw, 60px); font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
+    .stat b i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; }
+    .stat span { display: block; margin-top: 8px; font-size: 18px; color: #393c41; }
+    .pair.left { margin: 0; max-width: 540px; }
+    .btn.black { background: #171a20; color: #fff; }
+    .btn.black:hover { background: #000; }
+    .btn.soft { background: #f4f4f4; color: #171a20; }
+    .btn.soft:hover { background: #e9e9e9; }
+
     /* Gray cards under the hero, like Tesla's. */
     .cards { display: grid; gap: 16px; padding: 24px 16px 8px; max-width: 1200px; margin: 0 auto; }
     .card { background: #f4f4f4; border-radius: 12px; overflow: hidden; }
@@ -151,6 +186,8 @@
       .slide .copy { top: calc(52px + 5svh); }
       .slide img.pro { object-position: 50% 0%; }
       .cards { padding: 32px 32px 8px; }
+      .find .words { padding: 40px 32px 56px; }
+      .map-wrap { height: 52svh; }
       /* On a wide screen the card sits photo left, words right. */
       .card { display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; }
       .card img { height: 100%; aspect-ratio: auto; min-height: 340px; }
@@ -211,6 +248,34 @@
       <div class="pair">
         <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
         <a class="btn plain" href="/local-pros">Learn More</a>
+      </div>
+    </section>
+
+    <section class="find" aria-labelledby="find-title">
+      <div class="map-wrap">
+        <div id="map" role="img" aria-label="Map of Saline County, Arkansas, marking Bryant, Benton, Bauxite and Alexander"></div>
+        <button type="button" class="findme" id="findme">
+          <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="#171a20" stroke-width="1.8"/><circle cx="11" cy="11" r="2.5" fill="#171a20"/><path d="M11 1v3.5M11 17.5V21M1 11h3.5M17.5 11H21" stroke="#171a20" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Find Me
+        </button>
+      </div>
+      <div class="words">
+        <h2 id="find-title">Find Your Pro</h2>
+        <p class="lede2">NOHM starts in Saline County, Arkansas, with local pros serving Bryant, Benton, Bauxite and Alexander.</p>
+        <div class="stats">
+          <div class="stat">
+            <b>16 <i style="background:#171a20"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 5.3l-3 3-2.6-.4-.4-2.6 3-3a6 6 0 0 0-7.9 7.2L3.3 16.9a2.4 2.4 0 1 0 3.4 3.4l7.4-7.5a6 6 0 0 0 7.6-7.5z" fill="#fff"/></svg></i></b>
+            <span>Home services</span>
+          </div>
+          <div class="stat">
+            <b>4 <i style="background:#356CA3"><svg width="16" height="18" viewBox="0 0 16 20" aria-hidden="true"><path d="M8 0a8 8 0 0 0-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 0 0-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" fill="#fff"/></svg></i></b>
+            <span>Towns to start</span>
+          </div>
+        </div>
+        <div class="pair left">
+          <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Find a Pro</a>
+          <a class="btn soft" href="/local-pros">Learn More</a>
+        </div>
       </div>
     </section>
 
@@ -286,6 +351,46 @@
       function solid() { bar.classList.toggle('solid', scrollY > hero.offsetHeight - bar.offsetHeight); }
       addEventListener('scroll', solid, { passive: true });
       solid();
+    })();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+          integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous"></script>
+  <script>
+    // Find Your Pro map: the four launch towns from the marketing plan, on a
+    // gray OpenStreetMap. One-finger dragging and wheel zoom are off so the
+    // map never traps the page scroll.
+    (function () {
+      if (!window.L) return;
+      var towns = [
+        ['Bryant', 34.5959, -92.4890],
+        ['Benton', 34.5645, -92.5868],
+        ['Bauxite', 34.5565, -92.5118],
+        ['Alexander', 34.6298, -92.4413]
+      ];
+      var map = L.map('map', {
+        scrollWheelZoom: false, dragging: !L.Browser.mobile, tap: false,
+        zoomControl: false, attributionControl: true
+      });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      var dot = L.divIcon({ className: '', html: '<div class="town-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+      var group = L.featureGroup(towns.map(function (t) {
+        return L.marker([t[1], t[2]], { icon: dot, title: t[0] }).bindTooltip(t[0], { direction: 'top', offset: [0, -8] });
+      })).addTo(map);
+      map.fitBounds(group.getBounds().pad(0.6));
+
+      var you = null;
+      document.getElementById('findme').addEventListener('click', function () {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          var here = [pos.coords.latitude, pos.coords.longitude];
+          if (you) you.setLatLng(here);
+          else you = L.marker(here, { icon: L.divIcon({ className: '', html: '<div class="you-dot"></div>', iconSize: [14, 14], iconAnchor: [7, 7] }), title: 'You' }).addTo(map);
+          map.fitBounds(group.getBounds().extend(here).pad(0.3));
+        });
+      });
     })();
   </script>
   <script src="/download.js" defer></script>
