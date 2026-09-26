@@ -4,39 +4,243 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Homeowners | NOHM</title>
-  <meta name="description" content="Home is for living. NOHM handles the rest." />
+  <meta name="description" content="Home is for living. NOHM handles the rest. Local pros, clear fees, every repair saved." />
   <meta name="theme-color" content="#26272b" />
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/features.css" />
   <style>
     html, body { margin: 0; background: #fff; }
-    body { -webkit-font-smoothing: antialiased; }
-    .screen .copy { padding-top: 72px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: #171a20;
+    }
+
+    /* Opening: the pro at the door, the promise over it. */
+    .top { position: relative; height: min(78svh, 720px); min-height: 480px; background: #16171a; }
+    .top img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% 30%; }
+    .top::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
+    }
+    .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
+    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.08; }
+    .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+
+    /* The long read: one column, generous space, Tesla's quiet type. */
+    .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
+    .part { padding: 48px 0 8px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+    .part:last-child { border-bottom: 0; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; }
+    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.15; }
+    .part p { margin: 0 0 18px; font-size: 17px; line-height: 1.65; color: #393c41; }
+
+    /* The standard itself: a checked list in a gray card. */
+    .list { list-style: none; margin: 8px 0 28px; padding: 8px 22px; background: #f4f4f4; border-radius: 12px; }
+    .list li {
+      position: relative; padding: 14px 0 14px 34px;
+      font-size: 17px; line-height: 1.45; color: #171a20;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    }
+    .list li:last-child { border-bottom: 0; }
+    .list li::before {
+      content: ""; position: absolute; left: 4px; top: 19px;
+      width: 12px; height: 6px;
+      border-left: 2px solid #171a20; border-bottom: 2px solid #171a20;
+      transform: rotate(-45deg);
+    }
+
+    /* Two short promises side by side on wide screens. */
+    .facts { display: grid; gap: 12px; margin: 8px 0 28px; }
+    .fact { background: #f4f4f4; border-radius: 12px; padding: 20px 22px; }
+    .fact b { display: block; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .fact span { font-size: 15px; line-height: 1.5; color: #393c41; }
+
+    .end { text-align: center; padding: 56px 24px 48px; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+    }
+    .btn.main { background: #393c41; color: #fff; }
+    .btn.main:hover { background: #2b2d31; }
+    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    .btn.plain:hover { background: #eeeeee; }
+
+
+    /* The standard as a short spec list, like Tesla's specs. */
+    .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 8px; }
+    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .spec li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
+    .trio { max-width: 1200px; margin: 0 auto; padding: 24px 24px 8px; display: grid; gap: 12px; }
+    .trio .fact a { color: #171a20; font-weight: 600; }
+    @media (min-width: 900px) {
+      .spec ul { grid-template-columns: repeat(3, 1fr); }
+      .trio { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Trades as simple tiles. */
+    .trades { max-width: 1200px; margin: 0 auto; padding: 56px 24px 8px; }
+    .trades h2, .fees h2, .area h2, .faq h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+    .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .tiles div { background: #f4f4f4; border-radius: 12px; padding: 18px 16px; font-size: 16px; font-weight: 600; }
+    .tiles div.more { background: #fff; border: 1px dashed #c9cacc; color: #5c5e62; font-weight: 500; }
+
+    /* Fees, like Tesla's big-number stats. */
+    .fees { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .launch { display: inline-block; margin: 0 0 16px; padding: 6px 12px; border-radius: 999px; background: #171a20; color: #fff; font-size: 13px; font-weight: 600; }
+    .fee-grid { display: grid; gap: 12px; }
+    .fee { background: #f4f4f4; border-radius: 12px; padding: 24px 22px; }
+    .fee h3 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+    .fee .price { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 8px; }
+    .fee .price b { font-size: 52px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
+    .fee .price s { font-size: 20px; color: #86868b; }
+    .fee p { margin: 0; font-size: 16px; line-height: 1.5; color: #393c41; }
+    .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #5c5e62; }
+
+    .area { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .area p { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .area .btn { display: inline-flex; min-width: 240px; }
+
+    .faq { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .faq details { border-bottom: 1px solid rgba(0, 0, 0, 0.09); }
+    .faq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; font-weight: 500; position: relative; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform 0.2s ease; }
+    .faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+    .faq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
+    .btn.black { background: #171a20; color: #fff; }
+    @media (min-width: 900px) {
+      .tiles { grid-template-columns: repeat(6, 1fr); }
+      .fee-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 900px) {
+      .top img { object-position: 50% 30%; }
+      .top .copy { bottom: 64px; }
+      .facts { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
   <header class="bar"><a href="/">NOHM</a></header>
   <main>
-  <section class="screen">
-    <div class="copy">
-      <h1>Home is for living.</h1>
-      <p class="sub">NOHM handles the rest.</p>
-      <a class="cta" href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
-      <p class="stores">
-        <a href="https://apps.apple.com/us/app/nohm-app/id6761128513">App Store</a> &middot;
-        <a href="https://play.google.com/store/apps/details?id=com.nohm.app">Google Play</a>
-      </p>
-    </div>
-    <picture>
-      <source type="image/webp" srcset="/img/home-960.webp 960w, /img/home-1536.webp 1536w" sizes="100vw" />
-      <img class="family-shot" src="/img/home-1536.jpg" srcset="/img/home-960.jpg 960w, /img/home-1536.jpg 1536w" sizes="100vw"
-           width="1536" height="1024"
-           alt="A family laughing together over a game of chess on the living room floor" />
-    </picture>
-  </section>
+    <section class="top">
+      <picture>
+        <source type="image/webp" srcset="/img/home-960.webp 960w, /img/home-1536.webp 1536w" sizes="100vw" />
+        <img src="/img/home-1536.jpg" srcset="/img/home-960.jpg 960w, /img/home-1536.jpg 1536w" sizes="100vw"
+             width="1536" height="1024" fetchpriority="high" style="object-position:45% 40%"
+             alt="A family laughing together over a game of chess on the living room floor" />
+      </picture>
+      <div class="copy">
+        <h1>Home is for living.</h1>
+        <p>NOHM handles the rest.</p>
+        <a class="btn plain" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513" style="display:inline-flex;margin-top:22px;min-width:220px;border:0;">Get NOHM</a>
+      </div>
+    </section>
+
+    <section class="trades">
+      <h2>Whatever breaks.</h2>
+      <div class="tiles">
+        <div>HVAC</div><div>Plumbing</div><div>Electrical</div><div>Appliance</div><div>Handyman</div><div class="more">More on the way</div>
+      </div>
+    </section>
+
+    <section class="features" aria-label="How it works">
+      <div class="head"><h2>How it works.</h2></div>
+      <div class="f-row">
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/washer-960.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:70% 50%" alt="A homeowner beside a leaking washer" />
+          </picture>
+          <h3>Tell NOHM What Broke</h3>
+          <p>Open the app and request help.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:38% 30%" alt="A NOHM pro arriving at a homeowner&rsquo;s front door" />
+          </picture>
+          <h3>A Local Pro Accepts</h3>
+          <p>An owner-operated pro held to the NOHM Standard.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/fixed-960.webp 960w, /img/fixed-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/fixed-960.jpg" srcset="/img/fixed-960.jpg 960w, /img/fixed-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:45% 35%" alt="A homeowner shaking hands with the pro who fixed his washer" />
+          </picture>
+          <h3>Handled and Saved</h3>
+          <p>Fixed, paid in the app and saved to your home&rsquo;s record.</p>
+        </article>
+      </div>
+      <div class="f-dots"></div>
+    </section>
+
+    <section class="fees">
+      <h2>Simple fees.</h2>
+      <p class="launch" data-launch-only>Launch pricing: 50% off</p>
+      <div class="fee-grid">
+        <div class="fee">
+          <h3>Express</h3>
+          <div class="price"><b data-fee="express">$20</b><s data-fee-regular="express">$40</s></div>
+          <p>The everyday way to get help. One flat NOHM fee.</p>
+        </div>
+        <div class="fee">
+          <h3>NOHM Now</h3>
+          <div class="price"><b data-fee="now">$30</b><s data-fee-regular="now">$60</s></div>
+          <p>A pro at your door within 60 minutes of accepting your job, or the NOHM Now fee is waived.</p>
+        </div>
+      </div>
+      <p class="fine"><span data-launch-only>Launch pricing lasts until NOHM reaches <span data-launch-target>1,000</span> activated homeowners. </span>NOHM fees are separate from the pro&rsquo;s charges. You pay the pro for diagnostics, labor, parts and repairs, and you approve the price before work begins.</p>
+    </section>
+
+    <section class="spec">
+      <h2>What You Can Count On</h2>
+      <ul>
+        <li>Price before work</li>
+        <li>Your OK for extras</li>
+        <li>Owner-operated pros</li>
+        <li>One NOHM Standard</li>
+        <li>Every repair saved</li>
+        <li>Real support</li>
+      </ul>
+    </section>
+
+    <section class="area">
+      <h2>Starting in Saline County, Arkansas.<br />Coming to your city.</h2>
+      <p>NOHM launches in Bryant, Benton, Bauxite and Alexander. Not there yet? Tell us where you are.</p>
+      <a class="btn black" href="mailto:admin@nohm.app?subject=Bring%20NOHM%20to%20my%20area&amp;body=City%20and%20state%3A%20">Bring NOHM to My Area</a>
+    </section>
+
+    <section class="faq">
+      <h2>Questions.</h2>
+      <details><summary>What&rsquo;s the difference between Express and NOHM Now?</summary><p>Express is the everyday way to request a local pro. NOHM Now is for when you need someone fast: a pro at your door within 60 minutes of accepting your job, or the NOHM Now fee is waived.</p></details>
+      <details><summary>When does the 60-minute clock start?</summary><p>When the pro accepts your job. You can watch the countdown in the app.</p></details>
+      <details><summary>Is the repair free if NOHM Now runs late?</summary><p>No. Only the NOHM Now fee is waived. You still pay the pro for diagnostics, labor, parts and repairs.</p></details>
+      <details><summary>Will I know the price first?</summary><p>Yes. Every pro explains the price before work begins and gets your approval before doing anything extra.</p></details>
+      <details><summary>How long does launch pricing last?</summary><p>Until NOHM reaches <span data-launch-target>1,000</span> activated homeowner accounts. Then fees return to the regular price.</p></details>
+      <details><summary>What if something goes wrong?</summary><p>If a pro doesn&rsquo;t show, behaves unsafely or charges for something you didn&rsquo;t approve, <a href="/support" style="color:#171a20;font-weight:600;">contact Support</a>.</p></details>
+    </section>
+
+    <section class="end">
+      <h2>It&rsquo;s always something. NOHM it.</h2>
+      <div class="pair">
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+        <a class="btn plain" href="/local-pros">Our Pros</a>
+      </div>
+    </section>
   </main>
   <footer>
     <span>NOHM &copy; 2026</span>
@@ -47,7 +251,9 @@
     <a href="/terms">Terms</a>
     <a href="/support">Support</a>
   </footer>
+  <script src="/pricing.js"></script>
   <script src="/download.js" defer></script>
+  <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
 </html>
