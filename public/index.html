@@ -42,7 +42,9 @@
       border-bottom-color: #3a3b40;
     }
 
-    .hero { position: relative; height: calc(100svh - 84px); min-height: 520px; background: #16171a; }
+    /* Same height as Tesla's phone hero: about 59% of the screen, so the next
+       section peeks up underneath. */
+    .hero { position: relative; height: calc(100svh - 170px); min-height: 420px; background: #16171a; }
     .slides {
       display: flex; height: 100%;
       overflow-x: auto; overscroll-behavior-x: contain;
