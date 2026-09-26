@@ -113,6 +113,14 @@
     .crew img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 30%; border-radius: 12px; }
     .crew h2 { margin: 22px 0 8px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
     .crew p { margin: 0; font-size: 18px; line-height: 1.5; color: #5c5e62; }
+
+    /* NOHM Now: the same clock on both screens, homeowner and pro side by side. */
+    .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sides figure { margin: 0; }
+    .sides img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; }
+    .sides figure:first-child img { object-position: 20% 30%; }
+    .sides figure:last-child img { object-position: 70% 40%; }
+    .sides figcaption { margin-top: 8px; font-size: 14px; font-weight: 600; color: #171a20; }
     /* NOHM Now: tall photo beside the promise on wide screens. */
     .now { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; display: grid; gap: 24px; align-items: center; }
     .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 40% 20%; border-radius: 12px; }
@@ -134,7 +142,7 @@
     @media (min-width: 900px) {
       .tiles { grid-template-columns: repeat(6, 1fr); }
       .fee-grid { grid-template-columns: repeat(3, 1fr); }
-      .now { grid-template-columns: 0.8fr 1fr; gap: 48px; }
+      .now { grid-template-columns: 1fr 1fr; gap: 48px; }
       .crew img { aspect-ratio: 1672 / 941; }
       .now img { max-height: 640px; }
     }
@@ -216,15 +224,28 @@
     </section>
 
     <section class="now">
-      <picture>
-        <source type="image/webp" srcset="/img/now-720.webp 720w, /img/now-1122.webp 1122w" sizes="(min-width: 900px) 40vw, 100vw" />
-        <img src="/img/now-720.jpg" srcset="/img/now-720.jpg 720w, /img/now-1122.jpg 1122w" sizes="(min-width: 900px) 40vw, 100vw"
-             width="1122" height="1402" loading="lazy" alt="A homeowner smiling and holding up his phone showing the NOHM Now countdown, 59:42, pro arriving" />
-      </picture>
+      <div class="sides">
+        <figure>
+          <picture>
+            <source type="image/webp" srcset="/img/now-720.webp 720w, /img/now-1122.webp 1122w" sizes="(min-width: 900px) 25vw, 50vw" />
+            <img src="/img/now-720.jpg" srcset="/img/now-720.jpg 720w, /img/now-1122.jpg 1122w" sizes="(min-width: 900px) 25vw, 50vw"
+                 width="1122" height="1402" loading="lazy" alt="A homeowner holding up his phone showing the NOHM Now countdown, 59:42, pro arriving" />
+          </picture>
+          <figcaption>You see your pro coming</figcaption>
+        </figure>
+        <figure>
+          <picture>
+            <source type="image/webp" srcset="/img/pro-now-720.webp 720w, /img/pro-now-1122.webp 1122w" sizes="(min-width: 900px) 25vw, 50vw" />
+            <img src="/img/pro-now-720.jpg" srcset="/img/pro-now-720.jpg 720w, /img/pro-now-1122.jpg 1122w" sizes="(min-width: 900px) 25vw, 50vw"
+                 width="1122" height="1402" loading="lazy" alt="A NOHM pro in his truck starting the NOHM Now countdown on his dashboard phone" />
+          </picture>
+          <figcaption>Your pro races the clock</figcaption>
+        </figure>
+      </div>
       <div class="words">
         <p class="eyebrow">NOHM Now</p>
         <h2>60 minutes.<br />Or the fee is waived.</h2>
-        <p>The clock starts when a pro accepts your job, and you watch it count down in the app. If they miss 60, the NOHM Now fee is waived.</p>
+        <p>One clock, two screens. It starts when a pro accepts your job. You watch them coming; they race to beat it. If they miss 60, the NOHM Now fee is waived.</p>
         <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
       </div>
     </section>
