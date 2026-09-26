@@ -5,7 +5,8 @@
   position: sticky; top: 0; z-index: 10;
   height: 52px; padding: 0 20px;
   display: flex; align-items: center;
-  background: #000;
+  background: linear-gradient(#26272b, #16171a);
+  border-bottom: 1px solid #3a3b40;
 }
 .bar a {
   font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;

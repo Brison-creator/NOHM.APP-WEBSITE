@@ -29,14 +29,14 @@
   min-width: 220px;
   padding: 15px 28px;
   border-radius: 6px;
-  background: #356CA3;
-  color: #fff;
+  background: #e6e7e9;
+  color: #171a20;
   font-size: 15px; font-weight: 600;
   text-decoration: none;
 }
-.cta:hover { background: #2c5b8b; }
-.stores { margin: 14px 0 0; font-size: 12px; color: #393c41; }
-.stores a { color: #356CA3; font-weight: 600; text-decoration: none; }
+.cta:hover { background: #d9dadd; }
+.stores { margin: 14px 0 0; font-size: 12px; color: #86868b; }
+.stores a { color: #5c5e62; font-weight: 600; text-decoration: none; }
 .screen picture, .screen img { display: block; width: 100%; }
 .screen img { height: 62svh; object-fit: cover; }
 .screen img.pro-shot { object-position: 36% 40%; }
