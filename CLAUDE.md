@@ -4,6 +4,9 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
 
 ## Rules for every page
 
+- **Layout copies tesla.com.** Homepage: full-screen photo carousel with the title and a pair of buttons (gray main, white second) over the photo, the bar clear over the photo until you scroll, gray cards below, and on phones a Download button pinned to the bottom.
+- Every page loads `/menu.js`, which puts the **Menu** button in the bar and builds the full-screen menu. New pages go in its list.
+
 - **Design follows Tesla / Starlink:** white background, charcoal body text `#393c41`, near-black headings `#171a20`, medium-weight headings, 4px corners, lots of space.
 - **Every page carries the top bar.** Link `/bar.css` in the head and open `<body>` with:
   ```html

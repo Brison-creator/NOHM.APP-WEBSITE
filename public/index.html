@@ -4,174 +4,219 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>NOHM</title>
-  <meta name="description" content="It's always something. NOHM it." />
+  <meta name="description" content="It's always something. NOHM it. Find and book a local pro for home repairs." />
   <meta name="theme-color" content="#26272b" />
-  <!-- Panchang Semibold, the NOHM wordmark face. Free for commercial use under
-       the ITF Free Font License, which forbids redistributing the files — so
-       it loads from Fontshare rather than living in this public repo. -->
+  <!-- Panchang, the NOHM wordmark face. Free for commercial use under the ITF
+       Free Font License, which forbids redistributing the files, so it loads
+       from Fontshare rather than living in this public repo. -->
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: #fff; }
+    /* Laid out like tesla.com: a full-screen photo carousel with the title
+       and two buttons on it, the bar floating clear over the photo, gray
+       cards underneath, and a download button pinned to the bottom on
+       phones. */
+    html, body { margin: 0; background: #fff; }
     body {
-      font-family: "Panchang", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
-      color: #171a20; /* Tesla's near-black */
+      color: #171a20;
     }
-    main {
-      min-height: 100svh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      /* Tesla puts the title in the upper third, not dead centre. */
-      padding-top: 28svh;
-      padding-left: 24px;
-      padding-right: 24px;
+
+    /* The bar starts clear over the photo and turns solid once you scroll
+       past it. */
+    .bar {
+      position: fixed; left: 0; right: 0;
+      background: transparent;
+      border-bottom-color: transparent;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
-    /* On the homepage the bar floats over the hero so the title doesn't move. */
-    .bar { position: fixed; left: 0; right: 0; }
-    /* The setup line, set small in the sans like Tesla's subtitles, so the
-       wordmark underneath lands as the answer. */
-    .setup {
-      margin: 0 0 18px;
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-      font-size: clamp(15px, 1.6vw, 20px);
-      font-weight: 500;
-      color: #356CA3;
-      text-align: center;
+    .bar.solid {
+      background: linear-gradient(#26272b, #16171a);
+      border-bottom-color: #3a3b40;
     }
-    /* Deep blue with a slow glint that sweeps across, then rests. Both ends of
-       the gradient are the same dark blue, so the loop restarts seamlessly. */
-    @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-      .setup {
-        background: linear-gradient(100deg,
-          #2f6096 0%, #356CA3 30%, #5a8cc4 50%, #356CA3 70%, #2f6096 100%);
-        background-size: 250% 100%;
-        background-position: 100% 0;
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        animation: shine 9s ease-in-out infinite;
-      }
+
+    .hero { position: relative; height: calc(100svh - 84px); min-height: 520px; background: #16171a; }
+    .slides {
+      display: flex; height: 100%;
+      overflow-x: auto; overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
     }
-    @keyframes shine {
-      0%        { background-position: 100% 0; }
-      35%, 100% { background-position: 0 0; }
+    .slides::-webkit-scrollbar { display: none; }
+    .slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden; }
+    .slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .slide img.washer { object-position: 80% 50%; }
+    .slide img.pro { object-position: 36% 40%; }
+    /* Shade the top for the bar and the bottom for the words, so white text
+       reads on any photo without covering anyone's face. */
+    .slide::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0) 18%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.66), rgba(0, 0, 0, 0.28) 34%, rgba(0, 0, 0, 0) 58%);
     }
-    /* The hero gets the same line and button under the wordmark. */
-    .hero-cta { margin-top: 44px; }
-    .hero-cta .sub { margin-top: 0; }
-    /* The wordmark sits still, lifted off the page by a soft contact shadow.
-       The only movement is light: a faint reflection glides across it now
-       and then, just after the glint crosses the line above, as if one light
-       were passing over both. */
-    .lift {
-      position: relative;
-      display: inline-block;
+    .slide .copy {
+      position: absolute; z-index: 1; left: 0; right: 0; bottom: 56px;
+      padding: 0 24px;
+      text-align: center; color: #fff;
     }
-    .ground {
-      position: absolute;
-      left: 12%; right: 12%;
-      bottom: -0.55em;
-      height: 0.22em;
-      border-radius: 50%;
-      background: radial-gradient(closest-side, rgba(23, 26, 32, 0.20), rgba(23, 26, 32, 0));
-      filter: blur(6px);
-      pointer-events: none;
-    }
-    h1 {
+    .slide h1, .slide h2 {
       margin: 0;
-      /* Panchang is a wide face, so it runs smaller than a normal sans would
-         to fit a phone. */
-      font-size: clamp(30px, 8.4vw, 88px);
-      font-weight: 600;
-      letter-spacing: 0;
-      line-height: 1.05;
-      white-space: nowrap;
-      text-shadow:
-        0 1px 0 rgba(23, 26, 32, 0.28),
-        0 2px 1px rgba(23, 26, 32, 0.14),
-        0 8px 18px rgba(23, 26, 32, 0.10);
+      font-size: clamp(34px, 4vw, 48px);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3);
     }
-    @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-      h1 {
-        background: linear-gradient(105deg,
-          #171a20 0%, #171a20 40%, #50565f 50%, #171a20 60%, #171a20 100%);
-        background-size: 300% 100%;
-        background-position: 100% 0;
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        /* text-shadow would paint over a clipped fill, so the depth moves to
-           a filter on the glyphs instead. */
-        text-shadow: none;
-        filter:
-          drop-shadow(0 1px 0 rgba(23, 26, 32, 0.28))
-          drop-shadow(0 8px 14px rgba(23, 26, 32, 0.12));
-        animation: shine 9s ease-in-out 0.6s infinite;
-      }
+    .slide h1.mark {
+      font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 600; letter-spacing: 0;
+      font-size: clamp(32px, 4vw, 52px);
     }
-    @media (prefers-reduced-motion: reduce) {
-      .setup, h1 { animation: none; }
+    .lede {
+      margin: 10px 0 22px;
+      font-size: clamp(16px, 1.4vw, 19px);
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Tesla's pair of buttons, side by side: the main one solid gray, the
+       second one white. */
+    .pair {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      max-width: 540px; margin: 0 auto;
+    }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+    }
+    .btn.main { background: #393c41; color: #fff; }
+    .btn.main:hover { background: #2b2d31; }
+    .btn.plain { background: #fff; color: #393c41; }
+    .btn.plain:hover { background: #eeeeee; }
+
+    .dots {
+      position: absolute; z-index: 2; left: 0; right: 0; bottom: 20px;
+      display: flex; justify-content: center; gap: 10px;
+    }
+    .dots button {
+      width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.45); cursor: pointer;
+    }
+    .dots button[aria-current="true"] { background: #fff; }
+
+    /* Gray cards under the hero, like Tesla's. */
+    .cards { display: grid; gap: 16px; padding: 24px 16px 8px; max-width: 1200px; margin: 0 auto; }
+    .card { background: #f4f4f4; border-radius: 12px; overflow: hidden; }
+    .card img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+    .card .body { padding: 22px 22px 24px; }
+    .card h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+    .card p { margin: 8px 0 18px; font-size: 15px; color: #393c41; }
+    .card .pair { max-width: none; }
+    .card .btn.plain { border: 1px solid #d0d1d2; }
+
+    /* Pinned to the bottom on phones, like "Schedule a Drive Today". */
+    .dock {
+      position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
+      display: flex; gap: 12px;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, 0.94);
+      -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .dock a {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      height: 48px; border-radius: 4px;
+      background: #f4f4f4; border: 1px solid #d0d1d2;
+      color: #393c41; font-size: 16px; font-weight: 500; text-decoration: none;
+    }
+    .dock .chat { flex: 0 0 60px; }
+    .dock .get { flex: 1; }
+    body { padding-bottom: 76px; }
+
+    @media (min-width: 900px) {
+      .hero { height: 100svh; }
+      .slide img.washer { object-position: 50% 45%; }
+      .slide img.pro { object-position: 50% 35%; }
+      .slide .copy { bottom: 72px; }
+      .cards { padding: 32px 32px 8px; }
+      /* On a wide screen the card sits photo left, words right. */
+      .card { display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; }
+      .card img { height: 100%; aspect-ratio: auto; min-height: 340px; }
+      .card .body { padding: 36px 40px; }
+      .card h2 { font-size: 30px; }
+      .dock { display: none; }
+      body { padding-bottom: 0; }
     }
   </style>
 </head>
 <body>
   <header class="bar"><a href="/">NOHM</a></header>
   <main>
-    <p class="setup">It&rsquo;s always something.</p>
-    <div class="lift">
-      <h1>NOHM it.</h1>
-      <span class="ground" aria-hidden="true"></span>
-    </div>
-    <div class="hero-cta">
-      <p class="sub">Home repairs. One app.</p>
-      <a class="cta" href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download now</a>
-      <p class="stores">
-        <a href="https://apps.apple.com/us/app/nohm-app/id6761128513">App Store</a> &middot;
-        <a href="https://play.google.com/store/apps/details?id=com.nohm.app">Google Play</a>
-      </p>
-    </div>
+    <section class="hero" aria-roledescription="carousel" aria-label="NOHM">
+      <div class="slides" id="slides">
+        <article class="slide" aria-roledescription="slide" aria-label="1 of 2">
+          <picture>
+            <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="100vw" />
+            <img class="washer" src="/img/washer-1536.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="100vw"
+                 width="1536" height="1024" fetchpriority="high"
+                 alt="A frustrated homeowner crouched beside a front-load washer leaking water across the laundry room floor" />
+          </picture>
+          <div class="copy">
+            <h1 class="mark">NOHM it.</h1>
+            <p class="lede">It&rsquo;s always something.</p>
+            <div class="pair">
+              <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
+              <a class="btn plain" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="slide" aria-roledescription="slide" aria-label="2 of 2">
+          <picture>
+            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
+            <img class="pro" src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
+                 width="1536" height="1024"
+                 alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
+          </picture>
+          <div class="copy">
+            <h2>Need a home repair?</h2>
+            <p class="lede">Find and book a local pro.</p>
+            <div class="pair">
+              <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
+              <a class="btn plain" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="dots" id="dots">
+        <button type="button" aria-label="Show slide 1" aria-current="true"></button>
+        <button type="button" aria-label="Show slide 2" aria-current="false"></button>
+      </div>
+    </section>
+
+    <section class="cards">
+      <article class="card">
+        <picture>
+          <source type="image/webp" srcset="/img/family-960.webp 960w, /img/family-1672.webp 1672w" sizes="(min-width: 900px) 50vw, 100vw" />
+          <img src="/img/family-960.jpg" srcset="/img/family-960.jpg 960w, /img/family-1672.jpg 1672w" sizes="(min-width: 900px) 50vw, 100vw"
+               width="1672" height="941" loading="lazy"
+               alt="A family laughing over a board game in their living room" />
+        </picture>
+        <div class="body">
+          <h2>The future of home services.</h2>
+          <p>Home repair, handled.</p>
+          <div class="pair">
+            <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
+            <a class="btn plain" href="/homeowners">Learn More</a>
+          </div>
+        </div>
+      </article>
+    </section>
   </main>
-  <section class="screen">
-    <div class="copy">
-      <h2>Washer leaking?</h2>
-      <p class="sub">Tell NOHM what broke. A local pro handles the rest.</p>
-      <a class="cta" href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download now</a>
-      <p class="stores">
-        <a href="https://apps.apple.com/us/app/nohm-app/id6761128513">App Store</a> &middot;
-        <a href="https://play.google.com/store/apps/details?id=com.nohm.app">Google Play</a>
-      </p>
-    </div>
-    <picture>
-      <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="100vw" />
-      <img class="washer-shot" src="/img/washer-1536.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="100vw"
-           width="1536" height="1024" loading="lazy"
-           alt="A frustrated homeowner crouched beside a front-load washer leaking water across the laundry room floor" />
-    </picture>
-  </section>
-  <section class="screen">
-    <div class="copy">
-      <h2>Need a home repair?</h2>
-      <p class="sub">Find and book a local pro.</p>
-      <a class="cta" href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download now</a>
-      <p class="stores">
-        <a href="https://apps.apple.com/us/app/nohm-app/id6761128513">App Store</a> &middot;
-        <a href="https://play.google.com/store/apps/details?id=com.nohm.app">Google Play</a>
-      </p>
-    </div>
-    <picture>
-      <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
-      <img class="pro-shot" src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
-           width="1536" height="1024" loading="lazy"
-           alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
-    </picture>
-  </section>
-  <script src="/download.js" defer></script>
   <footer>
     <span>NOHM &copy; 2026</span>
     <a href="/homeowners">Homeowners</a>
@@ -179,5 +224,54 @@
     <a href="/terms">Terms</a>
     <a href="/support">Support</a>
   </footer>
+
+  <div class="dock">
+    <a class="chat" href="/support" aria-label="Support">
+      <svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M4 1h16a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H11l-5 4.5V16H4a3 3 0 0 1-3-3V4a3 3 0 0 1 3-3z" fill="#393c41"/><circle cx="7.5" cy="8.5" r="1.4" fill="#fff"/><circle cx="12" cy="8.5" r="1.4" fill="#fff"/><circle cx="16.5" cy="8.5" r="1.4" fill="#fff"/></svg>
+    </a>
+    <a class="get" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">
+      <svg width="16" height="24" viewBox="0 0 16 24" aria-hidden="true"><rect x="1" y="1" width="14" height="22" rx="3" fill="none" stroke="#393c41" stroke-width="1.8"/><path d="M6 19.5h4" stroke="#393c41" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Download NOHM
+    </a>
+  </div>
+
+  <script>
+    (function () {
+      var slides = document.getElementById('slides');
+      var dots = [].slice.call(document.querySelectorAll('#dots button'));
+      var bar = document.querySelector('.bar');
+      var hero = document.querySelector('.hero');
+      var current = 0, auto = null;
+
+      function show(i, smooth) {
+        slides.scrollTo({ left: i * slides.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+      }
+      function mark(i) {
+        current = i;
+        dots.forEach(function (d, k) { d.setAttribute('aria-current', String(k === i)); });
+      }
+      slides.addEventListener('scroll', function () {
+        mark(Math.round(slides.scrollLeft / slides.clientWidth));
+      }, { passive: true });
+      dots.forEach(function (d, i) {
+        d.addEventListener('click', function () { stop(); show(i, true); });
+      });
+
+      // Advance on its own like Tesla's, until someone touches it.
+      function stop() { clearInterval(auto); auto = null; }
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        auto = setInterval(function () { show((current + 1) % dots.length, true); }, 7000);
+        ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (t) {
+          slides.addEventListener(t, stop, { passive: true });
+        });
+      }
+
+      function solid() { bar.classList.toggle('solid', scrollY > hero.offsetHeight - bar.offsetHeight); }
+      addEventListener('scroll', solid, { passive: true });
+      solid();
+    })();
+  </script>
+  <script src="/download.js" defer></script>
+  <script src="/menu.js" defer></script>
 </body>
 </html>
