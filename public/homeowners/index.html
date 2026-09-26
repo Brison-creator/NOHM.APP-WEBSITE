@@ -106,6 +106,13 @@
     .fee p { margin: 0; font-size: 16px; line-height: 1.5; color: #393c41; }
     .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #5c5e62; }
 
+
+    /* NOHM Now: tall photo beside the promise on wide screens. */
+    .now { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; display: grid; gap: 24px; align-items: center; }
+    .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 40% 20%; border-radius: 12px; }
+    .now h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 46px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.08; }
+    .now .words p:not(.eyebrow) { margin: 0 0 22px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .now .btn { display: inline-flex; min-width: 200px; }
     .area { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
     .area p { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #393c41; }
     .area .btn { display: inline-flex; min-width: 240px; }
@@ -121,6 +128,8 @@
     @media (min-width: 900px) {
       .tiles { grid-template-columns: repeat(6, 1fr); }
       .fee-grid { grid-template-columns: repeat(3, 1fr); }
+      .now { grid-template-columns: 0.8fr 1fr; gap: 48px; }
+      .now img { max-height: 640px; }
     }
 
     @media (min-width: 900px) {
@@ -186,6 +195,20 @@
         </article>
       </div>
       <div class="f-dots"></div>
+    </section>
+
+    <section class="now">
+      <picture>
+        <source type="image/webp" srcset="/img/now-720.webp 720w, /img/now-1122.webp 1122w" sizes="(min-width: 900px) 40vw, 100vw" />
+        <img src="/img/now-720.jpg" srcset="/img/now-720.jpg 720w, /img/now-1122.jpg 1122w" sizes="(min-width: 900px) 40vw, 100vw"
+             width="1122" height="1402" loading="lazy" alt="A homeowner smiling and holding up his phone showing the NOHM Now countdown, 59:42, pro arriving" />
+      </picture>
+      <div class="words">
+        <p class="eyebrow">NOHM Now</p>
+        <h2>60 minutes.<br />Or the fee is waived.</h2>
+        <p>The clock starts when a pro accepts your job, and you watch it count down in the app. If they miss 60, the NOHM Now fee is waived.</p>
+        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+      </div>
     </section>
 
     <section class="fees">

@@ -172,6 +172,7 @@
     .card img.pro { object-position: 34% 30%; }
     .card img.washer { object-position: 78% 50%; }
     .card img.ready { object-position: 34% 40%; }
+    .card img.now { object-position: 18% 20%; }
     .card img.crew { object-position: 50% 30%; }
     .card::after {
       content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -383,6 +384,21 @@
         </article>
         <article class="card">
           <picture>
+            <source type="image/webp" srcset="/img/now-720.webp 720w, /img/now-1122.webp 1122w" sizes="(min-width: 900px) 46vw, 90vw" />
+            <img class="now" src="/img/now-720.jpg" srcset="/img/now-720.jpg 720w, /img/now-1122.jpg 1122w" sizes="(min-width: 900px) 46vw, 90vw"
+                 width="1122" height="1402" loading="lazy" alt="A homeowner smiling and holding up his phone showing the NOHM Now countdown, 59:42, pro arriving" />
+          </picture>
+          <div class="body">
+            <h2>NOHM Now.</h2>
+            <p>A pro in 60 minutes, or the NOHM Now fee is waived. Watch the clock in the app.</p>
+            <div class="pair">
+              <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+              <a class="btn plain" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <picture>
             <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 46vw, 90vw" />
             <img class="pro" src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 46vw, 90vw"
                  width="1536" height="1024" loading="lazy" alt="A Speedy Plumbing pro with a NOHM patch on his sleeve at a homeowner&rsquo;s front door" />
@@ -417,6 +433,7 @@
         <button type="button" aria-label="Show card 2" aria-current="false"></button>
         <button type="button" aria-label="Show card 3" aria-current="false"></button>
         <button type="button" aria-label="Show card 4" aria-current="false"></button>
+        <button type="button" aria-label="Show card 5" aria-current="false"></button>
       </div>
     </section>
   </main>
