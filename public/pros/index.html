@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>For Pros | NOHM</title>
+  <meta name="description" content="Become a NOHM member contractor. No ads, no chasing leads: real local homeowners who want repairs and maintenance handled." />
+  <meta name="theme-color" content="#26272b" />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: #171a20;
+    }
+
+    /* Opening: the pro at the door, the promise over it. */
+    .top { position: relative; height: min(78svh, 720px); min-height: 480px; background: #16171a; }
+    .top img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% 30%; }
+    .top::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
+    }
+    .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
+    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.08; }
+    .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+
+    /* The long read: one column, generous space, Tesla's quiet type. */
+    .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
+    .part { padding: 48px 0 8px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+    .part:last-child { border-bottom: 0; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; }
+    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.15; }
+    .part p { margin: 0 0 18px; font-size: 17px; line-height: 1.65; color: #393c41; }
+
+    /* The standard itself: a checked list in a gray card. */
+    .list { list-style: none; margin: 8px 0 28px; padding: 8px 22px; background: #f4f4f4; border-radius: 12px; }
+    .list li {
+      position: relative; padding: 14px 0 14px 34px;
+      font-size: 17px; line-height: 1.45; color: #171a20;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    }
+    .list li:last-child { border-bottom: 0; }
+    .list li::before {
+      content: ""; position: absolute; left: 4px; top: 19px;
+      width: 12px; height: 6px;
+      border-left: 2px solid #171a20; border-bottom: 2px solid #171a20;
+      transform: rotate(-45deg);
+    }
+
+    /* Two short promises side by side on wide screens. */
+    .facts { display: grid; gap: 12px; margin: 8px 0 28px; }
+    .fact { background: #f4f4f4; border-radius: 12px; padding: 20px 22px; }
+    .fact b { display: block; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .fact span { font-size: 15px; line-height: 1.5; color: #393c41; }
+
+    .end { text-align: center; padding: 56px 24px 48px; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+    }
+    .btn.main { background: #393c41; color: #fff; }
+    .btn.main:hover { background: #2b2d31; }
+    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    .btn.plain:hover { background: #eeeeee; }
+
+
+    /* The member request. The site has no server, so Send Request opens the
+       pro's own email app with the request filled in, addressed to
+       admin@nohm.app. */
+    .join { background: #f4f4f4; }
+    .join .inner { max-width: 760px; margin: 0 auto; padding: 56px 24px 64px; }
+    .join h2 { margin: 0 0 10px; font-size: clamp(28px, 3.2vw, 40px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+    .join .intro { margin: 0 0 28px; font-size: 17px; line-height: 1.6; color: #393c41; }
+    .fields { display: grid; gap: 14px; }
+    .field label { display: block; margin: 0 0 6px; font-size: 14px; font-weight: 500; color: #171a20; }
+    .field input, .field textarea {
+      width: 100%; padding: 13px 14px;
+      font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: #171a20; background: #fff;
+      border: 1px solid #d0d1d2; border-radius: 4px;
+    }
+    .field input:focus, .field textarea:focus { outline: 2px solid #171a20; outline-offset: 0; border-color: #171a20; }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .send {
+      margin-top: 22px; width: 100%; height: 48px; border: 0; border-radius: 4px;
+      background: #171a20; color: #fff; font-size: 16px; font-weight: 500; cursor: pointer;
+    }
+    .send:hover { background: #000; }
+    .or { margin: 16px 0 0; font-size: 14px; color: #5c5e62; text-align: center; }
+    .or a { color: #171a20; font-weight: 600; text-decoration: none; }
+    .note { margin: 14px 0 0; font-size: 13px; color: #86868b; text-align: center; }
+    @media (min-width: 700px) {
+      .fields { grid-template-columns: 1fr 1fr; }
+      .field.wide { grid-column: 1 / -1; }
+    }
+
+    @media (min-width: 900px) {
+      .top img { object-position: 50% 30%; }
+      .top .copy { bottom: 64px; }
+      .facts { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main>
+    <section class="top">
+      <picture>
+        <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
+        <img src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
+             width="1536" height="1024" fetchpriority="high"
+             alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, greeting a homeowner at her front door" />
+      </picture>
+      <div class="copy">
+        <h1>Join the future<br />of home service.</h1>
+        <p>Become a NOHM member contractor. Do the work. Build your reputation. Earn access to more jobs.</p>
+        <a class="btn plain" href="#join" style="display:inline-flex;margin-top:22px;min-width:220px;border:0;">Request to Join</a>
+      </div>
+    </section>
+
+    <div class="read">
+      <section class="part">
+        <p class="eyebrow">For owner-operators</p>
+        <h2>No ads. No chasing leads.</h2>
+        <p>Stop paying for clicks, racing competitors to call first and figuring out how to get more work. NOHM sends real local service requests. You don&rsquo;t buy rankings. You don&rsquo;t buy leads. You earn access by doing good work and responding.</p>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">Who you&rsquo;ll work for</p>
+        <h2>Homeowners who want it handled.</h2>
+        <p>People on NOHM want stress-free, on-demand repairs and maintenance from a local pro they can trust. They come to NOHM when something breaks, and they come back.</p>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">Why NOHM</p>
+        <h2>Earn your place. You can&rsquo;t buy it.</h2>
+        <div class="facts">
+          <div class="fact"><b>No paid placement</b><span>Nobody buys the top spot. Quality, responsiveness and performance decide who gets work.</span></div>
+          <div class="fact"><b>No lead fees</b><span>You&rsquo;re not paying for fake or low-intent leads, or for visibility.</span></div>
+          <div class="fact"><b>Clear job information</b><span>Know what the homeowner needs before you head out.</span></div>
+          <div class="fact"><b>Payment inside NOHM</b><span>Get paid through the app, no chasing invoices.</span></div>
+        </div>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">Who we&rsquo;re looking for</p>
+        <h2>Local pros with a name worth protecting.</h2>
+        <ul class="list">
+          <li>You own or run a local home-service business.</li>
+          <li>You answer your phone and communicate well.</li>
+          <li>You have a strong reputation where you work.</li>
+          <li>You&rsquo;re comfortable using a smartphone app.</li>
+          <li>You can take on new jobs and want more local customers.</li>
+          <li>You&rsquo;ll work to the <a href="/local-pros" style="color:#171a20;font-weight:600;">NOHM Standard</a>.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="join" id="join">
+      <div class="inner">
+        <h2>Request to become a NOHM member.</h2>
+        <p class="intro">Tell us about your business. Your request goes to the NOHM team at admin@nohm.app, and we&rsquo;ll be in touch.</p>
+        <form id="join-form" novalidate>
+          <div class="fields">
+            <div class="field"><label for="f-name">Your name</label><input id="f-name" name="name" autocomplete="name" required /></div>
+            <div class="field"><label for="f-biz">Business name</label><input id="f-biz" name="business" autocomplete="organization" required /></div>
+            <div class="field"><label for="f-trade">Trade</label><input id="f-trade" name="trade" placeholder="Plumbing, HVAC, electrical&hellip;" required /></div>
+            <div class="field"><label for="f-area">Towns you serve</label><input id="f-area" name="area" placeholder="Bryant, Benton&hellip;" /></div>
+            <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel" required /></div>
+            <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" /></div>
+            <div class="field wide"><label for="f-note">Anything else we should know?</label><textarea id="f-note" name="note" placeholder="Years in business, licenses, team size&hellip;"></textarea></div>
+          </div>
+          <button class="send" type="submit">Send Request</button>
+          <p class="note" id="join-note" role="status"></p>
+        </form>
+        <p class="or">Prefer to write it yourself? Email <a href="mailto:admin@nohm.app?subject=NOHM%20member%20contractor%20request">admin@nohm.app</a></p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM &copy; 2026</span>
+    <a href="/homeowners">Homeowners</a>
+    <a href="/local-pros">Local Pros</a>
+    <a href="/pros">For Pros</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+  <script>
+    // Send Request opens the pro's email app with everything filled in.
+    (function () {
+      var form = document.getElementById('join-form');
+      var note = document.getElementById('join-note');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = function (n) { return form.elements[n].value.trim(); };
+        var missing = ['name', 'business', 'trade', 'phone'].filter(function (n) { return !v(n); });
+        if (missing.length) {
+          note.textContent = 'Please fill in your name, business, trade and phone.';
+          form.elements[missing[0]].focus();
+          return;
+        }
+        var body = [
+          'I would like to become a NOHM member contractor.',
+          '',
+          'Name: ' + v('name'),
+          'Business: ' + v('business'),
+          'Trade: ' + v('trade'),
+          'Towns served: ' + v('area'),
+          'Phone: ' + v('phone'),
+          'Email: ' + v('email'),
+          '',
+          v('note')
+        ].join('\n');
+        var subject = 'NOHM member contractor request: ' + v('business');
+        location.href = 'mailto:admin@nohm.app?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+        note.textContent = 'Your email app should open with your request ready to send. If it doesn\u2019t, email admin@nohm.app.';
+      });
+    })();
+  </script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
