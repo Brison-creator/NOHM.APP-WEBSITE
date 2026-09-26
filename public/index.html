@@ -37,8 +37,26 @@
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
       font-size: clamp(15px, 1.6vw, 20px);
       font-weight: 500;
-      color: #356CA3; /* NOHM blue, the same as the app's buttons */
+      color: #143f86;
       text-align: center;
+    }
+    /* Deep blue with a slow glint that sweeps across, then rests. Both ends of
+       the gradient are the same dark blue, so the loop restarts seamlessly. */
+    @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+      .setup {
+        background: linear-gradient(100deg,
+          #0b2a63 0%, #143f86 38%, #6f9ce6 50%, #143f86 62%, #0b2a63 100%);
+        background-size: 250% 100%;
+        background-position: 100% 0;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: shine 7s ease-in-out infinite;
+      }
+    }
+    @keyframes shine {
+      0%        { background-position: 100% 0; }
+      35%, 100% { background-position: 0 0; }
     }
     footer {
       position: fixed; left: 0; right: 0; bottom: 0;
@@ -75,7 +93,7 @@
       50%      { transform: translateY(6px) scaleX(0.9); opacity: 0.65; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .lift, .ground { animation: none; }
+      .lift, .ground, .setup { animation: none; }
     }
     h1 {
       margin: 0;
