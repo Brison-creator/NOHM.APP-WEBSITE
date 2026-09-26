@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>NOHM</title>
   <meta name="description" content="It's always something. NOHM it." />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#000000" />
   <!-- Panchang Semibold, the NOHM wordmark face. Free for commercial use under
        the ITF Free Font License, which forbids redistributing the files — so
        it loads from Fontshare rather than living in this public repo. -->
@@ -29,6 +29,17 @@
       padding-top: 28svh;
       padding-left: 24px;
       padding-right: 24px;
+    }
+    /* Slim black top bar with the white wordmark, tall enough to hold nav buttons. */
+    .bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      height: 48px; padding: 0 20px;
+      display: flex; align-items: center;
+      background: #000;
+    }
+    .bar a {
+      font-size: 14px; line-height: 1; font-weight: 600;
+      color: #fff; text-decoration: none;
     }
     /* The setup line, set small in the sans like Tesla's subtitles, so the
        wordmark underneath lands as the answer. */
@@ -112,6 +123,7 @@
   </style>
 </head>
 <body>
+  <header class="bar"><a href="/">NOHM</a></header>
   <main>
     <p class="setup">It&rsquo;s always something.</p>
     <div class="lift">

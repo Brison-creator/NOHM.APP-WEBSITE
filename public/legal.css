@@ -12,10 +12,16 @@ body {
 a { color: #356CA3; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-.bar { padding: 22px 24px; }
+/* Slim black top bar with the white wordmark, tall enough to hold nav buttons. */
+.bar {
+  position: sticky; top: 0; z-index: 10;
+  height: 48px; padding: 0 20px;
+  display: flex; align-items: center;
+  background: #000;
+}
 .mark {
   font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
-  font-weight: 600; font-size: 20px; color: #171a20; letter-spacing: 0;
+  font-weight: 600; font-size: 14px; line-height: 1; color: #fff; letter-spacing: 0;
 }
 .mark:hover { text-decoration: none; }
 
