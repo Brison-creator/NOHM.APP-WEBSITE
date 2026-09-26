@@ -18,4 +18,5 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
   - headlines and the wordmark `#171a20`; body text `#393c41`; small print `#86868b`
   - NOHM blue `#356CA3` for buttons, links and accents (button hover `#2c5b8b`)
 - Never use "Keep money local" or anything about it, anywhere on the site.
+- Marketing pages (homepage, `/homeowners`) link `/screens.css` for the shared screen template and footer, and `/download.js` so Download now opens the right store.
 - Each page lives at `public/<path>/index.html` so clean URLs like `/privacy` work.
