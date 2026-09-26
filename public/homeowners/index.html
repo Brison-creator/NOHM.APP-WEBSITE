@@ -107,6 +107,12 @@
     .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #5c5e62; }
 
 
+
+    /* Different faces: the crew photo full width with a short line under it. */
+    .crew { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .crew img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 30%; border-radius: 12px; }
+    .crew h2 { margin: 22px 0 8px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+    .crew p { margin: 0; font-size: 18px; line-height: 1.5; color: #5c5e62; }
     /* NOHM Now: tall photo beside the promise on wide screens. */
     .now { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; display: grid; gap: 24px; align-items: center; }
     .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 40% 20%; border-radius: 12px; }
@@ -129,6 +135,7 @@
       .tiles { grid-template-columns: repeat(6, 1fr); }
       .fee-grid { grid-template-columns: repeat(3, 1fr); }
       .now { grid-template-columns: 0.8fr 1fr; gap: 48px; }
+      .crew img { aspect-ratio: 1672 / 941; }
       .now img { max-height: 640px; }
     }
 
@@ -161,6 +168,17 @@
       <div class="tiles">
         <div>HVAC</div><div>Plumbing</div><div>Electrical</div><div>Appliance</div><div>Handyman</div><div class="more">More on the way</div>
       </div>
+    </section>
+
+    <section class="crew">
+      <picture>
+        <source type="image/webp" srcset="/img/crew-960.webp 960w, /img/crew-1672.webp 1672w" sizes="(min-width: 1200px) 1152px, 100vw" />
+        <img src="/img/crew-960.jpg" srcset="/img/crew-960.jpg 960w, /img/crew-1672.jpg 1672w" sizes="(min-width: 1200px) 1152px, 100vw"
+             width="1672" height="941" loading="lazy"
+             alt="Local pros from many trades, each wearing a NOHM patch, gathered in front of their work trucks" />
+      </picture>
+      <h2>Different faces. Same standard.</h2>
+      <p>Different companies. More contractors means faster service.</p>
     </section>
 
     <section class="features" aria-label="How it works">
