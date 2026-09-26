@@ -41,12 +41,12 @@
 .screen img { height: 62svh; object-fit: cover; }
 .screen img.washer-shot { object-position: 48% 50%; }
 .screen img.pro-shot { object-position: 36% 40%; }
-.screen img.family-shot { object-position: 66% 50%; }
+.screen img.family-shot { object-position: 45% 40%; }
 @media (min-width: 900px) {
   .screen img { height: min(80svh, 56.25vw); }
   .screen img.washer-shot { object-position: 50% 45%; }
   .screen img.pro-shot { object-position: 50% 35%; }
-  .screen img.family-shot { object-position: 50% 60%; }
+  .screen img.family-shot { object-position: 50% 45%; }
 }
 footer {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px;
