@@ -109,6 +109,13 @@
     }
     .dots button[aria-current="true"] { background: #fff; }
 
+    /* The trust statement under the hero: big words on white, like the
+       text sections between Tesla's photos. */
+    .standard { max-width: 760px; margin: 0 auto; padding: 64px 24px 40px; text-align: center; }
+    .standard h2 { margin: 0; font-size: clamp(30px, 3.6vw, 44px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+    .standard p { margin: 16px auto 28px; max-width: 620px; font-size: clamp(16px, 1.4vw, 19px); line-height: 1.55; color: #393c41; }
+    .standard .btn.plain { border: 1px solid #d0d1d2; }
+
     /* Gray cards under the hero, like Tesla's. */
     .cards { display: grid; gap: 16px; padding: 24px 16px 8px; max-width: 1200px; margin: 0 auto; }
     .card { background: #f4f4f4; border-radius: 12px; overflow: hidden; }
@@ -187,7 +194,7 @@
             <p class="lede">Find and book a local pro.</p>
             <div class="pair">
               <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
-              <a class="btn plain" href="/homeowners">Learn More</a>
+              <a class="btn plain" href="/local-pros">Learn More</a>
             </div>
           </div>
         </article>
@@ -195,6 +202,15 @@
       <div class="dots" id="dots">
         <button type="button" aria-label="Show slide 1" aria-current="true"></button>
         <button type="button" aria-label="Show slide 2" aria-current="false"></button>
+      </div>
+    </section>
+
+    <section class="standard">
+      <h2>Local pros.<br />One standard.</h2>
+      <p>NOHM connects you with independent, owner-operated local businesses&mdash;the people whose name is on the truck and whose reputation is built in your community.</p>
+      <div class="pair">
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
+        <a class="btn plain" href="/local-pros">Learn More</a>
       </div>
     </section>
 
@@ -220,6 +236,7 @@
   <footer>
     <span>NOHM &copy; 2026</span>
     <a href="/homeowners">Homeowners</a>
+    <a href="/local-pros">Local Pros</a>
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
     <a href="/support">Support</a>

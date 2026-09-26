@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Local Pros. One Standard. | NOHM</title>
+  <meta name="description" content="NOHM connects you with independent, owner-operated local businesses, all held to one standard: the NOHM Standard." />
+  <meta name="theme-color" content="#26272b" />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: #171a20;
+    }
+
+    /* Opening: the pro at the door, the promise over it. */
+    .top { position: relative; height: min(78svh, 720px); min-height: 480px; background: #16171a; }
+    .top img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% 30%; }
+    .top::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
+    }
+    .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
+    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.08; }
+    .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+
+    /* The long read: one column, generous space, Tesla's quiet type. */
+    .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
+    .part { padding: 48px 0 8px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+    .part:last-child { border-bottom: 0; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; }
+    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.15; }
+    .part p { margin: 0 0 18px; font-size: 17px; line-height: 1.65; color: #393c41; }
+
+    /* The standard itself: a checked list in a gray card. */
+    .list { list-style: none; margin: 8px 0 28px; padding: 8px 22px; background: #f4f4f4; border-radius: 12px; }
+    .list li {
+      position: relative; padding: 14px 0 14px 34px;
+      font-size: 17px; line-height: 1.45; color: #171a20;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    }
+    .list li:last-child { border-bottom: 0; }
+    .list li::before {
+      content: ""; position: absolute; left: 4px; top: 19px;
+      width: 12px; height: 6px;
+      border-left: 2px solid #171a20; border-bottom: 2px solid #171a20;
+      transform: rotate(-45deg);
+    }
+
+    /* Two short promises side by side on wide screens. */
+    .facts { display: grid; gap: 12px; margin: 8px 0 28px; }
+    .fact { background: #f4f4f4; border-radius: 12px; padding: 20px 22px; }
+    .fact b { display: block; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .fact span { font-size: 15px; line-height: 1.5; color: #393c41; }
+
+    .end { text-align: center; padding: 56px 24px 48px; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+    }
+    .btn.main { background: #393c41; color: #fff; }
+    .btn.main:hover { background: #2b2d31; }
+    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    .btn.plain:hover { background: #eeeeee; }
+
+    @media (min-width: 900px) {
+      .top img { object-position: 50% 30%; }
+      .top .copy { bottom: 64px; }
+      .facts { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main>
+    <section class="top">
+      <picture>
+        <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
+        <img src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
+             width="1536" height="1024" fetchpriority="high"
+             alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
+      </picture>
+      <div class="copy">
+        <h1>Local pros.<br />One standard.</h1>
+        <p>NOHM connects you with independent, owner-operated local businesses&mdash;the people whose name is on the truck and whose reputation is built in your community.</p>
+      </div>
+    </section>
+
+    <div class="read">
+      <section class="part">
+        <p class="eyebrow">Who comes to your door</p>
+        <h2>Owners, not a call center.</h2>
+        <p>The pros on NOHM run their own businesses. They live and work where you do, their name is on the truck, and their reputation follows them from job to job. That is who we want in your home.</p>
+        <p>We look for local contractors who answer their phones, communicate well and already have a strong reputation in the community, then ask every one of them to work to the same standard.</p>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">The NOHM Standard</p>
+        <h2>One standard. Every job. Every pro.</h2>
+        <p>The companies are independent. The standard is not. Every contractor on NOHM agrees to the same basic rules, so you know what to expect before anyone knocks.</p>
+        <ul class="list">
+          <li>Show up when they say they will.</li>
+          <li>Communicate clearly.</li>
+          <li>Explain the price before the work begins.</li>
+          <li>Get your approval before doing any additional work.</li>
+          <li>Treat your home, and the people in it, with respect.</li>
+          <li>Do the work professionally.</li>
+          <li>Document what was done.</li>
+          <li>Keep payments inside NOHM.</li>
+          <li>If something goes wrong, address it.</li>
+        </ul>
+        <p>Different companies. One NOHM Standard.</p>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">How pros get here</p>
+        <h2>Chosen for quality. Not because they paid to be here.</h2>
+        <p>NOHM is not a lead-selling site, a bidding marketplace or an advertising directory. Contractors earn their place on NOHM. They can&rsquo;t buy it.</p>
+        <div class="facts">
+          <div class="fact"><b>No paid placement</b><span>Nobody buys the top spot. Money never decides who is on NOHM or who gets your job.</span></div>
+          <div class="fact"><b>No buying leads</b><span>Pros don&rsquo;t race to call you first. They earn more work by doing good work and responding.</span></div>
+        </div>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">Every job, on the record</p>
+        <h2>Your home remembers.</h2>
+        <p>Arrival is recorded, the work is documented and payment stays inside NOHM, so every repair and every visit lands in one record for your home. The next time something breaks, you know who came, what they did and what it cost.</p>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">Fair both ways</p>
+        <h2>The standard applies to homeowners too.</h2>
+        <p>Good pros deserve good customers. When you book through NOHM, you agree to:</p>
+        <ul class="list">
+          <li>Give accurate job details and the right service address.</li>
+          <li>Be available, and give the pro access to the property.</li>
+          <li>Communicate respectfully.</li>
+          <li>Approve the work before it begins.</li>
+          <li>Pay through NOHM.</li>
+          <li>Report safety, payment or no-show problems accurately.</li>
+        </ul>
+      </section>
+
+      <section class="part">
+        <p class="eyebrow">If something goes wrong</p>
+        <h2>We step in when it matters.</h2>
+        <p>If a pro doesn&rsquo;t show or abandons the job, behaves unsafely or inappropriately, or charges you for something you didn&rsquo;t approve, tell us. <a href="/support" style="color:#356CA3;text-decoration:none;font-weight:500;">Contact NOHM Support</a> and we&rsquo;ll take it from there.</p>
+      </section>
+    </div>
+
+    <section class="end">
+      <h2>It&rsquo;s always something. NOHM it.</h2>
+      <div class="pair">
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
+        <a class="btn plain" href="/support">Get Support</a>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM &copy; 2026</span>
+    <a href="/homeowners">Homeowners</a>
+    <a href="/local-pros">Local Pros</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+  <script src="/download.js" defer></script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
