@@ -61,7 +61,33 @@
       0%        { background-position: 100% 0; }
       35%, 100% { background-position: 0 0; }
     }
-    /* Screen two: the family. On a wide screen the words sit on the empty
+    /* Screen two: the pro at the door. Words on white above, the photo full
+       width below; the photo has no empty wall to write on. */
+    .pro {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: #0f2346;
+      text-align: center;
+    }
+    .pro .copy { padding: 88px 24px 36px; }
+    .pro h2 {
+      margin: 0;
+      font-size: clamp(34px, 4.6vw, 72px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.04;
+    }
+    .pro .sub {
+      margin: 12px 0 0;
+      font-size: clamp(19px, 1.9vw, 30px);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+    .pro picture, .pro img { display: block; width: 100%; }
+    .pro img { height: 62svh; object-fit: cover; object-position: 36% 40%; }
+    @media (min-width: 900px) {
+      .pro img { height: min(88svh, 66.7vw); object-position: 50% 35%; }
+    }
+    /* Screen three: the family. On a wide screen the words sit on the empty
        wall at the left of the photo, like the ad; on a phone they sit on
        white above it, because the photo is cropped to the family there. */
     .family {
@@ -185,6 +211,18 @@
       <span class="ground" aria-hidden="true"></span>
     </div>
   </main>
+  <section class="pro">
+    <div class="copy">
+      <h2>Need a home repair?</h2>
+      <p class="sub">Find and book a local pro.</p>
+    </div>
+    <picture>
+      <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
+      <img src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
+           width="1536" height="1024" loading="lazy"
+           alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
+    </picture>
+  </section>
   <section class="family">
     <div class="copy">
       <h2>The future of<br />home services.</h2>
