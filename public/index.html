@@ -11,7 +11,8 @@
        it loads from Fontshare rather than living in this public repo. -->
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600&display=swap" />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="stylesheet" href="/bar.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: #fff; }
@@ -30,17 +31,8 @@
       padding-left: 24px;
       padding-right: 24px;
     }
-    /* Slim black top bar with the white wordmark, tall enough to hold nav buttons. */
-    .bar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-      height: 48px; padding: 0 20px;
-      display: flex; align-items: center;
-      background: #000;
-    }
-    .bar a {
-      font-size: 14px; line-height: 1; font-weight: 600;
-      color: #fff; text-decoration: none;
-    }
+    /* On the homepage the bar floats over the hero so the title doesn't move. */
+    .bar { position: fixed; left: 0; right: 0; }
     /* The setup line, set small in the sans like Tesla's subtitles, so the
        wordmark underneath lands as the answer. */
     .setup {

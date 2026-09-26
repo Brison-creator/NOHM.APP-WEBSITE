@@ -1,0 +1,14 @@
+/* The top bar every page carries: slim, black, white NOHM on the left, tall
+   enough to hold nav buttons on the right. Pages link this file and open
+   <body> with <header class="bar"><a href="/">NOHM</a></header>. */
+.bar {
+  position: sticky; top: 0; z-index: 10;
+  height: 52px; padding: 0 20px;
+  display: flex; align-items: center;
+  background: #000;
+}
+.bar a {
+  font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700; font-size: 19px; line-height: 1; letter-spacing: 0;
+  color: #fff; text-decoration: none;
+}
