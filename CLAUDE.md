@@ -13,5 +13,6 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
 - **Wordmark font is Panchang** (600 for headlines, 700 in the bar). Load it from Fontshare:
   `https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap`.
   Never commit the font files; the ITF Free Font License forbids redistributing them and this repo is public.
-- NOHM blue is `#356CA3`.
+- Palette is white, black and NOHM blue (`#356CA3`).
+- Never use "Keep money local" or anything about it, anywhere on the site.
 - Each page lives at `public/<path>/index.html` so clean URLs like `/privacy` work.
