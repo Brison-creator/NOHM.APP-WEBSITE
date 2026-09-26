@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/features.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -103,6 +104,15 @@
       .field.wide { grid-column: 1 / -1; }
     }
 
+
+    .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 48px; }
+    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .spec li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
+    .spec a { color: #171a20; }
+    .join { background: #fff; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+    @media (min-width: 900px) { .spec ul { grid-template-columns: repeat(3, 1fr); } }
     @media (min-width: 900px) {
       .top img { object-position: 50% 30%; }
       .top .copy { bottom: 64px; }
@@ -122,53 +132,60 @@
       </picture>
       <div class="copy">
         <h1>Join the future<br />of home service.</h1>
-        <p>Become a NOHM member contractor. Do the work. Build your reputation. Earn access to more jobs.</p>
+        <p>Become a NOHM member contractor.</p>
         <a class="btn plain" href="#join" style="display:inline-flex;margin-top:22px;min-width:220px;border:0;">Request to Join</a>
       </div>
     </section>
 
-    <div class="read">
-      <section class="part">
-        <p class="eyebrow">For owner-operators</p>
-        <h2>No ads. No chasing leads.</h2>
-        <p>Stop paying for clicks, racing competitors to call first and figuring out how to get more work. NOHM sends real local service requests. You don&rsquo;t buy rankings. You don&rsquo;t buy leads. You earn access by doing good work and responding.</p>
-      </section>
+    <section class="features">
+      <div class="f-row">
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:38% 30%" alt="A Speedy Plumbing pro with a NOHM patch on his sleeve at a homeowner&rsquo;s front door" />
+          </picture>
+          <h3>No Ads</h3>
+          <p>No lead fees. No paying for clicks. Real local requests.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/family-960.webp 960w, /img/family-1672.webp 1672w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/family-960.jpg" srcset="/img/family-960.jpg 960w, /img/family-1672.jpg 1672w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1672" height="941" loading="lazy" style="object-position:60% 50%" alt="A family relaxing over a board game at home" />
+          </picture>
+          <h3>Homeowners Who Want It Handled</h3>
+          <p>Stress-free, on-demand repairs and maintenance.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/washer-960.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:70% 50%" alt="A homeowner beside a leaking washer in the laundry room" />
+          </picture>
+          <h3>Earn Your Place</h3>
+          <p>Good work and quick replies earn more jobs. Nobody buys the top spot.</p>
+        </article>
+      </div>
+      <div class="f-dots"></div>
+    </section>
 
-      <section class="part">
-        <p class="eyebrow">Who you&rsquo;ll work for</p>
-        <h2>Homeowners who want it handled.</h2>
-        <p>People on NOHM want stress-free, on-demand repairs and maintenance from a local pro they can trust. They come to NOHM when something breaks, and they come back.</p>
-      </section>
-
-      <section class="part">
-        <p class="eyebrow">Why NOHM</p>
-        <h2>Earn your place. You can&rsquo;t buy it.</h2>
-        <div class="facts">
-          <div class="fact"><b>No paid placement</b><span>Nobody buys the top spot. Quality, responsiveness and performance decide who gets work.</span></div>
-          <div class="fact"><b>No lead fees</b><span>You&rsquo;re not paying for fake or low-intent leads, or for visibility.</span></div>
-          <div class="fact"><b>Clear job information</b><span>Know what the homeowner needs before you head out.</span></div>
-          <div class="fact"><b>Payment inside NOHM</b><span>Get paid through the app, no chasing invoices.</span></div>
-        </div>
-      </section>
-
-      <section class="part">
-        <p class="eyebrow">Who we&rsquo;re looking for</p>
-        <h2>Local pros with a name worth protecting.</h2>
-        <ul class="list">
-          <li>You own or run a local home-service business.</li>
-          <li>You answer your phone and communicate well.</li>
-          <li>You have a strong reputation where you work.</li>
-          <li>You&rsquo;re comfortable using a smartphone app.</li>
-          <li>You can take on new jobs and want more local customers.</li>
-          <li>You&rsquo;ll work to the <a href="/local-pros" style="color:#171a20;font-weight:600;">NOHM Standard</a>.</li>
-        </ul>
-      </section>
-    </div>
+    <section class="spec">
+      <h2>Who We&rsquo;re Looking For</h2>
+      <ul>
+        <li>Owner-operated</li>
+        <li>Answers the phone</li>
+        <li>Strong local name</li>
+        <li>Smartphone ready</li>
+        <li>Room for new jobs</li>
+        <li>Works to the <a href="/local-pros">NOHM Standard</a></li>
+      </ul>
+    </section>
 
     <section class="join" id="join">
       <div class="inner">
         <h2>Request to become a NOHM member.</h2>
-        <p class="intro">Tell us about your business. Your request goes to the NOHM team at admin@nohm.app, and we&rsquo;ll be in touch.</p>
+        <p class="intro">Tell us about your business. It goes to admin@nohm.app.</p>
         <form id="join-form" novalidate>
           <div class="fields">
             <div class="field"><label for="f-name">Your name</label><input id="f-name" name="name" autocomplete="name" required /></div>
@@ -227,6 +244,7 @@
       });
     })();
   </script>
+  <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
 </html>

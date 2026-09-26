@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/features.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -72,6 +73,19 @@
     .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
     .btn.plain:hover { background: #eeeeee; }
 
+
+    /* The standard as a short spec list, like Tesla's specs. */
+    .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 8px; }
+    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .spec li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
+    .trio { max-width: 1200px; margin: 0 auto; padding: 24px 24px 8px; display: grid; gap: 12px; }
+    .trio .fact a { color: #171a20; font-weight: 600; }
+    @media (min-width: 900px) {
+      .spec ul { grid-template-columns: repeat(3, 1fr); }
+      .trio { grid-template-columns: repeat(3, 1fr); }
+    }
     @media (min-width: 900px) {
       .top img { object-position: 50% 30%; }
       .top .copy { bottom: 64px; }
@@ -91,71 +105,63 @@
       </picture>
       <div class="copy">
         <h1>Local pros.<br />One standard.</h1>
-        <p>NOHM connects you with independent, owner-operated local businesses&mdash;the people whose name is on the truck and whose reputation is built in your community.</p>
+        <p>Owner-operated local businesses. One NOHM standard.</p>
       </div>
     </section>
 
-    <div class="read">
-      <section class="part">
-        <p class="eyebrow">Before they arrive</p>
-        <h2>Less explaining. Better preparation.</h2>
-        <p>With your permission, the company you choose can review your home&rsquo;s recorded equipment details and past repairs before arriving. Less explaining. Better preparation. A service history that grows with every documented repair.</p>
-      </section>
+    <section class="features">
+      <div class="f-row">
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:38% 30%" alt="A Speedy Plumbing pro with a NOHM patch on his sleeve at a homeowner&rsquo;s front door" />
+          </picture>
+          <h3>Owner-Operated</h3>
+          <p>Their name is on the truck. Their reputation is local.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/washer-960.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:70% 50%" alt="A homeowner beside a leaking washer in the laundry room" />
+          </picture>
+          <h3>Ready Before They Arrive</h3>
+          <p>With your permission, they review your equipment and past repairs first.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/family-960.webp 960w, /img/family-1672.webp 1672w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/family-960.jpg" srcset="/img/family-960.jpg 960w, /img/family-1672.jpg 1672w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1672" height="941" loading="lazy" style="object-position:60% 50%" alt="A family relaxing over a board game at home" />
+          </picture>
+          <h3>Any Pro, Same Standard</h3>
+          <p>Same company or someone new, the standard never changes.</p>
+        </article>
+      </div>
+      <div class="f-dots"></div>
+    </section>
 
-      <section class="part">
-        <p class="eyebrow">Whoever you choose</p>
-        <h2>Same company or someone new. Same standard.</h2>
-        <p>Whether you choose the same company or someone new, every professional agrees to the same NOHM standard: clear communication, pricing approved before work begins, respect for your home, and documented repairs.</p>
-      </section>
+    <section class="spec">
+      <h2>The NOHM Standard</h2>
+      <ul>
+        <li>Shows up on time</li>
+        <li>Communicates clearly</li>
+        <li>Price before work</li>
+        <li>Your OK for extras</li>
+        <li>Respects your home</li>
+        <li>Professional work</li>
+        <li>Documents the job</li>
+        <li>Payment in NOHM</li>
+        <li>Makes it right</li>
+      </ul>
+    </section>
 
-      <section class="part">
-        <p class="eyebrow">The full NOHM Standard</p>
-        <h2>One standard. Every job. Every pro.</h2>
-        <p>The companies are independent. The standard is not. Every contractor on NOHM agrees to the same basic rules, so you know what to expect before anyone knocks.</p>
-        <ul class="list">
-          <li>Show up when they say they will.</li>
-          <li>Communicate clearly.</li>
-          <li>Explain the price before the work begins.</li>
-          <li>Get your approval before doing any additional work.</li>
-          <li>Treat your home, and the people in it, with respect.</li>
-          <li>Do the work professionally.</li>
-          <li>Document what was done.</li>
-          <li>Keep payments inside NOHM.</li>
-          <li>If something goes wrong, address it.</li>
-        </ul>
-        <p>Different companies. One NOHM Standard.</p>
-      </section>
-
-      <section class="part">
-        <p class="eyebrow">How pros get here</p>
-        <h2>Chosen for quality. Not because they paid to be here.</h2>
-        <p>NOHM is not a lead-selling site, a bidding marketplace or an advertising directory. Contractors earn their place on NOHM. They can&rsquo;t buy it.</p>
-        <div class="facts">
-          <div class="fact"><b>No paid placement</b><span>Nobody buys the top spot. Money never decides who is on NOHM or who gets your job.</span></div>
-          <div class="fact"><b>No buying leads</b><span>Pros don&rsquo;t race to call you first. They earn more work by doing good work and responding.</span></div>
-        </div>
-      </section>
-
-      <section class="part">
-        <p class="eyebrow">Fair both ways</p>
-        <h2>The standard applies to homeowners too.</h2>
-        <p>Good pros deserve good customers. When you book through NOHM, you agree to:</p>
-        <ul class="list">
-          <li>Give accurate job details and the right service address.</li>
-          <li>Be available, and give the pro access to the property.</li>
-          <li>Communicate respectfully.</li>
-          <li>Approve the work before it begins.</li>
-          <li>Pay through NOHM.</li>
-          <li>Report safety, payment or no-show problems accurately.</li>
-        </ul>
-      </section>
-
-      <section class="part">
-        <p class="eyebrow">If something goes wrong</p>
-        <h2>We step in when it matters.</h2>
-        <p>If a pro doesn&rsquo;t show or abandons the job, behaves unsafely or inappropriately, or charges you for something you didn&rsquo;t approve, tell us. <a href="/support" style="color:#356CA3;text-decoration:none;font-weight:500;">Contact NOHM Support</a> and we&rsquo;ll take it from there.</p>
-      </section>
-    </div>
+    <section class="trio">
+      <div class="fact"><b>No Paid Placement</b><span>Pros earn their spot. They can&rsquo;t buy it.</span></div>
+      <div class="fact"><b>Fair Both Ways</b><span>Homeowners give clear details and access, and pay through NOHM.</span></div>
+      <div class="fact"><b>We Step In</b><span>No-show, unsafe conduct or a charge you didn&rsquo;t approve? <a href="/support">Tell Support</a>.</span></div>
+    </section>
 
     <section class="end">
       <h2>It&rsquo;s always something. NOHM it.</h2>
@@ -175,6 +181,7 @@
     <a href="/support">Support</a>
   </footer>
   <script src="/download.js" defer></script>
+  <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
 </html>

@@ -16,6 +16,7 @@
         integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/features.css" />
   <style>
     /* Laid out like tesla.com: a full-screen photo carousel with the title
        and two buttons on it, the bar floating clear over the photo, gray
@@ -111,12 +112,6 @@
     }
     .dots button[aria-current="true"] { background: #fff; }
 
-    /* The trust statement under the hero: big words on white, like the
-       text sections between Tesla's photos. */
-    .standard { max-width: 760px; margin: 0 auto; padding: 64px 24px 40px; text-align: center; }
-    .standard h2 { margin: 0; font-size: clamp(30px, 3.6vw, 44px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
-    .standard p { margin: 16px auto 28px; max-width: 620px; font-size: clamp(16px, 1.4vw, 19px); line-height: 1.55; color: #393c41; }
-    .standard .btn.one { display: inline-flex; min-width: 220px; }
 
     /* Find Your Pro, laid out like Tesla's Find Your Charge: a gray map with
        a Find Me button, then a big left-aligned title, two big numbers and
@@ -268,10 +263,39 @@
       </div>
     </section>
 
-    <section class="standard">
-      <h2>Local pros.<br />One standard.</h2>
-      <p>NOHM connects you with independent, owner-operated local businesses&mdash;the people whose name is on the truck and whose reputation is built in your community. Different companies, committed to the same NOHM standard: clear communication, approved pricing, and respect for your home.</p>
-      <a class="btn black one" href="/local-pros">Learn More</a>
+    <section class="features">
+      <div class="head"><h2>Local pros.<br />One standard.</h2></div>
+      <div class="f-row">
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:38% 30%" alt="A Speedy Plumbing pro with a NOHM patch on his sleeve at a homeowner&rsquo;s front door" />
+          </picture>
+          <h3>Owner-Operated</h3>
+          <p>Local businesses. Their name is on the truck.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/family-960.webp 960w, /img/family-1672.webp 1672w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/family-960.jpg" srcset="/img/family-960.jpg 960w, /img/family-1672.jpg 1672w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1672" height="941" loading="lazy" style="object-position:60% 50%" alt="A family relaxing over a board game at home" />
+          </picture>
+          <h3>One Standard</h3>
+          <p>Clear communication, approved pricing and respect for your home.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/washer-960.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:70% 50%" alt="A homeowner beside a leaking washer in the laundry room" />
+          </picture>
+          <h3>Ready Before They Arrive</h3>
+          <p>With your permission, pros see your equipment and past repairs first.</p>
+        </article>
+      </div>
+      <div class="f-dots"></div>
+      <div class="after"><a class="btn black" href="/local-pros">Learn More</a></div>
     </section>
 
     <section class="find" aria-labelledby="find-title">
@@ -466,6 +490,7 @@
     })();
   </script>
   <script src="/download.js" defer></script>
+  <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
 </html>

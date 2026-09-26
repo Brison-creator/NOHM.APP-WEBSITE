@@ -1,0 +1,28 @@
+/* Feature row, like Tesla's "Efficient Drive" blocks: a photo, a short title
+   and a line or two under it. On phones the next one peeks in and you swipe;
+   on wide screens all of them sit side by side. Pair with /features.js. */
+.features { padding: 48px 0 32px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #171a20; }
+.features .head { padding: 0 24px 24px; max-width: 1200px; margin: 0 auto; }
+.features .head h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+.f-row {
+  display: flex; gap: 12px;
+  padding: 0 24px;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scroll-padding: 0 24px;
+  scrollbar-width: none;
+}
+.f-row::-webkit-scrollbar { display: none; }
+.f-item { flex: 0 0 calc(100% - 36px); scroll-snap-align: start; }
+.f-item img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: #f4f4f4; }
+.f-item h3 { margin: 22px 0 8px; font-size: clamp(28px, 2.6vw, 36px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+.f-item p { margin: 0; font-size: 18px; line-height: 1.5; color: #5c5e62; }
+.f-dots { display: flex; justify-content: center; gap: 10px; padding: 22px 0 0; }
+.f-dots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #b8b9bc; cursor: pointer; }
+.f-dots button[aria-current="true"] { background: #171a20; }
+.features .after { padding: 28px 24px 0; max-width: 1200px; margin: 0 auto; }
+.features .after .btn { display: inline-flex; min-width: 200px; }
+@media (min-width: 900px) {
+  .f-row { max-width: 1200px; margin: 0 auto; gap: 24px; overflow: visible; }
+  .f-item { flex: 1 1 0; }
+  .f-dots { display: none; }
+}
