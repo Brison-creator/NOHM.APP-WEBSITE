@@ -10,8 +10,8 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
   <header class="bar"><a href="/">NOHM</a></header>
   ```
   Also set `<meta name="theme-color" content="#000000" />` so the phone's status bar matches.
-- **Wordmark font is Panchang** (600 for headlines, 700 in the bar). Load it from Fontshare:
-  `https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap`.
+- **One font everywhere: Panchang** (400 body, 500 small lines, 600 headlines and buttons, 700 in the bar). Load it from Fontshare:
+  `https://api.fontshare.com/v2/css?f[]=panchang@400,500,600,700&display=swap`.
   Never commit the font files; the ITF Free Font License forbids redistributing them and this repo is public.
 - Palette is white, black and NOHM blue, nothing else:
   - background `#ffffff`; top bar `#000000`
