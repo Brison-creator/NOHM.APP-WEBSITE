@@ -56,6 +56,7 @@
     .slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .slide img.washer { object-position: 80% 50%; }
     .slide img.pro { object-position: 36% 40%; }
+    .slide img.fixed { object-position: 44% 50%; }
     /* Shade the top of the photo so the white words read on any picture,
        and a touch at the bottom behind the dots. */
     .slide::after {
@@ -228,7 +229,7 @@
   <main>
     <section class="hero" aria-roledescription="carousel" aria-label="NOHM">
       <div class="slides" id="slides">
-        <article class="slide" aria-roledescription="slide" aria-label="1 of 2">
+        <article class="slide" aria-roledescription="slide" aria-label="1 of 3">
           <picture>
             <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="100vw" />
             <img class="washer" src="/img/washer-1536.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="100vw"
@@ -244,7 +245,23 @@
             </div>
           </div>
         </article>
-        <article class="slide" aria-roledescription="slide" aria-label="2 of 2">
+        <article class="slide" aria-roledescription="slide" aria-label="2 of 3">
+          <picture>
+            <source type="image/webp" srcset="/img/fixed-960.webp 960w, /img/fixed-1536.webp 1536w" sizes="100vw" />
+            <img class="fixed" src="/img/fixed-1536.jpg" srcset="/img/fixed-960.jpg 960w, /img/fixed-1536.jpg 1536w" sizes="100vw"
+                 width="1536" height="1024"
+                 alt="The same homeowner, washer fixed, shaking hands with a pro from Larry&rsquo;s Appliance wearing a NOHM patch" />
+          </picture>
+          <div class="copy">
+            <h2>Handled.</h2>
+            <p class="lede">A local pro fixed it. The repair is saved in your app.</p>
+            <div class="pair">
+              <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+              <a class="btn plain" href="/local-pros">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="slide" aria-roledescription="slide" aria-label="3 of 3">
           <picture>
             <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
             <img class="pro" src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
@@ -264,6 +281,7 @@
       <div class="dots" id="dots">
         <button type="button" aria-label="Show slide 1" aria-current="true"></button>
         <button type="button" aria-label="Show slide 2" aria-current="false"></button>
+        <button type="button" aria-label="Show slide 3" aria-current="false"></button>
       </div>
     </section>
 
