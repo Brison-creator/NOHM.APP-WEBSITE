@@ -54,7 +54,7 @@
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
-        animation: shine 7s ease-in-out infinite;
+        animation: shine 9s ease-in-out infinite;
       }
     }
     @keyframes shine {
@@ -69,12 +69,13 @@
       font-size: 12px;
     }
     footer, footer a { color: #86868b; text-decoration: none; }
-    /* The wordmark floats: a slow 7s drift of a few pixels, with a soft
-       contact shadow underneath that tightens as the word rises. */
+    /* The wordmark sits still, lifted off the page by a soft contact shadow.
+       The only movement is light: a faint reflection glides across it now
+       and then, just after the glint crosses the line above, as if one light
+       were passing over both. */
     .lift {
       position: relative;
       display: inline-block;
-      animation: hover 7s ease-in-out infinite;
     }
     .ground {
       position: absolute;
@@ -84,19 +85,7 @@
       border-radius: 50%;
       background: radial-gradient(closest-side, rgba(23, 26, 32, 0.20), rgba(23, 26, 32, 0));
       filter: blur(6px);
-      animation: ground 7s ease-in-out infinite;
       pointer-events: none;
-    }
-    @keyframes hover {
-      0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-6px); }
-    }
-    @keyframes ground {
-      0%, 100% { transform: translateY(0) scaleX(1);    opacity: 1; }
-      50%      { transform: translateY(6px) scaleX(0.9); opacity: 0.65; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .lift, .ground, .setup { animation: none; }
     }
     h1 {
       margin: 0;
@@ -111,6 +100,27 @@
         0 1px 0 rgba(23, 26, 32, 0.28),
         0 2px 1px rgba(23, 26, 32, 0.14),
         0 8px 18px rgba(23, 26, 32, 0.10);
+    }
+    @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+      h1 {
+        background: linear-gradient(105deg,
+          #171a20 0%, #171a20 40%, #50565f 50%, #171a20 60%, #171a20 100%);
+        background-size: 300% 100%;
+        background-position: 100% 0;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        /* text-shadow would paint over a clipped fill, so the depth moves to
+           a filter on the glyphs instead. */
+        text-shadow: none;
+        filter:
+          drop-shadow(0 1px 0 rgba(23, 26, 32, 0.28))
+          drop-shadow(0 8px 14px rgba(23, 26, 32, 0.12));
+        animation: shine 9s ease-in-out 0.6s infinite;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .setup, h1 { animation: none; }
     }
   </style>
 </head>
