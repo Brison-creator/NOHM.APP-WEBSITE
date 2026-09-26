@@ -61,10 +61,57 @@
       0%        { background-position: 100% 0; }
       35%, 100% { background-position: 0 0; }
     }
+    /* Screen two: the pro at the door. Words on white above the photo, the
+       photo full width, the download buttons on white below it. */
+    .pro {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      text-align: center;
+      padding-top: 96px;
+    }
+    .pro h2 {
+      margin: 0 24px;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      line-height: 1.1;
+      color: #171a20;
+    }
+    .pro .sub {
+      margin: 10px 24px 36px;
+      font-size: clamp(16px, 1.6vw, 20px);
+      color: #393c41;
+    }
+    .pro picture, .pro img {
+      display: block;
+      width: 100%;
+    }
+    .pro img {
+      height: min(72svh, 760px);
+      object-fit: cover;
+      object-position: 42% 30%;
+    }
+    .pro .tag {
+      margin: 36px 24px 18px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #393c41;
+    }
+    .get {
+      display: flex; gap: 12px; justify-content: center;
+      padding: 0 24px;
+    }
+    .get a {
+      flex: 0 1 240px;
+      padding: 13px 16px;
+      border-radius: 4px;
+      font-size: 14px; font-weight: 600;
+      color: #fff; text-decoration: none;
+    }
+    .get .ios { background: #356CA3; }
+    .get .android { background: #171a20; }
     footer {
-      position: fixed; left: 0; right: 0; bottom: 0;
       display: flex; justify-content: center; gap: 22px;
-      padding: 18px 24px calc(18px + env(safe-area-inset-bottom));
+      padding: 28px 24px calc(28px + env(safe-area-inset-bottom));
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
       font-size: 12px;
     }
@@ -133,6 +180,20 @@
       <span class="ground" aria-hidden="true"></span>
     </div>
   </main>
+  <section class="pro">
+    <h2>Need a home repair?</h2>
+    <p class="sub">Find and book a local pro.</p>
+    <picture>
+      <source srcset="/img/pro-at-door.webp" type="image/webp" />
+      <img src="/img/pro-at-door.jpg" width="1112" height="775" loading="lazy"
+           alt="A NOHM pro with a tool bag, smiling at a homeowner at her front door" />
+    </picture>
+    <p class="tag">Home repairs. One app.</p>
+    <div class="get">
+      <a class="ios" href="https://apps.apple.com/us/app/nohm-app/id6761128513">App Store</a>
+      <a class="android" href="https://play.google.com/store/apps/details?id=com.nohm.app">Google Play</a>
+    </div>
+  </section>
   <footer>
     <span>NOHM &copy; 2026</span>
     <a href="/privacy">Privacy</a>
