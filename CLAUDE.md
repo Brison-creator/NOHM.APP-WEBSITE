@@ -22,6 +22,7 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
   - headlines and the wordmark `#171a20`; body text `#393c41`; small print `#86868b`
   - buttons are gray: `#e6e7e9` with `#171a20` text (hover `#d9dadd`); store links `#5c5e62`
   - NOHM blue `#356CA3` only for the tagline and links inside text
+- Never say good work earns pros more jobs; meeting the NOHM Standard keeps them in good standing.
 - Copy about pros and the NOHM Standard comes from the NOHM Marketing Plan (section 5); don't invent policies.
 - Never use "Keep money local" or anything about it, anywhere on the site.
 - Marketing pages (homepage, `/homeowners`) link `/screens.css` for the shared screen template and footer, and `/download.js` so Download now opens the right store.
