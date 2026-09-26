@@ -105,6 +105,12 @@
     }
 
 
+
+    .now { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; display: grid; gap: 24px; align-items: center; }
+    .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 60% 40%; border-radius: 12px; }
+    .now h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 46px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.08; }
+    .now .words p:not(.eyebrow) { margin: 0; font-size: 17px; line-height: 1.55; color: #393c41; }
+    @media (min-width: 900px) { .now { grid-template-columns: 0.8fr 1fr; gap: 48px; } .now img { max-height: 640px; } }
     .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 48px; }
     .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
     .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
@@ -169,6 +175,20 @@
         </article>
       </div>
       <div class="f-dots"></div>
+    </section>
+
+    <section class="now">
+      <picture>
+        <source type="image/webp" srcset="/img/pro-now-720.webp 720w, /img/pro-now-1122.webp 1122w" sizes="(min-width: 900px) 40vw, 100vw" />
+        <img src="/img/pro-now-720.jpg" srcset="/img/pro-now-720.jpg 720w, /img/pro-now-1122.jpg 1122w" sizes="(min-width: 900px) 40vw, 100vw"
+             width="1122" height="1402" loading="lazy"
+             alt="A NOHM pro in his truck starting the NOHM Now 60-minute countdown on his dashboard phone" />
+      </picture>
+      <div class="words">
+        <p class="eyebrow">NOHM Now</p>
+        <h2>60 for 60.<br />Beat the clock.</h2>
+        <p>Accept a NOHM Now job and a 60-minute countdown starts. The homeowner watches it too. Arrive before zero.</p>
+      </div>
     </section>
 
     <section class="spec">
