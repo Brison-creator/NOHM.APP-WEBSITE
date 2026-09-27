@@ -53,8 +53,10 @@
     .slides::-webkit-scrollbar { display: none; }
     .slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden; }
     .slide img, .slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .slide .narrow-only { display: block; }
+    .slide .wide-only { display: none; }
     .slide .washer { object-position: 50% 0%; }
-    .slide img.pro { object-position: 30% 0%; }
+    .slide .pro { object-position: 50% 0%; }
     /* This slide's phone photo has his face up top, so its words sit low. */
     .slide .copy.low { top: auto; bottom: 44px; }
     .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
@@ -287,7 +289,7 @@
       .hero { height: 100svh; }
       .slide .washer { object-position: 50% 45%; }
       .slide .copy { top: calc(52px + 5svh); }
-      .slide img.pro { object-position: 50% 0%; }
+      .slide .pro { object-position: 50% 0%; }
       .slide .copy.low { top: calc(52px + 5svh); bottom: auto; }
       .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.34) 40%, rgba(0,0,0,0) 62%), linear-gradient(to top, rgba(0,0,0,.3), rgba(0,0,0,0) 14%); }
       .cards { padding: 24px 0 0; }
@@ -301,6 +303,8 @@
       .q-points { grid-template-columns: repeat(3, 1fr); }
       .q-img { aspect-ratio: 16 / 7; object-position: 50% 0%; }
       .p-grid { grid-template-columns: repeat(4, 1fr); }
+      .slide .narrow-only { display: none; }
+      .slide .wide-only { display: block; }
       .dock { display: none; }
       body { padding-bottom: 0; }
     }
@@ -329,7 +333,7 @@
           </div>
         </article>
         <article class="slide" aria-roledescription="slide" aria-label="2 of 3">
-          <video class="fixed" autoplay muted loop playsinline preload="metadata" poster="/video/handled-poster.jpg"
+          <video class="fixed once" muted playsinline preload="metadata" poster="/video/handled-poster.jpg"
                  aria-label="The homeowner, washer fixed, shaking hands with a pro from Larry&rsquo;s Appliance wearing a NOHM patch">
             <source media="(max-width: 899px)" src="/video/handled-720.mp4" type="video/mp4" />
             <source media="(max-width: 899px)" src="/video/handled-720.webm" type="video/webm" />
@@ -346,14 +350,17 @@
           </div>
         </article>
         <article class="slide" aria-roledescription="slide" aria-label="3 of 3">
-          <picture>
-            <source media="(max-width: 899px)" type="image/webp" srcset="/img/hvac-tall-720.webp 720w, /img/hvac-tall-941.webp 941w" sizes="100vw" />
-            <source media="(max-width: 899px)" srcset="/img/hvac-tall-720.jpg 720w, /img/hvac-tall-941.jpg 941w" sizes="100vw" />
+          <picture class="wide-only">
             <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
             <img class="pro" src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
                  width="1536" height="1024"
                  alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
           </picture>
+          <video class="pro narrow-only once" muted playsinline preload="none" poster="/video/door-poster.jpg"
+                 aria-label="A Jet HVAC pro with a NOHM patch walks up to the front door, waves and shakes the homeowner&rsquo;s hand">
+            <source src="/video/door-720.mp4" type="video/mp4" />
+            <source src="/video/door-720.webm" type="video/webm" />
+          </video>
           <div class="copy low">
             <h2>Need a home repair?</h2>
             <p class="lede">Find and book a local pro.</p>
@@ -627,7 +634,18 @@
       function show(i, smooth) {
         slides.scrollTo({ left: i * slides.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
       }
+      // Slides are stills that come to life once: when a slide becomes the
+      // current one, its clip plays from the start and holds on the last frame.
+      function wake(i) {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var v = slides.children[i] && slides.children[i].querySelector('video.once');
+        if (!v || getComputedStyle(v).display === 'none') return;
+        if (v.preload === 'none') v.preload = 'auto';
+        try { v.currentTime = 0; } catch (e) {}
+        var p = v.play(); if (p && p.catch) p.catch(function () {});
+      }
       function mark(i) {
+        if (i !== current) wake(i);
         current = i;
         dots.forEach(function (d, k) { d.setAttribute('aria-current', String(k === i)); });
       }
