@@ -93,9 +93,11 @@
     /* Opening video: the water rolls out, then the tagline fades in (3s),
        then NOHM it. and the buttons (4s). Without JS or with reduced motion
        everything simply shows. */
-    .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 0; transform: translateY(8px); transition: opacity .9s ease, transform .9s ease; }
+    .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 0; transform: translateY(10px); transition: opacity .7s ease, transform .7s ease; }
+    .js #leak-copy .lede { transform: scale(.85); transition: opacity .5s ease, transform .6s cubic-bezier(.2, 1.6, .4, 1); }
     .js #leak-copy.s1 .lede, .js #leak-copy.s2 h1, .js #leak-copy.s2 .pair { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 1; transform: none; transition: none; } }
+    #leak-copy .lede.above { font-size: clamp(20px, 2vw, 26px); font-weight: 500; }
     /* The setup line sits above the wordmark on the first slide. */
     .lede.above { margin: 0 0 10px; }
     .lede.above + h1 { margin-bottom: 22px; }
@@ -655,15 +657,20 @@
       if (still) {
         reveal(2); leak.poster = '/video/leak-end.jpg';
       } else {
-        leak.addEventListener('timeupdate', function () {
-          if (leak.currentTime >= 3) reveal(1);
-          if (leak.currentTime >= 4) reveal(2);
-        });
+        // Timed from when the video actually starts playing: tagline pops at
+        // 2s, NOHM it. and the buttons follow a second later.
+        var timed = false;
+        function schedule() {
+          if (timed) return; timed = true;
+          setTimeout(function () { reveal(1); }, 2000);
+          setTimeout(function () { reveal(2); }, 3000);
+        }
+        leak.addEventListener('playing', schedule);
         leak.addEventListener('ended', function () { reveal(2); setTimeout(startAuto, 2500); });
         var p = leak.play();
-        if (p && p.catch) p.catch(function () { reveal(2); startAuto(); });
-        // If the video can't load, never leave the words hidden.
-        setTimeout(function () { if (leak.readyState < 2) { reveal(2); startAuto(); } }, 4500);
+        if (p && p.catch) p.catch(function () { schedule(); setTimeout(startAuto, 7000); });
+        // If the video is slow or blocked (e.g. Low Power Mode), still run the timing.
+        setTimeout(function () { if (!timed) { schedule(); setTimeout(startAuto, 7000); } }, 1500);
       }
 
       var row = document.getElementById('card-row');
