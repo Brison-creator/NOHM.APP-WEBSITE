@@ -53,13 +53,13 @@
     }
     .slides::-webkit-scrollbar { display: none; }
     .slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden; }
-    .slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .slide img, .slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .slide img.washer { object-position: 72% 0%; }
     .slide img.pro { object-position: 30% 0%; }
     /* This slide's phone photo has his face up top, so its words sit low. */
     .slide .copy.low { top: auto; bottom: 44px; }
     .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
-    .slide img.fixed { object-position: 44% 50%; }
+    .slide .fixed { object-position: 44% 50%; }
     /* Shade the top of the photo so the white words read on any picture,
        and a touch at the bottom behind the dots. */
     .slide::after {
@@ -296,12 +296,13 @@
           </div>
         </article>
         <article class="slide" aria-roledescription="slide" aria-label="2 of 3">
-          <picture>
-            <source type="image/webp" srcset="/img/fixed-960.webp 960w, /img/fixed-1536.webp 1536w" sizes="100vw" />
-            <img class="fixed" src="/img/fixed-1536.jpg" srcset="/img/fixed-960.jpg 960w, /img/fixed-1536.jpg 1536w" sizes="100vw"
-                 width="1536" height="1024"
-                 alt="The same homeowner, washer fixed, shaking hands with a pro from Larry&rsquo;s Appliance wearing a NOHM patch" />
-          </picture>
+          <video class="fixed" autoplay muted loop playsinline preload="metadata" poster="/video/handled-poster.jpg"
+                 aria-label="The homeowner, washer fixed, shaking hands with a pro from Larry&rsquo;s Appliance wearing a NOHM patch">
+            <source media="(max-width: 899px)" src="/video/handled-720.mp4" type="video/mp4" />
+            <source media="(max-width: 899px)" src="/video/handled-720.webm" type="video/webm" />
+            <source src="/video/handled.mp4" type="video/mp4" />
+            <source src="/video/handled.webm" type="video/webm" />
+          </video>
           <div class="copy">
             <h2>Handled.</h2>
             <p class="lede">A local pro fixed it. The repair is saved in your app.</p>
@@ -591,6 +592,10 @@
       cdots.forEach(function (d, i) {
         d.addEventListener('click', function () { row.scrollTo({ left: i * cardStep(), behavior: 'smooth' }); });
       });
+
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.slide video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+      }
 
       function solid() { bar.classList.toggle('solid', scrollY > hero.offsetHeight - bar.offsetHeight); }
       addEventListener('scroll', solid, { passive: true });
