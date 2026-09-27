@@ -116,6 +116,26 @@
     .dots button[aria-current="true"] { background: #fff; }
 
 
+    /* Services: the come-fix-done trades as gray tiles with a line icon. */
+    .services, .quotes { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .services h2, .quotes h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+    .svc-lede { margin: 8px 0 22px; font-size: 18px; color: #5c5e62; }
+    .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .svc { background: #f4f4f4; border-radius: 12px; padding: 18px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .svc svg { width: 26px; height: 26px; margin-bottom: 8px; fill: none; stroke: #171a20; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .svc b { font-size: 17px; font-weight: 600; }
+    .svc span { font-size: 14px; line-height: 1.35; color: #5c5e62; }
+    .svc.more { background: #fff; border: 1px dashed #c9cacc; justify-content: center; }
+    .svc.more b { font-weight: 500; color: #5c5e62; font-size: 15px; }
+
+    /* Get Quotes: three promises as big numbers, like Tesla's stats. */
+    .quotes { padding-top: 56px; }
+    .q-points { list-style: none; margin: 24px 0 18px; padding: 0; display: grid; gap: 14px; }
+    .q-points li { display: flex; align-items: center; gap: 16px; }
+    .q-points b { flex: 0 0 56px; font-size: 48px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
+    .q-points span { font-size: 17px; color: #393c41; }
+    .q-trades { margin: 0 0 24px; font-size: 15px; color: #5c5e62; }
+
     /* Find Your Pro, laid out like Tesla's Find Your Charge: a gray map with
        a Find Me button, then a big left-aligned title, two big numbers and
        a black and a light-gray button. */
@@ -235,6 +255,8 @@
       .card .body { padding: 0 28px 28px; }
       .panel { height: 100svh; }
       .panel .copy { top: calc(52px + 9svh); }
+      .svc-grid { grid-template-columns: repeat(4, 1fr); }
+      .q-points { grid-template-columns: repeat(3, 1fr); }
       .dock { display: none; }
       body { padding-bottom: 0; }
     }
@@ -335,6 +357,35 @@
       </div>
       <div class="f-dots"></div>
       <div class="after"><a class="btn black" href="/local-pros">Learn More</a></div>
+    </section>
+
+    <section class="services" aria-labelledby="svc-title">
+      <h2 id="svc-title">Services</h2>
+      <p class="svc-lede">Come. Fix. Done.</p>
+      <div class="svc-grid">
+        <div class="svc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 9 7 12 3z"/></svg><b>Plumbing</b><span>Leaks, clogs, water heaters</span></div>
+        <div class="svc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.2 7l15.6 10M4.2 17L19.8 7"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5"/></svg><b>HVAC</b><span>No heat, no AC</span></div>
+        <div class="svc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13.5h6L10 22l8-11.5h-6L13 2z"/></svg><b>Electrical</b><span>Outages, outlets, breakers</span></div>
+        <div class="svc"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2"/><circle cx="12" cy="13.5" r="4.5"/><path d="M7.5 6h.01M10.5 6h.01"/></svg><b>Appliance</b><span>Washers, dryers, fridges</span></div>
+        <div class="svc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5l4 4-9.5 9.5-4-4z"/><path d="M13 4l2-2 7 7-2 2"/><path d="M5 15l-2.5 2.5 4 4L9 19"/></svg><b>Handyman</b><span>Small fixes, drywall patches</span></div>
+        <div class="svc"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><b>Locksmith</b><span>Locked out, rekeys</span></div>
+        <div class="svc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"/><path d="M6.5 21v-9h11v9M6.5 15h11M6.5 18h11"/></svg><b>Garage Door</b><span>Stuck doors, springs</span></div>
+        <div class="svc more"><b>More on the way</b></div>
+      </div>
+    </section>
+
+    <section class="quotes" aria-labelledby="q-title">
+      <h2 id="q-title">Bigger job? Get quotes.</h2>
+      <ul class="q-points">
+        <li><b>3</b><span>Sent to three local companies</span></li>
+        <li><b>0</b><span>No pressure, no sales calls</span></li>
+        <li><b>1</b><span>All communication in the app</span></li>
+      </ul>
+      <p class="q-trades">Roofing &middot; Painting &middot; Flooring &middot; Fencing &middot; Gutters &middot; Remodeling</p>
+      <div class="pair left">
+        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Quotes</a>
+        <a class="btn soft" href="/homeowners">Learn More</a>
+      </div>
     </section>
 
     <section class="find" aria-labelledby="find-title">
