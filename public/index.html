@@ -95,7 +95,7 @@
        everything simply shows. */
     .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 0; transform: translateY(10px); transition: opacity .7s ease, transform .7s ease; }
     .js #leak-copy .lede { transform: scale(.85); transition: opacity .5s ease, transform .6s cubic-bezier(.2, 1.6, .4, 1); }
-    .js #leak-copy.s1 .lede, .js #leak-copy.s2 h1, .js #leak-copy.s2 .pair { opacity: 1; transform: none; }
+    .js #leak-copy.s1 .lede, .js #leak-copy.s2 h1, .js #leak-copy.s3 .pair { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 1; transform: none; transition: none; } }
     #leak-copy .lede.above { font-size: clamp(20px, 2vw, 26px); font-weight: 500; }
     /* The setup line sits above the wordmark on the first slide. */
@@ -653,24 +653,26 @@
       // Opening video: plays once and holds its last frame. The words fade in
       // as the water finishes rolling out; the slideshow waits for the end.
       var leak = document.getElementById('leak'), copy = document.getElementById('leak-copy');
-      function reveal(step) { copy.classList.add('s1'); if (step > 1) copy.classList.add('s2'); }
+      function reveal(step) { for (var i = 1; i <= step; i++) copy.classList.add('s' + i); }
       if (still) {
-        reveal(2); leak.poster = '/video/leak-end.jpg';
+        reveal(3); leak.poster = '/video/leak-end.jpg';
       } else {
-        // Timed from when the video actually starts playing: tagline pops at
-        // 2s, NOHM it. and the buttons follow a second later.
+        // Two seconds apart, timed from when the video starts playing:
+        // tagline at 2s, NOHM it. at 4s, the buttons at 6s, then the
+        // slideshow starts moving at 8s.
         var timed = false;
         function schedule() {
           if (timed) return; timed = true;
           setTimeout(function () { reveal(1); }, 2000);
-          setTimeout(function () { reveal(2); }, 3000);
+          setTimeout(function () { reveal(2); }, 4000);
+          setTimeout(function () { reveal(3); }, 6000);
+          setTimeout(function () { if (!touched) { show(1, true); startAuto(); } }, 8000);
         }
         leak.addEventListener('playing', schedule);
-        leak.addEventListener('ended', function () { reveal(2); setTimeout(startAuto, 2500); });
         var p = leak.play();
-        if (p && p.catch) p.catch(function () { schedule(); setTimeout(startAuto, 7000); });
+        if (p && p.catch) p.catch(schedule);
         // If the video is slow or blocked (e.g. Low Power Mode), still run the timing.
-        setTimeout(function () { if (!timed) { schedule(); setTimeout(startAuto, 7000); } }, 1500);
+        setTimeout(schedule, 1500);
       }
 
       var row = document.getElementById('card-row');
