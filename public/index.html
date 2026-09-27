@@ -91,6 +91,9 @@
       font-size: clamp(16px, 1.4vw, 19px);
       text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
     }
+    /* The setup line sits above the wordmark on the first slide. */
+    .lede.above { margin: 0 0 10px; }
+    .lede.above + h1 { margin-bottom: 22px; }
 
     /* Tesla's pair of buttons, side by side: the main one solid gray, the
        second one white. */
@@ -316,8 +319,8 @@
                  alt="A homeowner crouched beside his leaking washer, calmly booking help on his phone" />
           </picture>
           <div class="copy low">
+            <p class="lede above">It&rsquo;s always something.</p>
             <h1 class="mark">NOHM it.</h1>
-            <p class="lede">It&rsquo;s always something.</p>
             <div class="pair">
               <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
               <a class="btn plain" href="/homeowners">Learn More</a>
