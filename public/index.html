@@ -55,7 +55,10 @@
     .slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden; }
     .slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .slide img.washer { object-position: 80% 50%; }
-    .slide img.pro { object-position: 36% 40%; }
+    .slide img.pro { object-position: 30% 0%; }
+    /* This slide's phone photo has his face up top, so its words sit low. */
+    .slide .copy.low { top: auto; bottom: 44px; }
+    .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
     .slide img.fixed { object-position: 44% 50%; }
     /* Shade the top of the photo so the white words read on any picture,
        and a touch at the bottom behind the dots. */
@@ -252,6 +255,8 @@
       .slide img.washer { object-position: 50% 45%; }
       .slide .copy { top: calc(52px + 5svh); }
       .slide img.pro { object-position: 50% 0%; }
+      .slide .copy.low { top: calc(52px + 5svh); bottom: auto; }
+      .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.34) 40%, rgba(0,0,0,0) 62%), linear-gradient(to top, rgba(0,0,0,.3), rgba(0,0,0,0) 14%); }
       .cards { padding: 32px 0 8px; }
       .find .words { padding: 40px 32px 56px; }
       .map-wrap { height: 52svh; }
@@ -308,12 +313,14 @@
         </article>
         <article class="slide" aria-roledescription="slide" aria-label="3 of 3">
           <picture>
+            <source media="(max-width: 899px)" type="image/webp" srcset="/img/hvac-tall-720.webp 720w, /img/hvac-tall-941.webp 941w" sizes="100vw" />
+            <source media="(max-width: 899px)" srcset="/img/hvac-tall-720.jpg 720w, /img/hvac-tall-941.jpg 941w" sizes="100vw" />
             <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
             <img class="pro" src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
                  width="1536" height="1024"
                  alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
           </picture>
-          <div class="copy">
+          <div class="copy low">
             <h2>Need a home repair?</h2>
             <p class="lede">Find and book a local pro.</p>
             <div class="pair">
