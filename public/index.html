@@ -130,6 +130,9 @@
     .svc b { padding: 12px 14px 2px; font-size: 16px; font-weight: 600; }
     .svc span { padding: 0 14px 14px; font-size: 13px; line-height: 1.35; color: #5c5e62; }
 
+    .svc-more { display: inline-block; margin-top: 16px; font-size: 14px; color: #5c5e62; text-decoration: underline; text-underline-offset: 3px; }
+    .svc-more:hover { color: #171a20; }
+
     /* Get Quotes: three promises as big numbers, like Tesla's stats. */
     .quotes { padding-top: 56px; }
     .q-points { list-style: none; margin: 24px 0 18px; padding: 0; display: grid; gap: 14px; }
@@ -400,26 +403,7 @@
           <b>Pressure Washing</b><span>Driveways, siding, decks</span>
         </div>
       </div>
-    </section>
-
-    <section class="quotes" aria-labelledby="q-title">
-      <picture>
-        <source type="image/webp" srcset="/img/flooring-960.webp 960w, /img/flooring-1672.webp 1672w" sizes="(min-width: 1200px) 1152px, 100vw" />
-        <img class="q-img" src="/img/flooring-960.jpg" srcset="/img/flooring-960.jpg 960w, /img/flooring-1672.jpg 1672w" sizes="(min-width: 1200px) 1152px, 100vw"
-             width="1672" height="941" loading="lazy"
-             alt="A NOHM flooring pro installing a hardwood floor while the homeowner looks on, smiling" />
-      </picture>
-      <h2 id="q-title">Bigger job? Get quotes.</h2>
-      <ul class="q-points">
-        <li><b>3</b><span>Sent to three local companies</span></li>
-        <li><b>0</b><span>No pressure, no sales calls</span></li>
-        <li><b>1</b><span>All communication in the app</span></li>
-      </ul>
-      <p class="q-trades">Roofing &middot; Painting &middot; Flooring &middot; Fencing &middot; Gutters &middot; Remodeling</p>
-      <div class="pair left">
-        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Quotes</a>
-        <a class="btn soft" href="/homeowners">Learn More</a>
-      </div>
+      <a class="svc-more" href="/quotes">don&rsquo;t see what you need? click here</a>
     </section>
 
     <section class="find" aria-labelledby="find-title">

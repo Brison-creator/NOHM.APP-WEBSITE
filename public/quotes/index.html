@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Get Quotes | NOHM</title>
+  <meta name="description" content="Bigger job? Get quotes from three local companies. No pressure, all in the NOHM app." />
+  <meta name="theme-color" content="#26272b" />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: #171a20;
+    }
+
+    /* Opening: the pro at the door, the promise over it. */
+    .top { position: relative; height: min(78svh, 720px); min-height: 480px; background: #16171a; }
+    .top img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% 30%; }
+    .top::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
+    }
+    .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
+    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.08; }
+    .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+
+    /* The long read: one column, generous space, Tesla's quiet type. */
+    .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
+    .part { padding: 48px 0 8px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+    .part:last-child { border-bottom: 0; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; }
+    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.15; }
+    .part p { margin: 0 0 18px; font-size: 17px; line-height: 1.65; color: #393c41; }
+
+    /* The standard itself: a checked list in a gray card. */
+    .list { list-style: none; margin: 8px 0 28px; padding: 8px 22px; background: #f4f4f4; border-radius: 12px; }
+    .list li {
+      position: relative; padding: 14px 0 14px 34px;
+      font-size: 17px; line-height: 1.45; color: #171a20;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    }
+    .list li:last-child { border-bottom: 0; }
+    .list li::before {
+      content: ""; position: absolute; left: 4px; top: 19px;
+      width: 12px; height: 6px;
+      border-left: 2px solid #171a20; border-bottom: 2px solid #171a20;
+      transform: rotate(-45deg);
+    }
+
+    /* Two short promises side by side on wide screens. */
+    .facts { display: grid; gap: 12px; margin: 8px 0 28px; }
+    .fact { background: #f4f4f4; border-radius: 12px; padding: 20px 22px; }
+    .fact b { display: block; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .fact span { font-size: 15px; line-height: 1.5; color: #393c41; }
+
+    .end { text-align: center; padding: 56px 24px 48px; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+    }
+    .btn.main { background: #393c41; color: #fff; }
+    .btn.main:hover { background: #2b2d31; }
+    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    .btn.plain:hover { background: #eeeeee; }
+
+
+    /* The standard as a short spec list, like Tesla's specs. */
+    .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 8px; }
+    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .spec li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
+    .trio { max-width: 1200px; margin: 0 auto; padding: 24px 24px 8px; display: grid; gap: 12px; }
+    .trio .fact a { color: #171a20; font-weight: 600; }
+    @media (min-width: 900px) {
+      .spec ul { grid-template-columns: repeat(3, 1fr); }
+      .trio { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .steps { max-width: 760px; margin: 0 auto; padding: 48px 24px 8px; }
+    .steps h2, .qfaq h2 { margin: 0 0 20px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .steps ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+    .steps li { counter-increment: s; position: relative; padding: 0 0 26px 56px; }
+    .steps li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%; background: #171a20; color: #fff; display: grid; place-items: center; font-weight: 600; }
+    .steps b { display: block; font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+    .steps span { font-size: 16px; line-height: 1.5; color: #393c41; }
+    .qtrades { max-width: 760px; margin: 0 auto; padding: 16px 24px 8px; }
+    .qtrades p { margin: 0; font-size: 16px; color: #5c5e62; }
+    .qfaq { max-width: 760px; margin: 0 auto; padding: 40px 24px 8px; }
+    .qfaq details { border-bottom: 1px solid rgba(0,0,0,0.09); }
+    .qfaq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; font-weight: 500; position: relative; }
+    .qfaq summary::-webkit-details-marker { display: none; }
+    .qfaq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform .2s; }
+    .qfaq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+    .qfaq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
+
+    @media (min-width: 900px) {
+      .top img { object-position: 50% 30%; }
+      .top .copy { bottom: 64px; }
+      .facts { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main>
+    <section class="top">
+      <picture>
+        <source type="image/webp" srcset="/img/flooring-960.webp 960w, /img/flooring-1672.webp 1672w" sizes="100vw" />
+        <img src="/img/flooring-1672.jpg" srcset="/img/flooring-960.jpg 960w, /img/flooring-1672.jpg 1672w" sizes="100vw"
+             width="1672" height="941" fetchpriority="high" style="object-position:55% 20%"
+             alt="A NOHM flooring pro installing a hardwood floor while the homeowner looks on, smiling" />
+      </picture>
+      <div class="copy">
+        <h1>Bigger job?<br />Get quotes.</h1>
+        <p>Three local companies. No pressure. All in the app.</p>
+      </div>
+    </section>
+
+    <section class="steps">
+      <h2>How it works.</h2>
+      <ol>
+        <li><b>Tell us about the job</b><span>Describe it in the app and add photos.</span></li>
+        <li><b>Three local companies quote</b><span>Your request goes to three local pros held to the NOHM Standard.</span></li>
+        <li><b>Compare in the app</b><span>Ask questions and see every quote side by side. No sales calls, no pressure.</span></li>
+        <li><b>Pick one, or don&rsquo;t</b><span>Choose the quote you like, or walk away. It&rsquo;s your call.</span></li>
+      </ol>
+    </section>
+
+    <section class="qtrades">
+      <p>Roofing &middot; Painting &middot; Flooring &middot; Fencing &middot; Gutters &middot; Remodeling &middot; and more</p>
+    </section>
+
+    <section class="qfaq">
+      <h2>Questions.</h2>
+      <details><summary>Does it cost anything to get quotes?</summary><p>No. Getting quotes through NOHM is free. You only pay the company you choose, for the work you approve.</p></details>
+      <details><summary>Will companies call me?</summary><p>No. All communication stays in the app, so there are no sales calls.</p></details>
+      <details><summary>Do I have to pick one?</summary><p>No. If none of the quotes feel right, you don&rsquo;t have to choose.</p></details>
+    </section>
+
+    <section class="end">
+      <h2>It&rsquo;s always something. NOHM it.</h2>
+      <div class="pair">
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Quotes</a>
+        <a class="btn plain" href="/">Back to Services</a>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM &copy; 2026</span>
+    <a href="/homeowners">Homeowners</a>
+    <a href="/local-pros">Local Pros</a>
+    <a href="/pros">For Pros</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+  <script src="/download.js" defer></script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
