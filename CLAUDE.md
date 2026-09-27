@@ -9,6 +9,7 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
 - Homepage trades: each trade gets a full-screen `<section class="panel">` near the bottom of the homepage (Lawn Care was removed for launch: recurring, quoted work doesn't fit Standard/Express/NOHM Now yet; photo kept at public/img/lawn-*). Paint out third-party logos (e.g. mower, truck brands) before publishing photos.
 - Homepage Services cards: drop a photo at `public/img/services/<trade>.jpg` (plumbing, hvac, electrical, appliance, handyman, locksmith, garage-door, pressure-washing) and it fills that card; empty cards show a faint icon.
 - Videos live in `public/video/`: silent, looping, with an MP4 (H.264, +faststart) and WebM (VP9) at 720px for phones and full size for desktop, plus a poster JPG. Strip audio. Hero slides use `<video autoplay muted loop playsinline>` in place of the photo.
+- Spacing matches tesla.com on phones: cards inset 12px from the screen edge with 12px corners, 24px between stacked cards, text 24px from the edge (16px inside a card), 64px under a text section's last line, sliding cards 16px apart with ~17px of the next card peeking.
 - Every page loads `/menu.js`, which puts the **Menu** button in the bar and builds the full-screen menu. New pages go in its list.
 
 - **Design follows Tesla / Starlink:** white background, charcoal body text `#393c41`, near-black headings `#171a20`, medium-weight headings, 4px corners, lots of space.
