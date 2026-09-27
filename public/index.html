@@ -210,6 +210,20 @@
     .btn.soft { background: #f4f4f4; color: #171a20; }
     .btn.soft:hover { background: #e9e9e9; }
 
+    /* Full-width video card right under the hero, Tesla style. */
+    .vcard { position: relative; margin: 16px 12px 0; height: min(72svh, 620px); min-height: 420px; border-radius: 16px; overflow: hidden; background: #16171a; }
+    .vcard video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 80% 30%; }
+    .vcard::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.28) 40%, rgba(0,0,0,0) 62%); }
+    .vcard .body { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; padding: 0 22px 24px; color: #fff; }
+    .vcard h2 { margin: 0; font-size: clamp(34px, 3.6vw, 48px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.05; }
+    .vcard p { margin: 8px 0 20px; font-size: clamp(17px, 1.4vw, 19px); }
+    .vcard .pair { max-width: 480px; margin: 0; }
+    @media (min-width: 900px) {
+      .vcard { margin: 24px 32px 0; height: min(80svh, 720px); }
+      .vcard video { object-position: 50% 15%; }
+      .vcard .body { padding: 0 40px 40px; }
+    }
+
     /* Full-screen trade panels, stacked like Tesla's model sections: one
        photo per trade, title and two buttons at the top. Add a trade by
        copying a <section class="panel">. */
@@ -369,6 +383,25 @@
         <button type="button" aria-label="Show slide 3" aria-current="false"></button>
       </div>
     </section>
+
+    <section class="vcard" aria-label="Heating and air">
+      <video autoplay muted loop playsinline preload="metadata" poster="/video/furnace-poster.jpg"
+             aria-label="A NOHM HVAC pro laughing with a homeowner while repairing his furnace">
+        <source media="(max-width: 899px)" src="/video/furnace-720.mp4" type="video/mp4" />
+        <source media="(max-width: 899px)" src="/video/furnace-720.webm" type="video/webm" />
+        <source src="/video/furnace-1168.mp4" type="video/mp4" />
+        <source src="/video/furnace-1168.webm" type="video/webm" />
+      </video>
+      <div class="body">
+        <h2>No heat? Handled.</h2>
+        <p>A local pro at your door, same day or in 60 minutes.</p>
+        <div class="pair">
+          <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+          <a class="btn plain" href="/homeowners">Learn More</a>
+        </div>
+      </div>
+    </section>
+
 
     <section class="features">
       <div class="head"><h2>Local pros.<br />One standard.</h2></div>
@@ -653,7 +686,7 @@
       });
 
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelectorAll('.slide video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+        document.querySelectorAll('.slide video, .vcard video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
       }
 
       // NOHM Now reel: the card nearest the middle is "on" (full size, caption shown).
