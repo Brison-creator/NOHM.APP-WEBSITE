@@ -136,6 +136,7 @@
     .q-points li { display: flex; align-items: center; gap: 16px; }
     .q-points b { flex: 0 0 56px; font-size: 48px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
     .q-points span { font-size: 17px; color: #393c41; }
+    .q-img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 55% 50%; border-radius: 12px; margin-bottom: 24px; }
     .q-trades { margin: 0 0 24px; font-size: 15px; color: #5c5e62; }
 
     /* Find Your Pro, laid out like Tesla's Find Your Charge: a gray map with
@@ -259,6 +260,7 @@
       .panel .copy { top: calc(52px + 9svh); }
       .svc-grid { grid-template-columns: repeat(4, 1fr); }
       .q-points { grid-template-columns: repeat(3, 1fr); }
+      .q-img { aspect-ratio: 16 / 7; object-position: 50% 0%; }
       .dock { display: none; }
       body { padding-bottom: 0; }
     }
@@ -401,6 +403,12 @@
     </section>
 
     <section class="quotes" aria-labelledby="q-title">
+      <picture>
+        <source type="image/webp" srcset="/img/flooring-960.webp 960w, /img/flooring-1672.webp 1672w" sizes="(min-width: 1200px) 1152px, 100vw" />
+        <img class="q-img" src="/img/flooring-960.jpg" srcset="/img/flooring-960.jpg 960w, /img/flooring-1672.jpg 1672w" sizes="(min-width: 1200px) 1152px, 100vw"
+             width="1672" height="941" loading="lazy"
+             alt="A NOHM flooring pro installing a hardwood floor while the homeowner looks on, smiling" />
+      </picture>
       <h2 id="q-title">Bigger job? Get quotes.</h2>
       <ul class="q-points">
         <li><b>3</b><span>Sent to three local companies</span></li>
