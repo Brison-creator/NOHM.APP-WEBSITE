@@ -7,6 +7,7 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
 - **Layout copies tesla.com.** Homepage: full-screen photo carousel with the title and a pair of buttons (gray main, white second) over the photo, the bar clear over the photo until you scroll, gray cards below, and on phones a Download button pinned to the bottom.
 - **Keep explanations short, Tesla style:** a photo, a short title, one line. Use the feature row (`/features.css` + `/features.js`) for that; lists become short spec lists.
 - Homepage trades: each trade gets a full-screen `<section class="panel">` near the bottom of the homepage (Lawn Care was removed for launch: recurring, quoted work doesn't fit Standard/Express/NOHM Now yet; photo kept at public/img/lawn-*). Paint out third-party logos (e.g. mower, truck brands) before publishing photos.
+- Homepage Services cards: drop a photo at `public/img/services/<trade>.jpg` (plumbing, hvac, electrical, appliance, handyman, locksmith, garage-door, pressure-washing) and it fills that card; empty cards show a faint icon.
 - Every page loads `/menu.js`, which puts the **Menu** button in the bar and builds the full-screen menu. New pages go in its list.
 
 - **Design follows Tesla / Starlink:** white background, charcoal body text `#393c41`, near-black headings `#171a20`, medium-weight headings, 4px corners, lots of space.
