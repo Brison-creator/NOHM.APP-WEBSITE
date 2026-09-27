@@ -145,6 +145,35 @@
     .q-img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 55% 50%; border-radius: 12px; margin-bottom: 24px; }
     .q-trades { margin: 0 0 24px; font-size: 15px; color: #5c5e62; }
 
+    /* NOHM Now reel, like Tesla's Full Self-Driving section: a gray panel,
+       a two-tone title, then photos and videos that slide sideways with a
+       caption under the one in the middle. */
+    .reel { margin: 32px 12px 0; padding: 48px 0 36px; background: #f4f4f4; border-radius: 16px; overflow: hidden; }
+    .reel .head { padding: 0 24px 32px; max-width: 1200px; margin: 0 auto; }
+    .reel h2 {
+      margin: 0; font-size: clamp(40px, 5vw, 64px); font-weight: 600; letter-spacing: -0.025em; line-height: 1.02;
+      background: linear-gradient(100deg, #171a20 20%, #356CA3 60%, #171a20 95%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .reel .head p { margin: 12px 0 0; font-size: clamp(17px, 1.6vw, 21px); line-height: 1.45; color: #5c5e62; }
+    .reel-row {
+      display: flex; gap: 12px; padding: 0 calc(50% - 36vw);
+      overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+    }
+    .reel-row::-webkit-scrollbar { display: none; }
+    .reel-item { flex: 0 0 72vw; scroll-snap-align: center; margin: 0; }
+    .reel-item .media { position: relative; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #dcdde0; transform: scale(0.88); transition: transform .35s ease; }
+    .reel-item.on .media { transform: scale(1); }
+    .reel-item img, .reel-item video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .reel-item figcaption { margin-top: 18px; text-align: center; font-size: 16px; font-weight: 500; color: #171a20; opacity: 0; transition: opacity .3s; }
+    .reel-item.on figcaption { opacity: 1; }
+    @media (min-width: 900px) {
+      .reel { margin: 40px 32px 0; }
+      .reel-row { padding: 0 calc(50% - min(360px, 26vw)); gap: 20px; }
+      .reel-item { flex-basis: min(720px, 52vw); }
+      .reel-item .media { aspect-ratio: 16 / 10; }
+    }
+
     /* Find Your Pro, laid out like Tesla's Find Your Charge: a gray map with
        a Find Me button, then a big left-aligned title, two big numbers and
        a black and a light-gray button. */
@@ -414,6 +443,33 @@
       <a class="svc-more" href="/quotes">don&rsquo;t see what you need? click here</a>
     </section>
 
+    <section class="reel" aria-labelledby="reel-title">
+      <div class="head">
+        <h2 id="reel-title">NOHM Now</h2>
+        <p>A local pro at your door in 60 minutes, or the NOHM Now fee is waived.</p>
+      </div>
+      <div class="reel-row" id="reel-row">
+        <figure class="reel-item">
+          <div class="media"><img src="/img/pro-now-720.jpg" srcset="/img/pro-now-720.jpg 720w, /img/pro-now-1122.jpg 1122w" sizes="(min-width: 900px) 36vw, 70vw" width="1122" height="1402" loading="lazy" style="object-position:70% 40%" alt="A NOHM pro in his truck starting the NOHM Now countdown" /></div>
+          <figcaption>A pro accepts. The clock starts.</figcaption>
+        </figure>
+        <figure class="reel-item">
+          <div class="media"><img src="/img/now-720.jpg" srcset="/img/now-720.jpg 720w, /img/now-1122.jpg 1122w" sizes="(min-width: 900px) 36vw, 70vw" width="1122" height="1402" loading="lazy" style="object-position:20% 30%" alt="A homeowner holding up his phone showing the NOHM Now countdown" /></div>
+          <figcaption>You watch them coming.</figcaption>
+        </figure>
+        <figure class="reel-item">
+          <div class="media"><img src="/img/hvac-tall-720.jpg" srcset="/img/hvac-tall-720.jpg 720w, /img/hvac-tall-941.jpg 941w" sizes="(min-width: 900px) 36vw, 70vw" width="941" height="1672" loading="lazy" style="object-position:50% 30%" alt="A Jet HVAC pro waving as he walks up to the front door" /></div>
+          <figcaption>At your door.</figcaption>
+        </figure>
+        <figure class="reel-item">
+          <div class="media"><video autoplay muted loop playsinline preload="metadata" poster="/video/handled-poster.jpg" aria-label="The homeowner shaking hands with the pro who fixed his washer">
+            <source src="/video/handled-720.mp4" type="video/mp4" /><source src="/video/handled-720.webm" type="video/webm" />
+          </video></div>
+          <figcaption>Fixed. Saved to your home.</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <section class="find" aria-labelledby="find-title">
       <div class="map-wrap">
         <div id="map" role="img" aria-label="Map of Saline County, Arkansas, marking Bryant, Benton, Bauxite and Alexander"></div>
@@ -595,6 +651,19 @@
 
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
         document.querySelectorAll('.slide video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+      }
+
+      // NOHM Now reel: the card nearest the middle is "on" (full size, caption shown).
+      var reel = document.getElementById('reel-row');
+      if (reel) {
+        var items = [].slice.call(reel.querySelectorAll('.reel-item'));
+        var pick = function () {
+          var mid = reel.scrollLeft + reel.clientWidth / 2, best = 0, d = Infinity;
+          items.forEach(function (it, i) { var c = it.offsetLeft + it.offsetWidth / 2, x = Math.abs(c - mid); if (x < d) { d = x; best = i; } });
+          items.forEach(function (it, i) { it.classList.toggle('on', i === best); });
+        };
+        reel.addEventListener('scroll', pick, { passive: true });
+        addEventListener('resize', pick); pick();
       }
 
       function solid() { bar.classList.toggle('solid', scrollY > hero.offsetHeight - bar.offsetHeight); }
