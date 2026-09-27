@@ -93,6 +93,13 @@
     .steps li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%; background: #171a20; color: #fff; display: grid; place-items: center; font-weight: 600; }
     .steps b { display: block; font-size: 19px; font-weight: 600; margin-bottom: 4px; }
     .steps span { font-size: 16px; line-height: 1.5; color: #393c41; }
+
+    .nps { max-width: 760px; margin: 0 auto; padding: 24px 24px 8px; }
+    .nps h2 { margin: 0 0 6px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .nps .sub3 { margin: 0 0 18px; font-size: 16px; color: #5c5e62; }
+    .nps ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+    .nps li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0,0,0,.07); }
+    .nps li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
     .qtrades { max-width: 760px; margin: 0 auto; padding: 16px 24px 8px; }
     .qtrades p { margin: 0; font-size: 16px; color: #5c5e62; }
     .qfaq { max-width: 760px; margin: 0 auto; padding: 40px 24px 8px; }
@@ -122,7 +129,7 @@
       </picture>
       <div class="copy">
         <h1>Bigger job?<br />Get quotes.</h1>
-        <p>Three local companies. No pressure. All calls and messages in the app.</p>
+        <p>Three local companies. All calls and messages in the app. Backed by the No-Pressure Standard.</p>
       </div>
     </section>
 
@@ -131,9 +138,22 @@
       <ol>
         <li><b>Tell us about the job</b><span>Describe it in the app and add photos.</span></li>
         <li><b>Three local companies quote</b><span>Your request goes to three local pros held to the NOHM Standard.</span></li>
-        <li><b>Compare in the app</b><span>Call or message companies right in the app and see every quote side by side. No pressure.</span></li>
+        <li><b>Compare in the app</b><span>Call or message companies right in the app and see every quote side by side.</span></li>
         <li><b>Pick one, or don&rsquo;t</b><span>Choose the quote you like, or walk away. It&rsquo;s your call.</span></li>
       </ol>
+    </section>
+
+    <section class="nps">
+      <h2>The No-Pressure Standard</h2>
+      <p class="sub3">Every company that quotes on NOHM agrees to it.</p>
+      <ul>
+        <li>No sales calls</li>
+        <li>No pushy follow-ups</li>
+        <li>No upsells you didn&rsquo;t ask for</li>
+        <li>Clear, written quotes</li>
+        <li>Calls and messages in the app</li>
+        <li>You can always say no</li>
+      </ul>
     </section>
 
     <section class="qtrades">
