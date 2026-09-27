@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <script>document.documentElement.classList.add('js')</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>NOHM</title>
   <meta name="description" content="It's always something. NOHM it. Find and book a local pro for home repairs." />
@@ -52,7 +53,7 @@
     .slides::-webkit-scrollbar { display: none; }
     .slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden; }
     .slide img, .slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .slide img.washer { object-position: 72% 0%; }
+    .slide .washer { object-position: 72% 0%; }
     .slide img.pro { object-position: 30% 0%; }
     /* This slide's phone photo has his face up top, so its words sit low. */
     .slide .copy.low { top: auto; bottom: 44px; }
@@ -89,6 +90,12 @@
       font-size: clamp(16px, 1.4vw, 19px);
       text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
     }
+    /* Opening video: the water rolls out, then the tagline fades in (3s),
+       then NOHM it. and the buttons (4s). Without JS or with reduced motion
+       everything simply shows. */
+    .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 0; transform: translateY(8px); transition: opacity .9s ease, transform .9s ease; }
+    .js #leak-copy.s1 .lede, .js #leak-copy.s2 h1, .js #leak-copy.s2 .pair { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 1; transform: none; transition: none; } }
     /* The setup line sits above the wordmark on the first slide. */
     .lede.above { margin: 0 0 10px; }
     .lede.above + h1 { margin-bottom: 22px; }
@@ -276,7 +283,7 @@
 
     @media (min-width: 900px) {
       .hero { height: 100svh; }
-      .slide img.washer { object-position: 50% 45%; }
+      .slide .washer { object-position: 50% 45%; }
       .slide .copy { top: calc(52px + 5svh); }
       .slide img.pro { object-position: 50% 0%; }
       .slide .copy.low { top: calc(52px + 5svh); bottom: auto; }
@@ -303,13 +310,14 @@
     <section class="hero" aria-roledescription="carousel" aria-label="NOHM">
       <div class="slides" id="slides">
         <article class="slide" aria-roledescription="slide" aria-label="1 of 3">
-          <picture>
-            <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="100vw" />
-            <img class="washer" src="/img/washer-1536.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="100vw"
-                 width="1536" height="1024" fetchpriority="high"
-                 alt="A homeowner crouched beside his leaking washer, calmly booking help on his phone" />
-          </picture>
-          <div class="copy low">
+          <video class="washer" id="leak" muted playsinline preload="auto" poster="/video/leak-poster.jpg"
+                 aria-label="Water rolls out from under a washer while the homeowner crouches beside it, calmly booking help on his phone">
+            <source media="(max-width: 899px)" src="/video/leak-720.mp4" type="video/mp4" />
+            <source media="(max-width: 899px)" src="/video/leak-720.webm" type="video/webm" />
+            <source src="/video/leak-1168.mp4" type="video/mp4" />
+            <source src="/video/leak-1168.webm" type="video/webm" />
+          </video>
+          <div class="copy low" id="leak-copy">
             <p class="lede above">It&rsquo;s always something.</p>
             <h1 class="mark">NOHM it.</h1>
             <div class="pair">
@@ -630,11 +638,32 @@
 
       // Advance on its own like Tesla's, until someone touches it.
       function stop() { clearInterval(auto); auto = null; }
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var touched = false;
+      function startAuto() {
+        if (still || touched || auto) return;
         auto = setInterval(function () { show((current + 1) % dots.length, true); }, 7000);
-        ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (t) {
-          slides.addEventListener(t, stop, { passive: true });
+      }
+      ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (t) {
+        slides.addEventListener(t, function () { touched = true; stop(); }, { passive: true });
+      });
+
+      // Opening video: plays once and holds its last frame. The words fade in
+      // as the water finishes rolling out; the slideshow waits for the end.
+      var leak = document.getElementById('leak'), copy = document.getElementById('leak-copy');
+      function reveal(step) { copy.classList.add('s1'); if (step > 1) copy.classList.add('s2'); }
+      if (still) {
+        reveal(2); leak.poster = '/video/leak-end.jpg';
+      } else {
+        leak.addEventListener('timeupdate', function () {
+          if (leak.currentTime >= 3) reveal(1);
+          if (leak.currentTime >= 4) reveal(2);
         });
+        leak.addEventListener('ended', function () { reveal(2); setTimeout(startAuto, 2500); });
+        var p = leak.play();
+        if (p && p.catch) p.catch(function () { reveal(2); startAuto(); });
+        // If the video can't load, never leave the words hidden.
+        setTimeout(function () { if (leak.readyState < 2) { reveal(2); startAuto(); } }, 4500);
       }
 
       var row = document.getElementById('card-row');
@@ -650,7 +679,7 @@
       });
 
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelectorAll('.slide video, .vcard video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+        document.querySelectorAll('.slide video:not(#leak), .vcard video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
       }
 
       // NOHM Now reel: the card nearest the middle is "on" (full size, caption shown).
