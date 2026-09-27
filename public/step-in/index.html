@@ -3,15 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Local Pros. One Standard. | NOHM</title>
-  <meta name="description" content="NOHM connects you with independent, owner-operated local businesses, all held to one standard: the NOHM Standard." />
+  <title>When NOHM Steps In | NOHM</title>
+  <meta name="description" content="What NOHM handles, what you work out with your pro, and how reports keep pros in good standing." />
   <meta name="theme-color" content="#26272b" />
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
-  <link rel="stylesheet" href="/features.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -86,6 +85,39 @@
       .spec ul { grid-template-columns: repeat(3, 1fr); }
       .trio { grid-template-columns: repeat(3, 1fr); }
     }
+
+    .steps { max-width: 760px; margin: 0 auto; padding: 48px 24px 8px; }
+    .steps h2, .qfaq h2 { margin: 0 0 20px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .steps ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+    .steps li { counter-increment: s; position: relative; padding: 0 0 26px 56px; }
+    .steps li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%; background: #171a20; color: #fff; display: grid; place-items: center; font-weight: 600; }
+    .steps b { display: block; font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+    .steps span { font-size: 16px; line-height: 1.5; color: #393c41; }
+    .qtrades { max-width: 760px; margin: 0 auto; padding: 16px 24px 8px; }
+    .qtrades p { margin: 0; font-size: 16px; color: #5c5e62; }
+    .qfaq { max-width: 760px; margin: 0 auto; padding: 40px 24px 8px; }
+    .qfaq details { border-bottom: 1px solid rgba(0,0,0,0.09); }
+    .qfaq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; font-weight: 500; position: relative; }
+    .qfaq summary::-webkit-details-marker { display: none; }
+    .qfaq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform .2s; }
+    .qfaq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+    .qfaq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
+
+
+    .scope { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .scope h2 { margin: 0 0 8px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .scope .sub2 { margin: 0 0 20px; font-size: 17px; color: #5c5e62; }
+    .cols { display: grid; gap: 12px; }
+    .col { border-radius: 12px; padding: 22px; }
+    .col.in { background: #171a20; color: #fff; }
+    .col.out { background: #f4f4f4; }
+    .col h3 { margin: 0 0 12px; font-size: 20px; font-weight: 600; }
+    .col ul { list-style: none; margin: 0; padding: 0; }
+    .col li { padding: 10px 0; border-top: 1px solid rgba(128,128,128,.25); font-size: 16px; }
+    .col li:first-child { border-top: 0; }
+    .col li small { display: block; margin-top: 2px; font-size: 14px; opacity: .72; }
+    @media (min-width: 900px) { .cols { grid-template-columns: 1fr 1fr; } }
+
     @media (min-width: 900px) {
       .top img { object-position: 50% 30%; }
       .top .copy { bottom: 64px; }
@@ -98,77 +130,55 @@
   <main>
     <section class="top">
       <picture>
-        <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
-        <img src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
-             width="1536" height="1024" fetchpriority="high"
-             alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
+        <source type="image/webp" srcset="/img/fixed-960.webp 960w, /img/fixed-1536.webp 1536w" sizes="100vw" />
+        <img src="/img/fixed-1536.jpg" srcset="/img/fixed-960.jpg 960w, /img/fixed-1536.jpg 1536w" sizes="100vw"
+             width="1536" height="1024" fetchpriority="high" style="object-position:45% 30%"
+             alt="A homeowner shaking hands with the NOHM pro who fixed his washer" />
       </picture>
       <div class="copy">
-        <h1>Local pros.<br />One standard.</h1>
-        <p>Owner-operated local businesses. One NOHM standard.</p>
+        <h1>When NOHM<br />steps in.</h1>
+        <p>Most things are between you and your pro. A few things are ours.</p>
       </div>
     </section>
 
-    <section class="features">
-      <div class="f-row">
-        <article class="f-item">
-          <picture>
-            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
-            <img src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
-                 width="1536" height="1024" loading="lazy" style="object-position:38% 30%" alt="A Speedy Plumbing pro with a NOHM patch on his sleeve at a homeowner&rsquo;s front door" />
-          </picture>
-          <h3>Owner-Operated</h3>
-          <p>Their name is on the truck. Their reputation is local.</p>
-        </article>
-        <article class="f-item">
-          <picture>
-            <source type="image/webp" srcset="/img/ready-960.webp 960w, /img/ready-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
-            <img src="/img/ready-960.jpg" srcset="/img/ready-960.jpg 960w, /img/ready-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
-                 width="1536" height="1024" loading="lazy" style="object-position:50% 40%" alt="A relaxed homeowner smiling at her phone while a NOHM pro arrives at the door with her home&rsquo;s details on his tablet" />
-          </picture>
-          <h3>Ready Before They Arrive</h3>
-          <p>With your permission, they review your equipment and past repairs first.</p>
-        </article>
-        <article class="f-item">
-          <picture>
-            <source type="image/webp" srcset="/img/standard-960.webp 960w, /img/standard-1264.webp 1264w" sizes="(min-width: 900px) 33vw, 90vw" />
-            <img src="/img/standard-960.jpg" srcset="/img/standard-960.jpg 960w, /img/standard-1264.jpg 1264w" sizes="(min-width: 900px) 33vw, 90vw"
-                 width="1264" height="941" loading="lazy" style="object-position:50% 40%"
-                 alt="Two different local companies, Mike&rsquo;s Plumbing and Ray&rsquo;s Plumbing, each pro wearing a NOHM patch at a homeowner&rsquo;s door" />
-          </picture>
-          <h3>Any Pro, Same Standard</h3>
-          <p>Same company or someone new, the standard never changes.</p>
-        </article>
+    <section class="scope">
+      <h2>Who handles what.</h2>
+      <p class="sub2">Like a rideshare app: you and your pro sort out the job. NOHM steps in on safety, no-shows and payments.</p>
+      <div class="cols">
+        <div class="col in">
+          <h3>NOHM steps in</h3>
+          <ul>
+            <li>No-show or abandoned job<small>The pro didn&rsquo;t come, or left and didn&rsquo;t come back.</small></li>
+            <li>Unsafe or inappropriate conduct<small>Anything that made you feel unsafe in your home.</small></li>
+            <li>Charges you didn&rsquo;t approve<small>A payment problem inside NOHM.</small></li>
+          </ul>
+        </div>
+        <div class="col out">
+          <h3>You and your pro</h3>
+          <ul>
+            <li>Quality of the work</li>
+            <li>Finishing or fixing the job</li>
+            <li>Scheduling and follow-ups</li>
+            <li>Pricing questions before you approve</li>
+          </ul>
+        </div>
       </div>
-      <div class="f-dots"></div>
     </section>
 
-    <section class="spec">
-      <h2>The NOHM Standard</h2>
-      <ul>
-        <li>Shows up on time</li>
-        <li>Communicates clearly</li>
-        <li>Price before work</li>
-        <li>Your OK for extras</li>
-        <li>Respects your home</li>
-        <li>Professional work</li>
-        <li>Documents the job</li>
-        <li>Payment in NOHM</li>
-        <li>Makes it right</li>
-      </ul>
-    </section>
-
-    <section class="trio">
-      <div class="fact"><b>No Paid Placement</b><span>Pros earn their spot. They can&rsquo;t buy it.</span></div>
-      <div class="fact"><b>Fair Both Ways</b><span>Homeowners give clear details and access, and pay through NOHM.</span></div>
-      <div class="fact"><b>We Step In</b><span>No-shows, unsafe conduct and unapproved charges. <a href="/step-in">Learn More</a></span></div>
+    <section class="steps">
+      <h2>You can always report it.</h2>
+      <ol>
+        <li><b>Report it in the app</b><span>Anything that went wrong, even if it&rsquo;s between you and your pro.</span></li>
+        <li><b>NOHM reviews it</b><span>Reports count toward a pro&rsquo;s standing, the same way ratings work for rideshare drivers.</span></li>
+        <li><b>Standing matters</b><span>Pros who don&rsquo;t meet the NOHM Standard can lose their place on NOHM.</span></li>
+      </ol>
     </section>
 
     <section class="end">
-      <h2>It&rsquo;s always something. NOHM it.</h2>
+      <h2>Something went wrong?</h2>
       <div class="pair">
-        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
-        <a class="btn plain" href="/support">Get Support</a>
+        <a class="btn main" href="/support">Contact Support</a>
+        <a class="btn plain" href="/local-pros">The NOHM Standard</a>
       </div>
     </section>
   </main>
@@ -181,8 +191,6 @@
     <a href="/terms">Terms</a>
     <a href="/support">Support</a>
   </footer>
-  <script src="/download.js" defer></script>
-  <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
 </html>

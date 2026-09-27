@@ -29,6 +29,7 @@
     '<li><a href="/quotes">Get Quotes</a></li>' +
     '<li><a href="/pros">For Pros</a></li>' +
     '<li><a href="' + store + '">Download the App</a></li>' +
+    '<li><a href="/step-in">When NOHM Steps In</a></li>' +
     '<li><a href="/support">Support</a></li>' +
     '<li><a href="/privacy">Privacy</a></li>' +
     '<li><a href="/terms">Terms</a></li>' +
