@@ -129,6 +129,7 @@
     .now .btn { display: inline-flex; min-width: 200px; }
     .area { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
     .area p { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .area-btns { display: flex; flex-wrap: wrap; gap: 12px; }
     .area .btn { display: inline-flex; min-width: 240px; }
     .area .made { margin: 20px 0 0; font-size: 15px; font-weight: 500; color: #171a20; }
 
@@ -140,6 +141,7 @@
     .faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
     .faq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
     .btn.black { background: #171a20; color: #fff; }
+    .btn.soft { background: #f4f4f4; color: #171a20; }
     @media (min-width: 900px) {
       .tiles { grid-template-columns: repeat(4, 1fr); }
       .fee-grid { grid-template-columns: repeat(3, 1fr); }
@@ -287,15 +289,19 @@
     </section>
 
     <section class="area">
-      <h2>Available in select markets.</h2>
-      <p>Not in your area yet? Tell us where you are.</p>
-      <a class="btn black" href="mailto:admin@nohm.app?subject=Bring%20NOHM%20to%20my%20area&amp;body=City%20and%20state%3A%20">Bring NOHM to My Area</a>
+      <h2>NOHM grows wherever local pros join.</h2>
+      <p>Open the app to see pros near you. Not there yet? Tell us where you are, or send us a pro you trust.</p>
+      <div class="area-btns">
+        <a class="btn black" href="mailto:admin@nohm.app?subject=Bring%20NOHM%20to%20my%20area&amp;body=City%20and%20state%3A%20">Bring NOHM to My Area</a>
+        <a class="btn soft" href="/pros">Invite a Local Pro</a>
+      </div>
       <p class="made">NOHM is an Arkansas technology company, proudly designed, developed and managed right here.</p>
     </section>
 
     <section class="faq">
       <h2>Questions.</h2>
       <details><summary>What&rsquo;s the difference between Standard, Express and NOHM Now?</summary><p>Standard is free: a local pro comes in a day or two. Express gets a pro there the same day for one flat NOHM fee. NOHM Now puts a pro at your door within 60 minutes of accepting your job, or the NOHM Now fee is waived.</p></details>
+      <details><summary>Is NOHM in my area?</summary><p>NOHM is available wherever local pros have joined, and it grows as more pros sign on. Open the app to see who&rsquo;s near you.</p></details>
       <details><summary>Does NOHM cost anything?</summary><p>No. NOHM is free to download and free to use with Standard. You only pay a NOHM fee if you choose Express or NOHM Now. You always pay the pro for their work.</p></details>
       <details><summary>Who shows up for NOHM Now?</summary><p>A local pro who chose Ready Now. They go live for four hours, ready to leave the moment a job comes in.</p></details>
       <details><summary>When does the 60-minute clock start?</summary><p>When the pro accepts your job. You can watch the countdown in the app.</p></details>

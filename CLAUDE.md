@@ -32,5 +32,5 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
 - Never use "Keep money local" or anything about it, anywhere on the site.
 - Marketing pages (homepage, `/homeowners`) link `/screens.css` for the shared screen template and footer, and `/download.js` so Download now opens the right store.
 - NOHM is free to use: Standard (a pro in a day or two) has no NOHM fee; Express is same day; NOHM Now is within 60 minutes of the pro accepting; pros choose Ready Now and go live for four hours, ready to leave immediately. NOHM fees shown on the site come from `/pricing.js`. Launch pricing is on (Express $20, NOHM Now $30) until 1,000 activated homeowners; then set `launch: false` there (regular $40 / $60). The app's own admin setting is separate.
-- Never list coverage areas or towns on the site; say "Available in select markets."
+- Never list coverage areas or towns. Coverage follows contractor onboarding: say NOHM is "available wherever local pros have joined" and grows as pros sign on.
 - Each page lives at `public/<path>/index.html` so clean URLs like `/privacy` work.
