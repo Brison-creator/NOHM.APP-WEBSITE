@@ -138,13 +138,20 @@
     .services, .quotes { max-width: 1200px; margin: 0 auto; padding: 48px 24px 64px; }
     .services h2, .quotes h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .svc-lede { margin: 8px 0 22px; font-size: 18px; color: #5c5e62; }
+
+    /* NOHM is advanced: a square loop of the dispatch engine, from orbit to the door. */
+    .advanced { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; display: grid; gap: 20px; }
+    .advanced h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; }
+    .advanced .live-link { display: inline-block; margin-top: 12px; font-size: 15px; font-weight: var(--weight-ui); color: #171a20; text-decoration: underline; text-underline-offset: 3px; }
+    .advanced video { display: block; width: 100%; max-width: 560px; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; background: #05070B; }
     .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     /* White cards with a photo slot. To fill one, add public/img/services/<trade>.jpg
        (e.g. plumbing.jpg, garage-door.jpg); until then the slot shows the icon. */
     .svc { background: #fff; border: 1px solid #e3e4e6; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
     .svc-img { position: relative; aspect-ratio: 4 / 3; background: #f4f4f4; display: grid; place-items: center; }
     .svc-img svg { width: 30px; height: 30px; fill: none; stroke: #b8b9bc; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-    .svc-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .svc-img img, .svc-img video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .svc-img video { object-position: 70% 40%; }
     .svc b { padding: 12px 14px 2px; font-size: 16px; font-weight: var(--weight-ui); }
     .svc span { padding: 0 14px 14px; font-size: 13px; line-height: 1.35; color: #5c5e62; }
 
@@ -309,6 +316,7 @@
       .panel { height: 100svh; margin: 24px 32px 0; }
       .panel .copy { top: calc(52px + 9svh); }
       .svc-grid { grid-template-columns: repeat(4, 1fr); }
+      .advanced { grid-template-columns: minmax(0, 1fr) minmax(0, 560px); align-items: center; gap: 48px; }
       .q-points { grid-template-columns: repeat(3, 1fr); }
       .q-img { aspect-ratio: 16 / 7; object-position: 50% 0%; }
       .p-grid { grid-template-columns: repeat(4, 1fr); }
@@ -467,7 +475,7 @@
           <b>Handyman</b><span>Small fixes, drywall patches</span>
         </div>
         <div class="svc">
-          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><img src="/img/services/locksmith.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><img src="/img/services/locksmith.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/locksmith.jpg" aria-hidden="true"><source src="/video/locksmith-720.mp4" type="video/mp4" /><source src="/video/locksmith-720.webm" type="video/webm" /></video></div>
           <b>Locksmith</b><span>Locked out, rekeys</span>
         </div>
         <div class="svc">
@@ -481,6 +489,20 @@
       </div>
       <a class="svc-all" href="/services">Browse All Services</a>
       <a class="svc-more" href="/quotes">don&rsquo;t see what you need? click here</a>
+    </section>
+
+    <section class="advanced" aria-labelledby="adv-title">
+      <div>
+        <h2 id="adv-title">NOHM is advanced.</h2>
+        <a class="live-link" href="/dispatch">See it live</a>
+      </div>
+      <video autoplay muted loop playsinline preload="metadata" poster="/video/advanced-poster.jpg"
+             aria-label="Animation: from orbit, NOHM pings verified pros, sends one to an emergency, dives down into the pro's van and follows the route to the homeowner's door">
+        <source media="(max-width: 899px)" src="/video/advanced-720.mp4" type="video/mp4" />
+        <source media="(max-width: 899px)" src="/video/advanced-720.webm" type="video/webm" />
+        <source src="/video/advanced-1080.mp4" type="video/mp4" />
+        <source src="/video/advanced-1080.webm" type="video/webm" />
+      </video>
     </section>
 
     <section class="reel" aria-labelledby="reel-title">
@@ -716,7 +738,7 @@
       });
 
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelectorAll('.slide video:not(#leak), .vcard video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+        document.querySelectorAll('.slide video:not(#leak), .vcard video, .advanced video, .svc-img video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
       }
 
       // NOHM Now reel: the card nearest the middle is "on" (full size, caption shown).

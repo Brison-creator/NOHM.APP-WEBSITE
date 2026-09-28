@@ -28,7 +28,8 @@
     .svc { background: #fff; border: 1px solid #e3e4e6; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
     .svc-img { position: relative; aspect-ratio: 4 / 3; background: #f4f4f4; display: grid; place-items: center; }
     .svc-img svg { width: 30px; height: 30px; fill: none; stroke: #b8b9bc; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-    .svc-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .svc-img img, .svc-img video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .svc-img video { object-position: 70% 40%; }
     .svc b { display: block; padding: 12px 14px 2px; font-size: 16px; font-weight: var(--weight-ui); }
     .svc span { display: block; padding: 0 14px 14px; font-size: 13px; line-height: 1.35; color: #5c5e62; }
     .svc-more { display: inline-block; margin-top: 16px; font-size: 14px; color: #5c5e62; text-decoration: underline; text-underline-offset: 3px; }
@@ -75,7 +76,7 @@
           <b>Appliance</b><span>Washers, dryers, fridges</span>
         </li>
         <li class="svc">
-          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><img src="/img/services/locksmith.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><img src="/img/services/locksmith.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/locksmith.jpg" aria-hidden="true"><source src="/video/locksmith-720.mp4" type="video/mp4" /><source src="/video/locksmith-720.webm" type="video/webm" /></video></div>
           <b>Locksmith</b><span>Locked out, rekeys</span>
         </li>
         <li class="svc">
@@ -141,5 +142,10 @@
   </footer>
   <script src="/download.js" defer></script>
   <script src="/menu.js" defer></script>
+  <script>
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.svc-img video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+    }
+  </script>
 </body>
 </html>
