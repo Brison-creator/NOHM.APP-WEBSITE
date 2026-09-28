@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Verified Dispatch Engine | NOHM</title>
+  <meta name="description" content="Inside the NOHM Verified Dispatch Engine: verified Master Pros on a live grid, an emergency dispatch, and the ride to the door." />
+  <meta name="theme-color" content="#26272b" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <style>
+    /* The dispatch engine's own palette: a dark command center, emerald for
+       verified pros and safe paths, amber for an emergency. */
+    :root {
+      --bg: #05070B;
+      --surface: #0D111A;
+      --grid: rgba(255, 255, 255, 0.08);
+      --green: #00E676;
+      --green-glow: rgba(0, 230, 118, 0.6);
+      --amber: #FFB300;
+      --amber-glow: rgba(255, 179, 0, 0.7);
+      --text: #F8FAFC;
+      --muted: #64748B;
+      --rule: rgba(255, 255, 255, 0.06);
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --bar-h: 53px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); }
+
+    .cc {
+      display: grid;
+      grid-template-columns: 272px minmax(0, 1fr) 312px;
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas: "head head head" "left view right";
+      height: calc(100svh - var(--bar-h));
+      min-height: 560px;
+    }
+
+    /* Title, phase timeline and clock across the top. */
+    .cc-head {
+      grid-area: head;
+      display: flex; align-items: center; gap: 24px;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--rule);
+    }
+    .cc-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .cc-title h1 { margin: 0; font-size: 15px; letter-spacing: -0.02em; white-space: nowrap; }
+    .live { position: relative; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .live::after {
+      content: ""; position: absolute; inset: 0; border-radius: 50%;
+      background: var(--green-glow); animation: live 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    }
+    @keyframes live { from { transform: scale(1); opacity: 1; } to { transform: scale(3); opacity: 0; } }
+    .timeline {
+      flex: 1; max-width: 640px; margin: 0 0 0 auto; padding: 0; list-style: none;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    }
+    .timeline li { font: 600 10px/1 var(--mono); letter-spacing: 0.08em; color: var(--muted); transition: color 0.3s; }
+    .timeline li span { display: block; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .timeline li i { display: block; height: 2px; background: var(--rule); overflow: hidden; }
+    .timeline li b { display: block; height: 100%; background: var(--green); transform-origin: 0 50%; transform: scaleX(0); }
+    .timeline li.on { color: var(--text); }
+    .timeline li.alert b { background: var(--amber); }
+    .clock { font: 600 11px var(--mono); color: var(--muted); white-space: nowrap; }
+
+    /* The two HUD sidebars. */
+    .hud {
+      min-height: 0; overflow: hidden;
+      display: flex; flex-direction: column; gap: 24px;
+      padding: 20px;
+      background: var(--surface);
+      font: 500 11px/1.5 var(--mono); color: var(--muted);
+    }
+    .hud-left { grid-area: left; border-right: 1px solid var(--rule); }
+    .hud-right { grid-area: right; border-left: 1px solid var(--rule); }
+    .hud h2 {
+      margin: 0 0 12px; display: flex; justify-content: space-between; gap: 8px;
+      font: 700 10px/1 var(--mono); letter-spacing: 0.14em; word-spacing: normal; color: var(--muted);
+    }
+    .hud h2 em { font-style: normal; color: var(--green); }
+    .kv { margin: 0; display: grid; gap: 7px; }
+    .kv div { display: flex; justify-content: space-between; gap: 12px; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; color: var(--text); font-weight: 600; text-align: right; white-space: nowrap; }
+    .kv .ok { color: var(--green); }
+    .kv .warn { color: var(--amber); }
+    .phase-name { margin: 0; color: var(--text); font-weight: 600; }
+    .meter { height: 3px; margin-top: 10px; background: var(--rule); overflow: hidden; }
+    .meter b { display: block; height: 100%; background: var(--green); transform-origin: 0 50%; transform: scaleX(0); }
+    .meter.alert b { background: var(--amber); }
+    .log { flex: 1; min-height: 0; overflow: hidden; }
+    .log ol, .feed { list-style: none; margin: 0; padding: 0; }
+    .log ol { display: grid; gap: 6px; }
+    .log li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: row-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    .log li time { margin-right: 8px; color: rgba(100, 116, 139, 0.7); }
+    .log li.g { color: var(--green); }
+    .log li.a { color: var(--amber); }
+    .feed-wrap { flex: 1; min-height: 0; overflow: hidden; }
+    .feed { display: grid; gap: 6px; }
+    .feed li {
+      display: grid; grid-template-columns: 1fr auto; gap: 3px 10px;
+      padding: 9px 10px; border: 1px solid var(--rule); border-radius: 4px;
+      background: rgba(5, 7, 11, 0.5);
+      animation: row-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .feed .id { color: var(--text); font-weight: 600; }
+    .feed .st { grid-column: 1 / -1; font-weight: 600; letter-spacing: 0.04em; }
+    .feed .d { color: var(--amber); }
+    .feed .g { color: var(--green); }
+    .feed .w { color: var(--text); }
+    .feed li.pin { border-color: rgba(255, 179, 0, 0.55); background: rgba(255, 179, 0, 0.07); }
+    @keyframes row-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+    /* The canvas fills the middle. */
+    .view { grid-area: view; position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--bg); }
+    .view canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+    @media (max-width: 1180px) {
+      .cc { grid-template-columns: 236px minmax(0, 1fr) 268px; }
+    }
+    /* Tablets and phones: the map on top, the two panels under it. */
+    @media (max-width: 900px) {
+      .cc {
+        grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(360px, 64svh) auto;
+        grid-template-areas: "head head" "view view" "left right";
+        height: auto; min-height: 0;
+      }
+      .cc-head { flex-wrap: wrap; gap: 10px 16px; }
+      .timeline { order: 3; flex-basis: 100%; max-width: none; }
+      .hud-left, .hud-right { border-top: 1px solid var(--rule); }
+      .hud-right { border-left: 0; }
+      .log li:nth-child(n + 7), .feed li:nth-child(n + 7) { display: none; }
+    }
+    @media (max-width: 600px) {
+      .cc { grid-template-columns: 1fr; grid-template-rows: auto minmax(340px, 62svh) auto auto; grid-template-areas: "head" "view" "left" "right"; }
+      .hud-left { border-right: 0; }
+      .hud { padding: 16px; }
+      .timeline li { font-size: 9px; letter-spacing: 0.04em; }
+      .log li:nth-child(n + 5), .feed li:nth-child(n + 5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+
+  <div class="cc">
+    <div class="cc-head">
+      <div class="cc-title"><span class="live" aria-hidden="true"></span><h1>Verified Dispatch Engine</h1></div>
+      <ol class="timeline" aria-label="Sequence">
+        <li><span>01 MACRO MAP</span><i><b></b></i></li>
+        <li><span>02 EMERGENCY</span><i><b></b></i></li>
+        <li><span>03 DIVE</span><i><b></b></i></li>
+        <li><span>04 CABIN</span><i><b></b></i></li>
+      </ol>
+      <span class="clock" data-k="clock">--:--:--</span>
+    </div>
+
+    <aside class="hud hud-left" aria-label="System status">
+      <section>
+        <h2>SYSTEM STATUS</h2>
+        <dl class="kv">
+          <div><dt>DISPATCH_ENGINE</dt><dd class="ok" data-k="engine">ONLINE</dd></div>
+          <div><dt>HIN_VAULT_SYNC</dt><dd class="ok" data-k="sync">100%</dd></div>
+          <div><dt>DATA_STREAM</dt><dd class="ok" data-k="stream">ENCRYPTED</dd></div>
+          <div><dt>MASTER_PROS</dt><dd data-k="pros">6 / 6 VERIFIED</dd></div>
+          <div><dt>GPS_LOCK</dt><dd data-k="gps">&plusmn;2.1 M</dd></div>
+          <div><dt>LATENCY</dt><dd data-k="latency">38 MS</dd></div>
+          <div><dt>PACKETS</dt><dd data-k="packets">12.4K/S</dd></div>
+          <div><dt>UPTIME</dt><dd data-k="uptime">00:00:00</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h2>ENGINE PHASE</h2>
+        <p class="phase-name" data-k="phase">01 &middot; MACRO_DISPATCH_MAP</p>
+        <div class="meter" data-k="meter"><b></b></div>
+      </section>
+      <section class="log">
+        <h2>EVENT LOG</h2>
+        <ol data-k="log"></ol>
+      </section>
+    </aside>
+
+    <main class="view" data-k="view">
+      <canvas data-k="stage" role="img" aria-label="Animation of the NOHM Verified Dispatch Engine: verified Master Pros move along a city street grid, one is sent to an emergency at 1428 Elm St., and the view dives into that pro's cabin with a live route and a voice line to the homeowner."></canvas>
+    </main>
+
+    <aside class="hud hud-right" aria-label="Active HIN records">
+      <section class="feed-wrap">
+        <h2>ACTIVE HIN RECORDS <em data-k="count">1,284</em></h2>
+        <ol class="feed" data-k="feed"></ol>
+      </section>
+    </aside>
+  </div>
+
+  <script src="/menu.js" defer></script>
+  <script>
+  (() => {
+    'use strict';
+
+    // ─── Brand tokens ────────────────────────────────────────────────────
+    const C = {
+      bg: '#05070B', surface: '#0D111A', grid: 'rgba(255, 255, 255, 0.08)',
+      green: '#00E676', greenGlow: 'rgba(0, 230, 118, 0.6)',
+      amber: '#FFB300', amberGlow: 'rgba(255, 179, 0, 0.7)',
+      red: '#FF4D4D', text: '#F8FAFC', muted: '#64748B',
+    };
+    const RGB = { green: '0, 230, 118', amber: '255, 179, 0', red: '255, 77, 77', white: '248, 250, 252', muted: '100, 116, 139', bg: '5, 7, 11' };
+    const rgba = (rgb, a) => 'rgba(' + rgb + ', ' + (a < 0 ? 0 : a > 1 ? 1 : a) + ')';
+    const MONO = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+    const DISPLAY = 'Sora, "Sora Fallback", system-ui, sans-serif';
+    const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ─── Math ────────────────────────────────────────────────────────────
+    const clamp = (v, a = 0, b = 1) => (v < a ? a : v > b ? b : v);
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const pick = (list) => list[(Math.random() * list.length) | 0];
+    const pad = (n, l = 2) => String(n).padStart(l, '0');
+
+    // CSS-style cubic-bezier easing: Newton's method, bisection as the fallback.
+    function cubicBezier(x1, y1, x2, y2) {
+      const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+      const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+      const sampleX = (t) => ((ax * t + bx) * t + cx) * t;
+      const sampleY = (t) => ((ay * t + by) * t + cy) * t;
+      const slopeX = (t) => (3 * ax * t + 2 * bx) * t + cx;
+      return (x) => {
+        if (x <= 0) return 0;
+        if (x >= 1) return 1;
+        let t = x;
+        for (let i = 0; i < 8; i++) {
+          const err = sampleX(t) - x;
+          if (Math.abs(err) < 1e-5) return sampleY(t);
+          const d = slopeX(t);
+          if (Math.abs(d) < 1e-6) break;
+          t -= err / d;
+        }
+        let lo = 0, hi = 1;
+        t = x;
+        for (let i = 0; i < 30; i++) {
+          const v = sampleX(t);
+          if (Math.abs(v - x) < 1e-5) break;
+          if (v < x) lo = t; else hi = t;
+          t = (lo + hi) / 2;
+        }
+        return sampleY(t);
+      };
+    }
+    const EASE = {
+      standard: cubicBezier(0.4, 0, 0.2, 1),
+      out: cubicBezier(0.16, 1, 0.3, 1),
+      inOut: cubicBezier(0.65, 0, 0.35, 1),
+      dive: cubicBezier(0.45, 0, 0.75, 0.3),
+    };
+
+    // Seeded random, so one city layout is stable while it is on screen.
+    function mulberry32(seed) {
+      return () => {
+        seed = (seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function roundRect(c, x, y, w, h, r) {
+      r = Math.min(r, w / 2, h / 2);
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.arcTo(x + w, y, x + w, y + h, r);
+      c.arcTo(x + w, y + h, x, y + h, r);
+      c.arcTo(x, y + h, x, y, r);
+      c.arcTo(x, y, x + w, y, r);
+      c.closePath();
+    }
+
+    // ─── DOM handles ─────────────────────────────────────────────────────
+    const el = {};
+    document.querySelectorAll('[data-k]').forEach((node) => { el[node.dataset.k] = node; });
+    const timelineItems = [...document.querySelectorAll('.timeline li')];
+    const timelineBars = timelineItems.map((li) => li.querySelector('b'));
+    const meterBar = el.meter.querySelector('b');
+
+    // ─── Canvas, sharp on high-DPI screens ───────────────────────────────
+    const canvas = el.stage;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const layer = document.createElement('canvas');          // the map, for the dive's zoom blur
+    const lctx = layer.getContext('2d');
+    const LAYER_SCALE = 0.5;                                   // half resolution: softer and cheaper
+    let W = 1, H = 1, DPR = 1, INV_R2 = 1;
+
+    function resize() {
+      const r = el.view.getBoundingClientRect();
+      const w = Math.max(1, Math.round(r.width));
+      const h = Math.max(1, Math.round(r.height));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (w === W && h === H && dpr === DPR) return;
+      W = w; H = h; DPR = dpr;
+      canvas.width = Math.round(W * DPR);
+      canvas.height = Math.round(H * DPR);
+      layer.width = Math.max(1, Math.round(W * DPR * LAYER_SCALE));
+      layer.height = Math.max(1, Math.round(H * DPR * LAYER_SCALE));
+      INV_R2 = 1 / ((W / 2) * (W / 2) + (H / 2) * (H / 2));
+    }
+    new ResizeObserver(resize).observe(el.view);
+    window.addEventListener('resize', resize);
+
+    // Soft glows drawn once, then stamped; no shadowBlur in the loop.
+    function glowSprite(rgb, alpha) {
+      const s = 128, c = document.createElement('canvas');
+      c.width = c.height = s;
+      const g = c.getContext('2d');
+      const grad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+      grad.addColorStop(0, rgba(rgb, alpha));
+      grad.addColorStop(0.35, rgba(rgb, alpha * 0.35));
+      grad.addColorStop(1, rgba(rgb, 0));
+      g.fillStyle = grad;
+      g.fillRect(0, 0, s, s);
+      return c;
+    }
+    const GLOW = { green: glowSprite(RGB.green, 0.6), amber: glowSprite(RGB.amber, 0.7) };
+    function stamp(c, sprite, x, y, r, alpha = 1) {
+      c.globalAlpha = alpha;
+      c.drawImage(sprite, x - r, y - r, r * 2, r * 2);
+      c.globalAlpha = 1;
+    }
+
+    // Scanlines for the holographic panel.
+    const scan = document.createElement('canvas');
+    scan.width = 1; scan.height = 3;
+    (() => { const g = scan.getContext('2d'); g.fillStyle = 'rgba(248, 250, 252, 0.035)'; g.fillRect(0, 0, 1, 1); })();
+    const SCANLINES = ctx.createPattern(scan, 'repeat');
+
+    // ─── The city: a street grid with a few closed blocks ────────────────
+    const S = 80;                                              // world units between streets
+    const STREETS = ['HARBOR ST', 'MAPLE ST', 'CEDAR ST', 'BIRCH ST', 'WALNUT ST', 'LAUREL ST', 'SPRUCE ST', 'HICKORY ST', 'ASPEN ST', 'WILLOW ST', 'POPLAR ST', 'CHESTNUT ST', 'MAGNOLIA ST', 'SYCAMORE ST'];
+
+    class City {
+      constructor(cols, rows, seed) {
+        const r = mulberry32(seed);
+        this.cols = cols; this.rows = rows;
+        this.w = (cols - 1) * S; this.h = (rows - 1) * S;
+        this.cc = Math.floor((cols - 1) / 2);
+        this.cr = Math.floor((rows - 1) / 2);
+
+        // 1428 Elm St.: two streets down and three over from the middle.
+        this.targetRow = Math.min(rows - 2, this.cr + 2);
+        this.targetCol = this.cc + 3 <= cols - 2 ? this.cc + 3 : Math.max(1, this.cc - 3);
+        let k = 0;
+        this.names = [];
+        for (let i = 0; i < rows; i++) this.names.push(i === this.targetRow ? 'ELM ST' : STREETS[k++ % STREETS.length]);
+
+        const n = cols * rows;
+        this.adj = Array.from({ length: n }, () => new Set());
+        const link = (a, b) => { this.adj[a].add(b); this.adj[b].add(a); };
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (x + 1 < cols) link(this.idx(x, y), this.idx(x + 1, y));
+            if (y + 1 < rows) link(this.idx(x, y), this.idx(x, y + 1));
+          }
+        }
+
+        // Close some side streets. Arterials (every fourth), the outer ring and
+        // Elm St. stay open, every corner keeps two ways out, and the grid stays
+        // one connected network.
+        const arterial = (i) => i % 4 === 0;
+        const candidates = [];
+        for (let y = 1; y < rows - 1; y++) {
+          for (let x = 0; x < cols - 1; x++) if (!arterial(y) && y !== this.targetRow) candidates.push([this.idx(x, y), this.idx(x + 1, y)]);
+        }
+        for (let x = 1; x < cols - 1; x++) {
+          for (let y = 0; y < rows - 1; y++) if (!arterial(x)) candidates.push([this.idx(x, y), this.idx(x, y + 1)]);
+        }
+        for (let i = candidates.length - 1; i > 0; i--) {
+          const j = Math.floor(r() * (i + 1));
+          [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        let toClose = Math.round(candidates.length * 0.14);
+        for (const [a, b] of candidates) {
+          if (toClose <= 0) break;
+          if (this.adj[a].size <= 2 || this.adj[b].size <= 2) continue;
+          this.adj[a].delete(b); this.adj[b].delete(a);
+          if (this.connected()) toClose--;
+          else link(a, b);
+        }
+
+        // Street segments to draw: the network, its continuation past the
+        // edges, and a few outer streets so the grid never ends on screen.
+        const EXT = 3.5 * S;
+        this.segs = [];
+        for (let a = 0; a < n; a++) {
+          for (const b of this.adj[a]) {
+            if (b < a) continue;
+            const horizontal = this.y(a) === this.y(b);
+            const line = horizontal ? this.row(a) : this.col(a);
+            this.segs.push([this.x(a), this.y(a), this.x(b), this.y(b), arterial(line)]);
+          }
+        }
+        for (let y = 0; y < rows; y++) {
+          this.segs.push([-EXT, y * S, 0, y * S, arterial(y)], [this.w, y * S, this.w + EXT, y * S, arterial(y)]);
+        }
+        for (let x = 0; x < cols; x++) {
+          this.segs.push([x * S, -EXT, x * S, 0, arterial(x)], [x * S, this.h, x * S, this.h + EXT, arterial(x)]);
+        }
+        for (let i = 1; i <= 3; i++) {
+          this.segs.push([-EXT, -i * S, this.w + EXT, -i * S, false], [-EXT, this.h + i * S, this.w + EXT, this.h + i * S, false]);
+          this.segs.push([-i * S, -EXT, -i * S, this.h + EXT, false], [this.w + i * S, -EXT, this.w + i * S, this.h + EXT, false]);
+        }
+
+        // Blocks: buildings, and now and then a park.
+        this.buildings = [];
+        this.parks = [];
+        const inset = 11, span = S - inset * 2;
+        for (let cy = -4; cy <= rows + 2; cy++) {
+          for (let cx = -4; cx <= cols + 2; cx++) {
+            const x0 = cx * S + inset, y0 = cy * S + inset;
+            const roll = r();
+            if (roll < 0.09) { this.parks.push([x0, y0, span, span]); continue; }
+            if (roll < 0.4) {
+              const s = span * (0.7 + r() * 0.3);
+              this.buildings.push([x0 + (span - s) / 2, y0 + (span - s) / 2, s, s]);
+            } else if (roll < 0.72) {
+              const cut = span * (0.35 + r() * 0.3), gap = 5;
+              if (r() < 0.5) this.buildings.push([x0, y0, cut - gap / 2, span], [x0 + cut + gap / 2, y0, span - cut - gap / 2, span]);
+              else this.buildings.push([x0, y0, span, cut - gap / 2], [x0, y0 + cut + gap / 2, span, span - cut - gap / 2]);
+            } else {
+              const h = (span - 5) / 2;
+              this.buildings.push([x0, y0, h, h], [x0 + h + 5, y0, h, h], [x0, y0 + h + 5, h, h], [x0 + h + 5, y0 + h + 5, h, h]);
+            }
+          }
+        }
+
+        // Homes with a Home Identity Number: small dots that light up when
+        // their record updates.
+        this.homes = [];
+        for (const b of this.buildings) {
+          if (r() < 0.16) this.homes.push({ x: b[0] + b[2] / 2, y: b[1] + b[3] / 2, lit: -10 });
+        }
+
+        this.targetNode = this.idx(this.targetCol, this.targetRow);
+        this.target = { x: this.targetCol * S + S * 0.5, y: this.targetRow * S + 17 };
+      }
+      idx(col, row) { return row * this.cols + col; }
+      col(i) { return i % this.cols; }
+      row(i) { return (i / this.cols) | 0; }
+      x(i) { return (i % this.cols) * S; }
+      y(i) { return ((i / this.cols) | 0) * S; }
+      connected() {
+        const seen = new Uint8Array(this.adj.length), queue = [0];
+        seen[0] = 1;
+        let count = 1;
+        while (queue.length) {
+          const a = queue.pop();
+          for (const b of this.adj[a]) if (!seen[b]) { seen[b] = 1; count++; queue.push(b); }
+        }
+        return count === this.adj.length;
+      }
+      path(from, to) {
+        const prev = new Int32Array(this.adj.length).fill(-1), queue = [from];
+        prev[from] = from;
+        for (let head = 0; head < queue.length; head++) {
+          const a = queue[head];
+          if (a === to) break;
+          for (const b of this.adj[a]) if (prev[b] < 0) { prev[b] = a; queue.push(b); }
+        }
+        const out = [];
+        for (let a = to; a !== from; a = prev[a]) { if (a < 0) return [from]; out.push(a); }
+        out.push(from);
+        return out.reverse();
+      }
+    }
+
+    // ─── Master Pros: GPS dots that only ever travel along streets ───────
+    const PRO_SPECS = [
+      { id: 'MasterPro_HVAC_04', tag: 'HVAC_04', speed: 56 },
+      { id: 'MasterPro_PLMB_02', tag: 'PLMB_02', speed: 74 },
+      { id: 'MasterPro_ELEC_07', tag: 'ELEC_07', speed: 64 },
+      { id: 'MasterPro_APPL_11', tag: 'APPL_11', speed: 47 },
+      { id: 'MasterPro_LOCK_03', tag: 'LOCK_03', speed: 82 },
+      { id: 'MasterPro_ROOF_09', tag: 'ROOF_09', speed: 53 },
+    ];
+    const TRAIL_LEN = 10;
+    const labelBoxes = [];
+    const TRAIL_STEP = 9;                                      // world units between trail points
+
+    class MasterPro {
+      constructor(city, spec, start, isHero) {
+        this.city = city;
+        this.id = spec.id;
+        this.tag = spec.tag;
+        this.isHero = isHero;
+        this.baseSpeed = spec.speed * rand(0.9, 1.15);
+        this.speedScale = 1;
+        this.emergency = false;
+        this.from = start;
+        this.to = pick([...city.adj[start]]);
+        this.t = isHero ? 0 : rand(0, 0.8);
+        this.dx = 0; this.dy = 0; this.x = 0; this.y = 0;
+        this.setDirection();
+        this.place();
+        this.trail = [{ x: this.x, y: this.y }];
+        this.sinceStep = 0;
+      }
+      setDirection() {
+        this.dx = Math.sign(this.city.x(this.to) - this.city.x(this.from));
+        this.dy = Math.sign(this.city.y(this.to) - this.city.y(this.from));
+      }
+      place() {
+        this.x = lerp(this.city.x(this.from), this.city.x(this.to), this.t);
+        this.y = lerp(this.city.y(this.from), this.city.y(this.to), this.t);
+      }
+      pushTrail() {
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > TRAIL_LEN) this.trail.shift();
+        this.sinceStep = 0;
+      }
+      update(dt, events) {
+        let d = this.baseSpeed * this.speedScale * dt;
+        if (d <= 0) return;
+        while (d > 0) {
+          const left = (1 - this.t) * S;
+          if (d < left) { this.t += d / S; this.sinceStep += d; d = 0; }
+          else {
+            d -= left; this.sinceStep += left;
+            this.t = 1; this.place();
+            this.pushTrail();                                  // keep the exact corner, so the trail bends on the street
+            this.turn(events);
+          }
+        }
+        this.place();
+        if (this.sinceStep >= TRAIL_STEP) this.pushTrail();
+      }
+      // At an intersection: any open street but the one we came down, unless
+      // it is a dead end. HVAC_04 leans back toward the middle of the grid.
+      turn(events) {
+        const city = this.city, came = this.from, here = this.to;
+        let options = [...city.adj[here]].filter((b) => b !== came);
+        if (!options.length) options = [came];
+        if (this.isHero) {
+          const away = (i) => Math.abs(city.col(i) - city.cc) + Math.abs(city.row(i) - city.cr);
+          if (away(here) > 2 && Math.random() < 0.8) {
+            const closer = options.filter((b) => away(b) < away(here));
+            if (closer.length) options = closer;
+          }
+        }
+        const odx = this.dx, ody = this.dy;
+        this.from = here;
+        this.to = pick(options);
+        this.t = 0;
+        this.setDirection();
+        if (this.dx !== odx || this.dy !== ody) events.onTurn(this);
+      }
+      drawTrail(c, alpha) {
+        const n = this.trail.length, rgb = this.emergency ? RGB.amber : RGB.green;
+        if (!n) return;
+        c.lineCap = 'round';
+        let p = project(this.trail[0].x, this.trail[0].y), px = p.x, py = p.y;
+        for (let i = 1; i <= n; i++) {
+          const q = i < n ? this.trail[i] : this;
+          p = project(q.x, q.y);
+          const k = (i - 0.5) / n;                             // 0 at the tail, 1 at the dot
+          c.strokeStyle = rgba(rgb, k * alpha);
+          c.lineWidth = 1 + 2.2 * k;
+          c.beginPath(); c.moveTo(px, py); c.lineTo(p.x, p.y); c.stroke();
+          px = p.x; py = p.y;
+        }
+      }
+      draw(c, clock, alpha, label) {
+        const p = project(this.x, this.y), x = p.x, y = p.y;
+        if (x < -40 || y < -40 || x > W + 40 || y > H + 40) return;
+        if (this.emergency) {
+          const hz = REDUCED ? 1 : 4;                           // blinking amber, 4 times a second
+          const on = Math.sin(clock * Math.PI * 2 * hz) >= 0;
+          stamp(c, GLOW.amber, x, y, on ? 38 : 24, on ? 1 : 0.3);
+          c.strokeStyle = rgba(RGB.amber, 0.6);
+          c.lineWidth = 1;
+          c.beginPath(); c.arc(x, y, 9, 0, Math.PI * 2); c.stroke();
+          c.fillStyle = on ? C.amber : rgba(RGB.amber, 0.35);
+        } else {
+          stamp(c, GLOW.green, x, y, 22, alpha);
+          c.fillStyle = rgba(RGB.green, alpha);
+        }
+        c.beginPath(); c.arc(x, y, 3.6, 0, Math.PI * 2); c.fill();
+        c.fillStyle = rgba(RGB.white, 0.9 * alpha);
+        c.beginPath(); c.arc(x, y, 1.4, 0, Math.PI * 2); c.fill();
+        if (label) {
+          c.font = '600 10px ' + MONO;
+          c.fillStyle = this.emergency ? C.amber : rgba(RGB.green, 0.85 * alpha);
+          const w = c.measureText(this.tag).width;
+          // Right and up first; if another pro's label is there, try the other corners.
+          const spots = [[x + 9, y - 8], [x + 9, y + 17], [x - 9 - w, y - 8], [x - 9 - w, y + 17]];
+          let spot = spots[0];
+          for (const s of spots) {
+            if (!labelBoxes.some((b) => s[0] < b[0] + b[2] && s[0] + w > b[0] && s[1] - 10 < b[1] && s[1] > b[1] - 10)) { spot = s; break; }
+          }
+          labelBoxes.push([spot[0], spot[1], w]);
+          c.fillText(this.tag, spot[0], spot[1]);
+        }
+      }
+    }
+
+    // ─── Camera, and the dive's lens distortion ──────────────────────────
+    const cam = { x: 0, y: 0, zoom: 1 };
+    let DK = 0;                                                // lens strength; 0 is a flat map
+    const P = { x: 0, y: 0 };
+    function project(wx, wy) {
+      let x = (wx - cam.x) * cam.zoom + W / 2;
+      let y = (wy - cam.y) * cam.zoom + H / 2;
+      if (DK > 0) {
+        // A field-of-view stretch: points move outward, farther the nearer the edge.
+        const dx = x - W / 2, dy = y - H / 2, f = 1 + DK * (dx * dx + dy * dy) * INV_R2;
+        x = W / 2 + dx * f; y = H / 2 + dy * f;
+      }
+      P.x = x; P.y = y;
+      return P;
+    }
+    const fitZoom = () => Math.min(W / (city.w + S * 0.7), H / (city.h + S * 0.7));
+
+    // ─── State machine ───────────────────────────────────────────────────
+    const PHASES = [
+      { key: 'map', name: '01 · MACRO_DISPATCH_MAP', dur: 9 },
+      { key: 'alert', name: '02 · EMERGENCY_DISPATCH', dur: 3 },
+      { key: 'dive', name: '03 · CAMERA_DIVE', dur: 1.5 },
+      { key: 'cabin', name: '04 · MASTER_PRO_CABIN', dur: 9 },
+    ];
+    const ALERT_ZOOM = 1.6;
+    const VEHICLE = { length: 9, width: 4.6 };
+    const state = { currentPhase: 0, t: 0, clock: 0, paused: false, started: performance.now() };
+    let city = null, pros = [], hero = null, pings = [], route = null, cabin = null;
+    const alertCam = { x: 0, y: 0, zoom: 1 };
+    let diveZoom0 = 1;
+
+    const events = {
+      onTurn(pro) {
+        pings.push({ x: pro.x, y: pro.y, t: state.clock, rgb: pro.emergency ? RGB.amber : RGB.green });
+        log('PING ' + pro.tag + ' · GRID ' + city.col(pro.from) + ',' + city.row(pro.from), '', true);
+      },
+    };
+
+    function enterPhase(i) {
+      state.currentPhase = i;
+      state.t = 0;
+      const phase = PHASES[i];
+      setText(el.phase, phase.name);
+      el.meter.classList.toggle('alert', phase.key === 'alert');
+      timelineItems.forEach((li, k) => {
+        li.classList.toggle('on', k === i);
+        li.classList.toggle('alert', k === 1);
+      });
+      if (phase.key === 'map') enterMap();
+      else if (phase.key === 'alert') enterAlert();
+      else if (phase.key === 'dive') enterDive();
+      else enterCabin();
+    }
+
+    function enterMap() {
+      const cols = clamp(Math.round(W / 92) + 2, 7, 18);
+      const rows = clamp(Math.round(H / 92) + 2, 6, 13);
+      city = new City(cols, rows, (Math.random() * 1e9) | 0);
+      cabin = null; pings = []; route = null;
+      const starts = new Set([city.idx(city.cc, city.cr)]);
+      pros = PRO_SPECS.map((spec, k) => {
+        let start = city.idx(city.cc, city.cr);
+        if (k > 0) {
+          do { start = city.idx(1 + ((Math.random() * (cols - 2)) | 0), 1 + ((Math.random() * (rows - 2)) | 0)); } while (starts.has(start));
+          starts.add(start);
+        }
+        return new MasterPro(city, spec, start, k === 0);
+      });
+      hero = pros[0];
+      cam.x = city.w / 2; cam.y = city.h / 2; cam.zoom = fitZoom();
+      setText(el.pros, '6 / 6 VERIFIED', '');
+      unpinRecord();
+      log('GRID ' + cols + 'x' + rows + ' ONLINE · 6 MASTER PROS', 'g');
+    }
+
+    function enterAlert() {
+      hero.emergency = true;
+      alertCam.x = cam.x; alertCam.y = cam.y; alertCam.zoom = cam.zoom;
+      // The way to the door: the streets to Elm St., along Elm, then the driveway.
+      const nodes = city.path(hero.to, city.targetNode);
+      route = [{ x: hero.x, y: hero.y }];
+      for (const nIdx of nodes) route.push({ x: city.x(nIdx), y: city.y(nIdx) });
+      route.push({ x: city.target.x, y: city.targetRow * S }, { x: city.target.x, y: city.target.y });
+      setText(el.pros, 'HVAC_04 DISPATCHED', 'warn');
+      pinRecord('#HIN-8902-X', 'HVAC_DISPATCH · EMERGENCY', 'd');
+      log('[!!] EMERGENCY DISPATCH · HIN-8902-X', 'a');
+      log('TARGET 1428 ELM ST. · HVAC_04 ASSIGNED', 'a');
+    }
+
+    function enterDive() {
+      diveZoom0 = cam.zoom;
+      log('CAMERA LOCK · MasterPro_HVAC_04', 'a');
+    }
+
+    function enterCabin() {
+      // The map is gone: the rest happens inside the vehicle.
+      city = null; pros = []; pings = []; route = null; hero = null;
+      cabin = new Cabin();
+      setText(el.pros, 'HVAC_04 EN ROUTE', 'ok');
+      pinRecord('#HIN-8902-X', 'HVAC_EN_ROUTE · ETA 04:12', 'g');
+      log('CABIN HUD ONLINE · VOICE LINE OPEN', 'g');
+    }
+
+    function update(dt) {
+      state.clock += dt;
+      state.t += dt;
+      const phase = PHASES[state.currentPhase];
+
+      if (phase.key !== 'cabin') {
+        for (const pro of pros) pro.update(dt, events);
+        if (pings.length && state.clock - pings[0].t > 1.2) pings = pings.filter((p) => state.clock - p.t <= 1.2);
+      }
+
+      if (phase.key === 'map') {
+        // A slow, barely-there drift so the map feels live.
+        const fit = fitZoom();
+        cam.x = city.w / 2 + Math.sin(state.t * 0.21) * S * 0.12;
+        cam.y = city.h / 2 + Math.cos(state.t * 0.17) * S * 0.08;
+        cam.zoom = fit * (1 + 0.02 * Math.sin(state.t * 0.3));
+      } else if (phase.key === 'alert') {
+        hero.speedScale = 1 - EASE.out(clamp(state.t / 0.5));  // the pro pulls over
+        const k = EASE.inOut(clamp(state.t / 1.1));
+        cam.x = lerp(alertCam.x, hero.x, k);
+        cam.y = lerp(alertCam.y, hero.y, k);
+        cam.zoom = lerp(alertCam.zoom, fitZoom() * ALERT_ZOOM, k);
+      } else if (phase.key === 'dive') {
+        // Exponential zoom: the vehicle's roof ends up bigger than the screen.
+        const e = EASE.dive(clamp(state.t / phase.dur));
+        const zoomEnd = (2.6 * Math.max(W, H)) / VEHICLE.length;
+        cam.x = hero.x; cam.y = hero.y;
+        cam.zoom = diveZoom0 * Math.pow(zoomEnd / diveZoom0, e);
+      } else {
+        cabin.update(dt);
+      }
+
+      if (state.t >= phase.dur) enterPhase((state.currentPhase + 1) % PHASES.length);
+    }
+
+    // ─── Map rendering (phases 1 to 3) ───────────────────────────────────
+    function strokeStreets(c, arterial) {
+      c.beginPath();
+      for (const s of city.segs) {
+        if (s[4] !== arterial) continue;
+        let x1 = (s[0] - cam.x) * cam.zoom + W / 2, y1 = (s[1] - cam.y) * cam.zoom + H / 2;
+        let x2 = (s[2] - cam.x) * cam.zoom + W / 2, y2 = (s[3] - cam.y) * cam.zoom + H / 2;
+        if (Math.max(x1, x2) < -60 || Math.min(x1, x2) > W + 60 || Math.max(y1, y2) < -60 || Math.min(y1, y2) > H + 60) continue;
+        if (DK <= 0) { c.moveTo(x1, y1); c.lineTo(x2, y2); continue; }
+        // Lensed: trim to just past the screen, then bend it in small steps.
+        let a = s[0], b = s[1], e = s[2], f = s[3];
+        if (s[1] === s[3]) {
+          const lo = (-120 - W / 2) / cam.zoom + cam.x, hi = (W + 120 - W / 2) / cam.zoom + cam.x;
+          a = clamp(Math.min(s[0], s[2]), lo, hi); e = clamp(Math.max(s[0], s[2]), lo, hi);
+        } else {
+          const lo = (-120 - H / 2) / cam.zoom + cam.y, hi = (H + 120 - H / 2) / cam.zoom + cam.y;
+          b = clamp(Math.min(s[1], s[3]), lo, hi); f = clamp(Math.max(s[1], s[3]), lo, hi);
+        }
+        x1 = (a - cam.x) * cam.zoom; y1 = (b - cam.y) * cam.zoom;
+        x2 = (e - cam.x) * cam.zoom; y2 = (f - cam.y) * cam.zoom;
+        const steps = clamp(Math.ceil(Math.hypot(x2 - x1, y2 - y1) / 24), 1, 160);
+        for (let j = 0; j <= steps; j++) {
+          const p = project(lerp(a, e, j / steps), lerp(b, f, j / steps));
+          if (j) c.lineTo(p.x, p.y); else c.moveTo(p.x, p.y);
+        }
+      }
+      c.stroke();
+    }
+
+    function traceRects(c, rects) {
+      c.beginPath();
+      for (const r of rects) {
+        const x = (r[0] - cam.x) * cam.zoom + W / 2, y = (r[1] - cam.y) * cam.zoom + H / 2;
+        const w = r[2] * cam.zoom, h = r[3] * cam.zoom;
+        if (x > W + 40 || y > H + 40 || x + w < -40 || y + h < -40) continue;
+        if (DK <= 0) { c.rect(x, y, w, h); continue; }
+        let p = project(r[0], r[1]); c.moveTo(p.x, p.y);
+        p = project(r[0] + r[2], r[1]); c.lineTo(p.x, p.y);
+        p = project(r[0] + r[2], r[1] + r[3]); c.lineTo(p.x, p.y);
+        p = project(r[0], r[1] + r[3]); c.lineTo(p.x, p.y);
+        c.closePath();
+      }
+    }
+
+    function drawMap(c, opt) {
+      const clock = state.clock;
+      c.lineJoin = 'round';
+
+      // Blocks and parks.
+      traceRects(c, city.parks);
+      c.fillStyle = 'rgba(0, 230, 118, 0.025)';
+      c.fill();
+      traceRects(c, city.buildings);
+      c.fillStyle = 'rgba(255, 255, 255, 0.018)';
+      c.fill();
+      c.globalAlpha = 0.35;
+      c.strokeStyle = C.grid;
+      c.lineWidth = 1;
+      c.stroke();
+      c.globalAlpha = 1;
+
+      // Streets. In the dive they light up as the speed builds.
+      const boost = opt.boost || 0;
+      c.strokeStyle = boost ? rgba(RGB.white, 0.08 + 0.2 * boost) : C.grid;
+      c.lineWidth = 1;
+      strokeStreets(c, false);
+      c.strokeStyle = boost ? rgba(RGB.white, 0.08 + 0.34 * boost) : C.grid;
+      c.lineWidth = 2.4;
+      strokeStreets(c, true);
+
+      // Street names along the left edge.
+      if (opt.labels) {
+        c.font = '600 9px ' + MONO;
+        for (let r = 0; r < city.rows; r++) {
+          const y = (r * S - cam.y) * cam.zoom + H / 2;
+          if (y < 62 || y > H - 50) continue;
+          const x = Math.max(12, (S * 0.12 - cam.x) * cam.zoom + W / 2);
+          const elm = r === city.targetRow;
+          c.fillStyle = elm && opt.alert ? C.amber : rgba(RGB.muted, 0.85);
+          c.fillText(city.names[r], x, y - 5);
+        }
+      }
+
+      // HIN homes.
+      for (const h of city.homes) {
+        const p = project(h.x, h.y);
+        if (p.x < -10 || p.y < -10 || p.x > W + 10 || p.y > H + 10) continue;
+        const age = clock - h.lit;
+        if (age < 1.6) {
+          const k = 1 - age / 1.6;
+          c.strokeStyle = rgba(RGB.green, 0.6 * k);
+          c.lineWidth = 1;
+          c.beginPath(); c.arc(p.x, p.y, 4 + (1 - k) * 12, 0, Math.PI * 2); c.stroke();
+          c.fillStyle = rgba(RGB.green, 0.4 + 0.6 * k);
+        } else {
+          c.fillStyle = 'rgba(248, 250, 252, 0.16)';
+        }
+        c.fillRect(p.x - 1.5, p.y - 1.5, 3, 3);
+      }
+
+      // The route to 1428 Elm St.
+      if (route && opt.alert) {
+        const reveal = opt.reveal === undefined ? smooth(0.35, 1.0, state.t) : opt.reveal;
+        if (reveal > 0) {
+          c.beginPath();
+          route.forEach((pt, i) => { const p = project(pt.x, pt.y); if (i) c.lineTo(p.x, p.y); else c.moveTo(p.x, p.y); });
+          c.strokeStyle = rgba(RGB.amber, 0.16 * reveal);
+          c.lineWidth = 8;
+          c.stroke();
+          c.setLineDash([8, 7]);
+          c.lineDashOffset = -clock * 40;
+          c.strokeStyle = rgba(RGB.amber, 0.95 * reveal);
+          c.lineWidth = 2;
+          c.stroke();
+          c.setLineDash([]);
+          const t = project(city.target.x, city.target.y), tx = t.x, ty = t.y;
+          const pulse = 0.5 + 0.5 * Math.sin(clock * 6);
+          c.strokeStyle = rgba(RGB.amber, reveal);
+          c.lineWidth = 1.5;
+          c.strokeRect(tx - 6, ty - 6, 12, 12);
+          c.strokeStyle = rgba(RGB.amber, 0.4 * reveal * pulse);
+          c.strokeRect(tx - 11, ty - 11, 22, 22);
+          if (opt.labels) {
+            c.font = '700 10px ' + MONO;
+            c.fillStyle = rgba(RGB.amber, reveal);
+            c.fillText('1428 ELM ST.', tx + 15, ty + 4);
+          }
+        }
+      }
+
+      // Telemetry pings: a ring each time a pro turns a corner.
+      c.globalCompositeOperation = 'lighter';
+      for (const pg of pings) {
+        const age = clock - pg.t;
+        if (age < 0 || age > 1) continue;
+        const e = EASE.out(age), p = project(pg.x, pg.y), r = 5 + e * 44;
+        const grad = c.createRadialGradient(p.x, p.y, r * 0.55, p.x, p.y, r);
+        grad.addColorStop(0, rgba(pg.rgb, 0));
+        grad.addColorStop(0.82, rgba(pg.rgb, 0.3 * (1 - e)));
+        grad.addColorStop(1, rgba(pg.rgb, 0));
+        c.fillStyle = grad;
+        c.beginPath(); c.arc(p.x, p.y, r, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = rgba(pg.rgb, 0.7 * (1 - e));
+        c.lineWidth = 1;
+        c.stroke();
+      }
+      c.globalCompositeOperation = 'source-over';
+
+      // Pros: others dim while the emergency has the floor.
+      labelBoxes.length = 0;
+      for (const pro of pros) {
+        const a = pro === hero ? 1 : 1 - 0.6 * opt.dim;
+        if (opt.trails) pro.drawTrail(c, a);
+        pro.draw(c, clock, a, opt.labels);
+      }
+    }
+
+    // Corner brackets and readouts on the map.
+    function drawMapChrome(c, alertMode) {
+      const m = 14, L = 18;
+      c.strokeStyle = alertMode ? rgba(RGB.amber, 0.55) : 'rgba(248, 250, 252, 0.22)';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(m, m + L); c.lineTo(m, m); c.lineTo(m + L, m);
+      c.moveTo(W - m - L, m); c.lineTo(W - m, m); c.lineTo(W - m, m + L);
+      c.moveTo(m, H - m - L); c.lineTo(m, H - m); c.lineTo(m + L, H - m);
+      c.moveTo(W - m - L, H - m); c.lineTo(W - m, H - m); c.lineTo(W - m, H - m - L);
+      c.stroke();
+
+      c.font = '700 10px ' + MONO;
+      c.fillStyle = alertMode ? C.amber : C.text;
+      c.fillText(alertMode ? 'LOCK · MasterPro_HVAC_04' : 'LIVE GRID · SECTOR 07', 26, 32);
+      c.font = '600 10px ' + MONO;
+      c.fillStyle = alertMode ? rgba(RGB.amber, 0.75) : rgba(RGB.green, 0.85);
+      c.fillText(alertMode ? 'PRIORITY 1 · NO HEAT · HIN-8902-X' : '6 MASTER PROS · GPS-VERIFIED', 26, 47);
+
+      // Scale bar: one block.
+      const block = S * cam.zoom;
+      if (block < W * 0.4) {
+        c.strokeStyle = 'rgba(248, 250, 252, 0.4)';
+        c.lineWidth = 1;
+        c.beginPath();
+        c.moveTo(26, H - 30); c.lineTo(26, H - 26); c.lineTo(26 + block, H - 26); c.lineTo(26 + block, H - 30);
+        c.stroke();
+        c.fillStyle = C.muted;
+        c.fillText('1 BLOCK · 0.1 MI', 26, H - 36);
+      }
+      if (W > 520 && !alertMode) {
+        const lat = (34.5621 - (cam.y - 400) * 0.00001).toFixed(4);
+        const lon = (92.5857 - (cam.x - 400) * 0.00001).toFixed(4);
+        const text = 'LAT ' + lat + '° N · LON ' + lon + '° W';
+        c.fillStyle = C.muted;
+        c.fillText(text, W - 26 - c.measureText(text).width, H - 26);
+      }
+    }
+
+    function renderMapPhase() {
+      drawMap(ctx, { labels: true, trails: true, dim: 0, alert: false });
+      drawMapChrome(ctx, false);
+    }
+
+    function renderAlertPhase() {
+      const t = state.t, clock = state.clock;
+      const dim = EASE.out(clamp(t / 0.6));
+      drawMap(ctx, { labels: true, trails: true, dim, alert: true });
+
+      const p = project(hero.x, hero.y), hx = p.x, hy = p.y;
+
+      // Three ripples across the whole screen.
+      const far = Math.max(Math.hypot(hx, hy), Math.hypot(W - hx, hy), Math.hypot(hx, H - hy), Math.hypot(W - hx, H - hy));
+      const starts = REDUCED ? [0.15] : [0.15, 0.5, 0.85];
+      ctx.globalCompositeOperation = 'lighter';
+      for (const s of starts) {
+        const k = (t - s) / 1.8;
+        if (k <= 0 || k >= 1) continue;
+        const e = EASE.out(k), r = 8 + e * far * 1.05, fade = Math.pow(1 - k, 1.5);
+        const band = ctx.createRadialGradient(hx, hy, Math.max(0, r - 90), hx, hy, r);
+        band.addColorStop(0, rgba(RGB.amber, 0));
+        band.addColorStop(0.85, rgba(RGB.amber, 0.14 * fade));
+        band.addColorStop(1, rgba(RGB.amber, 0));
+        ctx.fillStyle = band;
+        ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = rgba(RGB.amber, 0.85 * fade);
+        ctx.lineWidth = lerp(10, 1, k);
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+
+      // An amber edge that breathes.
+      const vign = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.62);
+      vign.addColorStop(0, rgba(RGB.amber, 0));
+      vign.addColorStop(1, rgba(RGB.amber, (0.07 + 0.05 * Math.sin(clock * 8)) * dim));
+      ctx.fillStyle = vign;
+      ctx.fillRect(0, 0, W, H);
+
+      drawModal(ctx, hx, hy, t, clock);
+      drawMapChrome(ctx, true);
+    }
+
+    // The holographic dispatch card, pinned to the pro by leader lines.
+    function drawModal(c, sx, sy, t, clock) {
+      const open = EASE.out(clamp((t - 0.45) / 0.45));
+      if (open <= 0) return;
+      const pw = clamp(W * 0.36, 232, 300), lh = 20, ph = 128;
+      const gap = 42;
+      const side = sx + gap + 16 + pw < W - 12 ? 1 : -1;
+      const above = sy - gap - ph > 12;
+      let px = side > 0 ? sx + gap + 16 : sx - gap - 16 - pw;
+      px = clamp(px, 12, W - pw - 12);
+      const py = above ? sy - gap - ph : sy + gap;
+      const ay = above ? py + ph : py, ax = side > 0 ? px : px + pw;
+      const ex = sx + side * gap, ey = above ? sy - gap : sy + gap;
+
+      // Leader lines draw themselves on.
+      const len = Math.hypot(ex - sx, ey - sy) + Math.abs(ax - ex);
+      c.strokeStyle = rgba(RGB.amber, 0.9);
+      c.lineWidth = 1.2;
+      c.setLineDash([len * open, len + 10]);
+      c.beginPath(); c.moveTo(sx, sy); c.lineTo(ex, ey); c.lineTo(ax, ay); c.stroke();
+      c.setLineDash([]);
+      c.fillStyle = C.amber;
+      c.beginPath(); c.arc(sx, sy, 2.5, 0, Math.PI * 2); c.fill();
+      c.save(); c.translate(ex, ey); c.rotate(Math.PI / 4); c.fillRect(-3, -3, 6, 6); c.restore();
+
+      // The card opens from the side the lines reach.
+      c.save();
+      const h = ph * open;
+      c.beginPath();
+      c.rect(px - 2, above ? py + ph - h - 2 : py - 2, pw + 4, h + 4);
+      c.clip();
+      const flicker = t < 1.1 ? 0.82 + 0.18 * Math.sin(clock * 70) : 1;
+      c.globalAlpha = flicker;
+      c.fillStyle = 'rgba(13, 17, 26, 0.84)';
+      c.fillRect(px, py, pw, ph);
+      c.fillStyle = SCANLINES;
+      c.fillRect(px, py, pw, ph);
+      c.strokeStyle = rgba(RGB.amber, 0.45);
+      c.lineWidth = 1;
+      c.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
+      c.strokeStyle = C.amber;
+      c.lineWidth = 2;
+      const b = 12;
+      c.beginPath();
+      c.moveTo(px, py + b); c.lineTo(px, py); c.lineTo(px + b, py);
+      c.moveTo(px + pw - b, py); c.lineTo(px + pw, py); c.lineTo(px + pw, py + b);
+      c.moveTo(px, py + ph - b); c.lineTo(px, py + ph); c.lineTo(px + b, py + ph);
+      c.moveTo(px + pw - b, py + ph); c.lineTo(px + pw, py + ph); c.lineTo(px + pw, py + ph - b);
+      c.stroke();
+
+      const x = px + 16;
+      let y = py + 27;
+      const red = Math.sin(clock * Math.PI * 2 * (REDUCED ? 0.5 : 2)) >= 0;
+      c.font = '700 12px ' + MONO;
+      c.fillStyle = red ? C.red : C.amber;
+      c.fillText('[!!] EMERGENCY DISPATCH', x, y);
+      y += 12;
+      c.fillStyle = 'rgba(248, 250, 252, 0.08)';
+      c.fillRect(x, y, pw - 32, 1);
+      y += 21;
+
+      // The lines type themselves in.
+      const typed = (text, start) => text.slice(0, Math.max(0, Math.floor((t - start) * 42)));
+      c.font = '600 12px ' + MONO;
+      const lines = [['TARGET: ', '1428 ELM ST.', 0.8], ['IDENTITY: ', 'HIN-8902-X', 1.05]];
+      for (const [key, value, start] of lines) {
+        const shown = typed(key + value, start);
+        const k = shown.slice(0, key.length), v = shown.slice(key.length);
+        c.fillStyle = C.muted;
+        c.fillText(k, x, y);
+        c.fillStyle = C.text;
+        c.fillText(v, x + c.measureText(key).width, y);
+        y += lh;
+      }
+
+      // Match progress, then the pro it matched.
+      y += 6;
+      const prog = EASE.standard(clamp((t - 1.1) / 0.8));
+      c.fillStyle = 'rgba(248, 250, 252, 0.08)';
+      c.fillRect(x, y, pw - 32, 3);
+      c.fillStyle = prog < 1 ? C.amber : C.green;
+      c.fillRect(x, y, (pw - 32) * prog, 3);
+      y += 17;
+      c.font = '600 10px ' + MONO;
+      c.fillStyle = prog < 1 ? C.muted : C.green;
+      c.fillText(prog < 1 ? 'MATCHING VERIFIED MASTER PRO...' : 'MATCHED · HVAC_04 · VERIFIED', x, y);
+      c.restore();
+    }
+
+    // Warp streaks for the dive.
+    const STREAKS = Array.from({ length: 120 }, () => ({ a: Math.random() * Math.PI * 2, r: Math.random(), v: rand(0.6, 1.6), green: Math.random() < 0.55 }));
+
+    function renderDivePhase() {
+      const p = clamp(state.t / PHASES[2].dur), e = EASE.dive(p);
+
+      // The map through the lens, at half resolution.
+      DK = 1.9 * e;
+      lctx.setTransform(DPR * LAYER_SCALE, 0, 0, DPR * LAYER_SCALE, 0, 0);
+      lctx.clearRect(0, 0, W, H);
+      drawMap(lctx, { labels: false, trails: false, dim: 1, alert: true, reveal: 1 - e, boost: e });
+      DK = 0;
+      ctx.drawImage(layer, 0, 0, W, H);
+
+      // Zoom blur: the same frame, scaled out from the center and added.
+      const passes = REDUCED ? 2 : 7;
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 1; i <= passes; i++) {
+        const s = 1 + i * 0.05 * e;
+        ctx.globalAlpha = 0.5 * e * (1 - i / (passes + 1));
+        ctx.drawImage(layer, W / 2 - (W * s) / 2, H / 2 - (H * s) / 2, W * s, H * s);
+      }
+      ctx.globalAlpha = 1;
+
+      // Warp streaks.
+      const maxR = Math.hypot(W, H) / 2;
+      ctx.lineCap = 'round';
+      for (const s of STREAKS) {
+        const rr = (s.r + p * s.v * 1.6) % 1;
+        const r0 = (0.06 + rr) * maxR, len = (0.04 + 0.55 * e) * r0 * s.v;
+        const ca = Math.cos(s.a), sa = Math.sin(s.a);
+        ctx.strokeStyle = rgba(s.green ? RGB.green : RGB.white, 0.5 * e * rr);
+        ctx.lineWidth = 1 + e * 1.5;
+        ctx.beginPath();
+        ctx.moveTo(W / 2 + ca * r0, H / 2 + sa * r0);
+        ctx.lineTo(W / 2 + ca * (r0 + len), H / 2 + sa * (r0 + len));
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+
+      drawVehicle(ctx);
+
+      // Through the roof.
+      const f = smooth(0.88, 1, p);
+      if (f > 0) {
+        ctx.fillStyle = REDUCED ? rgba(RGB.bg, f) : rgba(RGB.white, f);
+        ctx.fillRect(0, 0, W, H);
+      }
+    }
+
+    // The pro's vehicle from above, coming up to meet the camera.
+    function drawVehicle(c) {
+      const p = project(hero.x, hero.y);
+      const L = VEHICLE.length * cam.zoom, Wd = VEHICLE.width * cam.zoom;
+      if (L < 8) return;
+      c.save();
+      c.translate(p.x, p.y);
+      const heading = Math.atan2(hero.dy, hero.dx);
+      c.rotate(heading);
+      c.globalAlpha = clamp((L - 8) / 40);
+      roundRect(c, -L / 2, -Wd / 2, L, Wd, Wd * 0.28);
+      c.fillStyle = C.surface;
+      c.fill();
+      c.lineWidth = Math.max(1, L * 0.01);
+      c.strokeStyle = rgba(RGB.green, 0.85);
+      c.stroke();
+      // Windshield at the front, rear window at the back.
+      c.fillStyle = 'rgba(248, 250, 252, 0.07)';
+      c.beginPath();
+      c.moveTo(L * 0.17, -Wd * 0.38); c.lineTo(L * 0.33, -Wd * 0.43); c.lineTo(L * 0.33, Wd * 0.43); c.lineTo(L * 0.17, Wd * 0.38);
+      c.closePath(); c.fill();
+      c.beginPath();
+      c.moveTo(-L * 0.3, -Wd * 0.36); c.lineTo(-L * 0.4, -Wd * 0.4); c.lineTo(-L * 0.4, Wd * 0.4); c.lineTo(-L * 0.3, Wd * 0.36);
+      c.closePath(); c.fill();
+      // Roof panel with the NOHM mark.
+      c.fillStyle = '#0A0E15';
+      c.fillRect(-L * 0.27, -Wd * 0.36, L * 0.42, Wd * 0.72);
+      c.strokeStyle = 'rgba(248, 250, 252, 0.08)';
+      c.lineWidth = Math.max(1, L * 0.004);
+      c.strokeRect(-L * 0.27, -Wd * 0.36, L * 0.42, Wd * 0.72);
+      c.fillStyle = 'rgba(248, 250, 252, 0.92)';
+      c.font = '800 ' + Math.max(6, Wd * 0.18) + 'px ' + DISPLAY;
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      // Keep the mark reading left to right whichever way the vehicle faces.
+      c.save();
+      c.translate(-L * 0.1, 0);
+      if (Math.cos(heading) < -0.01 || Math.sin(heading) > 0.99) c.rotate(Math.PI);
+      c.fillText('NOHM', 0, 0);
+      c.restore();
+      c.textAlign = 'start';
+      c.textBaseline = 'alphabetic';
+      // Light bar, flashing side to side.
+      const leftOn = Math.sin(state.clock * Math.PI * 2 * (REDUCED ? 1 : 4)) >= 0;
+      c.fillStyle = leftOn ? C.amber : 'rgba(255, 179, 0, 0.25)';
+      c.fillRect(L * 0.08, -Wd * 0.34, L * 0.045, Wd * 0.3);
+      c.fillStyle = leftOn ? 'rgba(255, 179, 0, 0.25)' : C.amber;
+      c.fillRect(L * 0.08, Wd * 0.04, L * 0.045, Wd * 0.3);
+      c.restore();
+    }
+
+    // ─── Phase 4: inside the cabin ───────────────────────────────────────
+    class Cabin {
+      constructor() {
+        this.t = 0;
+        this.dist = 0;
+        this.mph = 45;
+        this.eta = 252;                                        // 04:12
+        this.curve = 0;
+        this.sway = 0;
+        this.span = 190;
+        this.buildings = [];
+        for (const side of [-1, 1]) {
+          for (let z = 6; z < this.span; z += rand(13, 22)) this.buildings.push(this.building(side, z));
+        }
+        this.voice = [
+          { amp: 0.6, target: 0.8, freq: 2.6, speed: 5.2, next: 0 },
+          { amp: 0.4, target: 0.6, freq: 4.3, speed: -6.8, next: 0 },
+          { amp: 0.3, target: 0.5, freq: 6.9, speed: 9.1, next: 0 },
+        ];
+      }
+      building(side, z) {
+        return { side, z, off: rand(8.5, 15), w: rand(6, 12), d: rand(8, 16), h: rand(7, 26), strip: Math.random() < 0.55 ? rand(0.25, 0.8) : -1 };
+      }
+      update(dt) {
+        this.t += dt;
+        this.mph = 45 + 1.4 * Math.sin(this.t * 0.8) + 0.6 * Math.sin(this.t * 2.1);
+        const ms = this.mph * 0.44704;
+        this.dist += ms * dt;
+        this.eta = Math.max(0, 252 - this.t);
+        this.curve = 0.003 * Math.sin(this.t * 0.45) + 0.0014 * Math.sin(this.t * 1.13 + 1.2);
+        this.sway = 0.18 * Math.sin(this.t * 0.9);
+        for (let i = 0; i < this.buildings.length; i++) {
+          const b = this.buildings[i];
+          b.z -= ms * dt;
+          if (b.z + b.d < 1) this.buildings[i] = this.building(b.side, b.z + this.span);
+        }
+        for (const v of this.voice) {
+          v.next -= dt;
+          if (v.next <= 0) {
+            v.next = rand(0.08, 0.22);
+            v.target = Math.random() < 0.12 ? rand(0.05, 0.15) : rand(0.35, 1);
+          }
+          v.amp += (v.target - v.amp) * Math.min(1, dt * 12);
+        }
+      }
+
+      render(c) {
+        const t = this.t;
+        const hz = H * 0.46;                                   // horizon
+        const f = Math.min(W, H * 1.4) * 0.9;                  // focal length
+        const camH = 1.3;
+        const carX = 1.75 + this.sway;
+        const curve = this.curve;
+        const xc = (z) => curve * z * z;                       // road center, bending with the curve
+        const sx = (x, z) => W / 2 + ((x - carX) / z) * f;
+        const sy = (y, z) => hz + ((camH - y) / z) * f;
+        const NEAR = 1.6, FAR = 150;
+
+        // Sky and ground.
+        const sky = c.createLinearGradient(0, 0, 0, hz);
+        sky.addColorStop(0, C.bg);
+        sky.addColorStop(1, '#07120E');
+        c.fillStyle = sky;
+        c.fillRect(0, 0, W, hz + 1);
+        c.fillStyle = '#04060A';
+        c.fillRect(0, hz, W, H - hz);
+        const glow = c.createRadialGradient(W / 2, hz, 0, W / 2, hz, W * 0.6);
+        glow.addColorStop(0, 'rgba(0, 230, 118, 0.08)');
+        glow.addColorStop(1, 'rgba(0, 230, 118, 0)');
+        c.fillStyle = glow;
+        c.fillRect(0, 0, W, H);
+
+        // Ground grid: the city's streets, now in perspective.
+        c.strokeStyle = C.grid;
+        c.lineWidth = 1;
+        c.beginPath();
+        for (let k = -7; k <= 7; k++) {
+          if (Math.abs(k) < 1) continue;
+          for (let j = 0; j <= 18; j++) {
+            const z = NEAR + (FAR - NEAR) * Math.pow(j / 18, 2);
+            const x = sx(xc(z) + k * 9, z), y = sy(0, z);
+            if (j) c.lineTo(x, y); else c.moveTo(x, y);
+          }
+        }
+        c.stroke();
+        for (let n = 0; n < 13; n++) {
+          const z = 12 - (this.dist % 12) + n * 12;
+          if (z < NEAR) continue;
+          c.globalAlpha = clamp(1 - z / FAR);
+          c.beginPath();
+          c.moveTo(sx(xc(z) - 64, z), sy(0, z));
+          c.lineTo(sx(xc(z) + 64, z), sy(0, z));
+          c.stroke();
+        }
+        c.globalAlpha = 1;
+
+        // The road.
+        const roadEdge = (side) => { for (let j = 0; j <= 30; j++) { const z = NEAR + (FAR - NEAR) * Math.pow(j / 30, 2); yieldPt(sx(xc(z) + side * 3.6, z), sy(0, z)); } };
+        let pts = [];
+        const yieldPt = (x, y) => pts.push(x, y);
+        roadEdge(-1);
+        const left = pts; pts = [];
+        roadEdge(1);
+        const right = pts;
+        c.beginPath();
+        for (let i = 0; i < left.length; i += 2) (i ? c.lineTo : c.moveTo).call(c, left[i], left[i + 1]);
+        for (let i = right.length - 2; i >= 0; i -= 2) c.lineTo(right[i], right[i + 1]);
+        c.closePath();
+        c.fillStyle = 'rgba(255, 255, 255, 0.03)';
+        c.fill();
+        const edgeFade = c.createLinearGradient(0, H, 0, hz);
+        edgeFade.addColorStop(0, 'rgba(248, 250, 252, 0.3)');
+        edgeFade.addColorStop(1, 'rgba(248, 250, 252, 0)');
+        c.strokeStyle = edgeFade;
+        c.lineWidth = 1.5;
+        for (const edge of [left, right]) {
+          c.beginPath();
+          for (let i = 0; i < edge.length; i += 2) (i ? c.lineTo : c.moveTo).call(c, edge[i], edge[i + 1]);
+          c.stroke();
+        }
+
+        // Lane dashes rushing past.
+        for (let n = 0; n < 16; n++) {
+          const z0 = 9 - (this.dist % 9) + n * 9, z1 = z0 + 3;
+          if (z1 < NEAR || z0 > 120) continue;
+          const a = Math.max(z0, NEAR);
+          c.fillStyle = rgba(RGB.white, 0.35 * clamp(1 - z0 / 120));
+          c.beginPath();
+          c.moveTo(sx(xc(a) - 0.08, a), sy(0, a));
+          c.lineTo(sx(xc(z1) - 0.08, z1), sy(0, z1));
+          c.lineTo(sx(xc(z1) + 0.08, z1), sy(0, z1));
+          c.lineTo(sx(xc(a) + 0.08, a), sy(0, a));
+          c.closePath();
+          c.fill();
+        }
+
+        // Buildings along both sides, far to near.
+        const order = this.buildings.slice().sort((p, q) => q.z - p.z);
+        c.lineWidth = 1;
+        for (const b of order) {
+          const zn = Math.max(NEAR, b.z), zf = b.z + b.d;
+          if (zf < NEAR || zn > FAR) continue;
+          const fog = clamp(1 - (zn - 25) / 125);
+          const inN = xc(zn) + b.side * b.off, inF = xc(zf) + b.side * b.off, outN = inN + b.side * b.w;
+          c.fillStyle = 'rgba(8, 11, 17, 0.94)';
+          c.strokeStyle = rgba(RGB.white, 0.12 * fog);
+          // The face along the road.
+          c.beginPath();
+          c.moveTo(sx(inN, zn), sy(0, zn)); c.lineTo(sx(inF, zf), sy(0, zf));
+          c.lineTo(sx(inF, zf), sy(b.h, zf)); c.lineTo(sx(inN, zn), sy(b.h, zn));
+          c.closePath(); c.fill(); c.stroke();
+          // The face toward us.
+          c.beginPath();
+          c.moveTo(sx(inN, zn), sy(0, zn)); c.lineTo(sx(outN, zn), sy(0, zn));
+          c.lineTo(sx(outN, zn), sy(b.h, zn)); c.lineTo(sx(inN, zn), sy(b.h, zn));
+          c.closePath(); c.fill(); c.stroke();
+          // A lit window strip.
+          if (b.strip > 0) {
+            const hh = b.h * b.strip;
+            c.strokeStyle = rgba(RGB.green, 0.28 * fog);
+            c.beginPath(); c.moveTo(sx(inN, zn), sy(hh, zn)); c.lineTo(sx(inF, zf), sy(hh, zf)); c.stroke();
+          }
+        }
+
+        // The AR path: this pro's lane, curving with the road.
+        const lane = (z) => xc(z) + 1.75;
+        const zs = [];
+        for (let z = 2.2; z <= 110; z += 2.8) zs.push(z);
+        const yNear = sy(0, zs[0]);
+        c.globalCompositeOperation = 'lighter';
+        const fillGrad = c.createLinearGradient(0, yNear, 0, hz);
+        fillGrad.addColorStop(0, 'rgba(0, 230, 118, 0.4)');
+        fillGrad.addColorStop(0.5, 'rgba(0, 230, 118, 0.12)');
+        fillGrad.addColorStop(1, 'rgba(0, 230, 118, 0)');
+        c.beginPath();
+        zs.forEach((z, i) => { const x = sx(lane(z) - 1.1, z), y = sy(0, z); if (i) c.lineTo(x, y); else c.moveTo(x, y); });
+        for (let i = zs.length - 1; i >= 0; i--) c.lineTo(sx(lane(zs[i]) + 1.1, zs[i]), sy(0, zs[i]));
+        c.closePath();
+        c.fillStyle = fillGrad;
+        c.fill();
+        const edgeGrad = c.createLinearGradient(0, yNear, 0, hz);
+        edgeGrad.addColorStop(0, 'rgba(0, 230, 118, 1)');
+        edgeGrad.addColorStop(1, 'rgba(0, 230, 118, 0)');
+        const glowGrad = c.createLinearGradient(0, yNear, 0, hz);
+        glowGrad.addColorStop(0, 'rgba(0, 230, 118, 0.22)');
+        glowGrad.addColorStop(1, 'rgba(0, 230, 118, 0)');
+        for (const side of [-1, 1]) {
+          c.beginPath();
+          zs.forEach((z, i) => { const x = sx(lane(z) + side * 1.1, z), y = sy(0, z); if (i) c.lineTo(x, y); else c.moveTo(x, y); });
+          c.strokeStyle = glowGrad; c.lineWidth = 8; c.stroke();
+          c.strokeStyle = edgeGrad; c.lineWidth = 2; c.stroke();
+        }
+        // Chevrons moving ahead.
+        c.lineCap = 'round';
+        c.lineJoin = 'round';
+        for (let n = 0; n < 12; n++) {
+          const z = 6 - (this.dist % 6) + n * 6 + 3;
+          if (z < 3 || z > 72) continue;
+          c.strokeStyle = rgba(RGB.green, 0.9 * clamp(1 - z / 72));
+          c.lineWidth = Math.max(1, 12 / z);
+          c.beginPath();
+          c.moveTo(sx(lane(z) - 0.7, z), sy(0, z));
+          c.lineTo(sx(lane(z + 1.1), z + 1.1), sy(0, z + 1.1));
+          c.lineTo(sx(lane(z) + 0.7, z), sy(0, z));
+          c.stroke();
+        }
+        // The destination, floating over the end of the path.
+        const zd = 104, dx = sx(lane(zd), zd), dy = sy(0, zd), top = sy(5.5, zd);
+        c.strokeStyle = 'rgba(0, 230, 118, 0.7)';
+        c.lineWidth = 1;
+        c.beginPath(); c.moveTo(dx, dy); c.lineTo(dx, top); c.stroke();
+        c.fillStyle = C.green;
+        c.save(); c.translate(dx, top); c.rotate(Math.PI / 4); c.fillRect(-4, -4, 8, 8); c.restore();
+        c.globalCompositeOperation = 'source-over';
+        const miles = (1.8 * this.eta / 252).toFixed(1);
+        c.font = '700 11px ' + MONO;
+        c.fillStyle = C.text;
+        c.fillText('1428 ELM ST.', dx + 10, top - 4);
+        c.font = '600 10px ' + MONO;
+        c.fillStyle = rgba(RGB.green, 0.9);
+        c.fillText('HIN-8902-X · ' + miles + ' MI', dx + 10, top + 10);
+
+        this.drawFrame(c);
+
+        const boot = (i) => EASE.out(clamp((t - 0.3 - i * 0.12) / 0.45));
+        const roofY = H * 0.075;
+        this.drawVoice(c, roofY + H * 0.06, boot(0));
+        this.drawTelemetry(c, boot(1));
+        if (W >= 760) this.drawTurn(c, boot(2));
+      }
+
+      // Windshield: roof, pillars, dashboard, a little glare.
+      drawFrame(c) {
+        const roofY = H * 0.075;
+        c.fillStyle = C.bg;
+        c.beginPath();
+        c.moveTo(0, 0); c.lineTo(W, 0); c.lineTo(W, roofY + H * 0.035);
+        c.quadraticCurveTo(W / 2, roofY - H * 0.03, 0, roofY + H * 0.035);
+        c.closePath(); c.fill();
+        c.strokeStyle = 'rgba(248, 250, 252, 0.07)';
+        c.lineWidth = 1;
+        c.beginPath();
+        c.moveTo(W, roofY + H * 0.035); c.quadraticCurveTo(W / 2, roofY - H * 0.03, 0, roofY + H * 0.035);
+        c.stroke();
+        for (const side of [0, 1]) {
+          const m = side ? -1 : 1, x0 = side ? W : 0;
+          c.fillStyle = C.bg;
+          c.beginPath();
+          c.moveTo(x0, 0); c.lineTo(x0 + m * W * 0.085, 0); c.lineTo(x0 + m * W * 0.018, H * 0.8); c.lineTo(x0, H * 0.8);
+          c.closePath(); c.fill();
+          c.beginPath(); c.moveTo(x0 + m * W * 0.085, 0); c.lineTo(x0 + m * W * 0.018, H * 0.8); c.stroke();
+        }
+        const dash = c.createLinearGradient(0, H * 0.74, 0, H);
+        dash.addColorStop(0, C.surface);
+        dash.addColorStop(1, C.bg);
+        c.fillStyle = dash;
+        c.beginPath();
+        c.moveTo(0, H); c.lineTo(0, H * 0.83); c.quadraticCurveTo(W / 2, H * 0.74, W, H * 0.83); c.lineTo(W, H);
+        c.closePath(); c.fill();
+        c.strokeStyle = 'rgba(0, 230, 118, 0.25)';
+        c.lineWidth = 1.2;
+        c.beginPath(); c.moveTo(0, H * 0.83); c.quadraticCurveTo(W / 2, H * 0.74, W, H * 0.83); c.stroke();
+        c.globalCompositeOperation = 'lighter';
+        const glare = c.createLinearGradient(W * 0.15, 0, W * 0.65, H * 0.75);
+        glare.addColorStop(0, 'rgba(248, 250, 252, 0)');
+        glare.addColorStop(0.5, 'rgba(248, 250, 252, 0.025)');
+        glare.addColorStop(1, 'rgba(248, 250, 252, 0)');
+        c.fillStyle = glare;
+        c.fillRect(0, 0, W, H * 0.8);
+        c.globalCompositeOperation = 'source-over';
+      }
+
+      // The live voice line with the homeowner.
+      drawVoice(c, top, a) {
+        if (a <= 0) return;
+        const ww = Math.min(460, W * 0.62), wh = clamp(H * 0.075, 30, 56);
+        const x0 = W / 2 - ww / 2;
+        c.globalAlpha = a;
+        c.font = '600 10px ' + MONO;
+        const dot = 0.55 + 0.45 * Math.sin(this.t * 5);
+        c.fillStyle = rgba(RGB.green, dot);
+        c.beginPath(); c.arc(x0 + 4, top - 4, 3.5, 0, Math.PI * 2); c.fill();
+        c.fillStyle = C.text;
+        c.fillText(ww < 330 ? 'LIVE VOICE · HIN-8902-X' : 'LIVE VOICE · HOMEOWNER · HIN-8902-X', x0 + 14, top);
+        const secs = Math.floor(this.t);
+        const timer = pad(Math.floor(secs / 60)) + ':' + pad(secs % 60);
+        c.fillStyle = C.muted;
+        c.fillText(timer, x0 + ww - c.measureText(timer).width, top);
+
+        const base = top + 12 + wh / 2;
+        c.strokeStyle = 'rgba(248, 250, 252, 0.08)';
+        c.lineWidth = 1;
+        c.beginPath(); c.moveTo(x0, base); c.lineTo(x0 + ww, base); c.stroke();
+        c.globalCompositeOperation = 'lighter';
+        const alphas = [0.95, 0.55, 0.35], widths = [2, 1.5, 1.2];
+        this.voice.forEach((v, i) => {
+          c.beginPath();
+          for (let j = 0; j <= 96; j++) {
+            const u = j / 96;
+            const env = Math.pow(Math.sin(Math.PI * u), 1.8);
+            const y = base + Math.sin(u * Math.PI * 2 * v.freq + this.t * v.speed) * v.amp * env * wh * 0.5;
+            if (j) c.lineTo(x0 + u * ww, y); else c.moveTo(x0 + u * ww, y);
+          }
+          c.strokeStyle = rgba(RGB.green, alphas[i]);
+          c.lineWidth = widths[i];
+          c.stroke();
+        });
+        c.globalCompositeOperation = 'source-over';
+        c.globalAlpha = 1;
+      }
+
+      // Driver telemetry: the dial and its readouts.
+      drawTelemetry(c, a) {
+        if (a <= 0) return;
+        const R = clamp(Math.min(W, H) * 0.105, 40, 84);
+        const cx = clamp(W * 0.05, 16, 40) + R + 14;
+        const cy = H - R - clamp(H * 0.04, 14, 30);
+        c.globalAlpha = a;
+
+        c.fillStyle = 'rgba(13, 17, 26, 0.92)';
+        c.beginPath(); c.arc(cx, cy, R, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = 'rgba(248, 250, 252, 0.1)';
+        c.lineWidth = 1;
+        c.stroke();
+
+        // Ticks.
+        c.strokeStyle = 'rgba(248, 250, 252, 0.22)';
+        c.beginPath();
+        for (let i = 0; i < 48; i++) {
+          const ang = (i / 48) * Math.PI * 2, r1 = R - 4, r2 = i % 6 === 0 ? R - 11 : R - 7;
+          c.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+          c.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * r2);
+        }
+        c.stroke();
+
+        // Speed arc over 270 degrees.
+        const start = Math.PI * 0.75, sweep = Math.PI * 1.5, v = clamp(this.mph / 80);
+        c.lineCap = 'round';
+        c.lineWidth = 4;
+        c.strokeStyle = 'rgba(248, 250, 252, 0.08)';
+        c.beginPath(); c.arc(cx, cy, R - 18, start, start + sweep); c.stroke();
+        c.strokeStyle = 'rgba(0, 230, 118, 0.2)';
+        c.lineWidth = 10;
+        c.beginPath(); c.arc(cx, cy, R - 18, start, start + sweep * v); c.stroke();
+        c.strokeStyle = C.green;
+        c.lineWidth = 4;
+        c.stroke();
+
+        // The rotating scanner arc and its trailing fade.
+        const spin = this.t * 2.4;
+        c.lineWidth = 2;
+        [0.8, 0.4, 0.15].forEach((al, i) => {
+          c.strokeStyle = rgba(RGB.green, al);
+          c.beginPath(); c.arc(cx, cy, R + 5, spin - (i + 1) * 0.45, spin - i * 0.45); c.stroke();
+        });
+
+        // Status text running around the dial.
+        c.font = '600 8.5px ' + MONO;
+        c.fillStyle = rgba(RGB.green, 0.6);
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        const ring = 'GPS-VERIFIED · EN ROUTE · HIN-8902-X · ';
+        const rr = R + 15, cw = c.measureText('M').width + 0.6;
+        const reps = Math.max(1, Math.floor((Math.PI * 2 * rr) / (cw * ring.length)));
+        const count = reps * ring.length;
+        const rot = -this.t * 0.35;
+        for (let i = 0; i < count; i++) {
+          const ang = rot + (i / count) * Math.PI * 2;
+          c.save();
+          c.translate(cx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr);
+          c.rotate(ang + Math.PI / 2);
+          c.fillText(ring[i % ring.length], 0, 0);
+          c.restore();
+        }
+
+        // Speed in the middle.
+        const mph = Math.round(this.mph);
+        c.fillStyle = C.text;
+        c.font = '700 ' + Math.round(R * 0.46) + 'px ' + MONO;
+        c.fillText(String(mph), cx, cy - R * 0.06);
+        c.font = '600 9px ' + MONO;
+        c.fillStyle = C.muted;
+        c.fillText('MPH', cx, cy + R * 0.3);
+        c.textAlign = 'start';
+        c.textBaseline = 'alphabetic';
+
+        // Readouts beside the dial, or above it when there is no room.
+        const eta = Math.ceil(this.eta);
+        const rows = [
+          ['ETA: ', pad(Math.floor(eta / 60)) + ':' + pad(eta % 60) + ' MIN', C.text],
+          ['SPEED: ', mph + ' MPH', C.text],
+          ['STATUS: ', 'GPS-VERIFIED EN ROUTE', C.green],
+        ];
+        const fs = clamp(W * 0.014, 10, 13);
+        c.font = '600 ' + fs + 'px ' + MONO;
+        const widest = Math.max(...rows.map((r) => c.measureText(r[0] + r[1]).width));
+        let tx = cx + R + 30, ty = cy - fs * 1.6;
+        if (tx + widest > W - 12) { tx = cx - R; ty = cy - R - 28 - fs * 3.2; }
+        rows.forEach(([k, v, col], i) => {
+          const y = ty + i * fs * 1.6;
+          c.fillStyle = C.muted;
+          c.fillText(k, tx, y);
+          c.fillStyle = col;
+          c.fillText(v, tx + c.measureText(k).width, y);
+        });
+        c.globalAlpha = 1;
+      }
+
+      // The next turn, lower right.
+      drawTurn(c, a) {
+        if (a <= 0) return;
+        const cw = 250, ch = 62, x = W - cw - clamp(W * 0.05, 16, 40), y = H - ch - clamp(H * 0.05, 16, 34);
+        c.globalAlpha = a;
+        c.fillStyle = 'rgba(13, 17, 26, 0.92)';
+        roundRect(c, x, y, cw, ch, 6);
+        c.fill();
+        c.strokeStyle = 'rgba(248, 250, 252, 0.1)';
+        c.lineWidth = 1;
+        c.stroke();
+        c.strokeStyle = C.green;
+        c.lineWidth = 2.5;
+        c.lineCap = 'round';
+        c.lineJoin = 'round';
+        c.beginPath();
+        c.moveTo(x + 22, y + ch - 16); c.lineTo(x + 22, y + 28); c.quadraticCurveTo(x + 22, y + 20, x + 30, y + 20); c.lineTo(x + 40, y + 20);
+        c.moveTo(x + 35, y + 14); c.lineTo(x + 41, y + 20); c.lineTo(x + 35, y + 26);
+        c.stroke();
+        c.font = '700 11px ' + MONO;
+        c.fillStyle = C.text;
+        c.fillText('RIGHT ON ELM ST.', x + 56, y + 26);
+        c.font = '600 10px ' + MONO;
+        c.fillStyle = C.muted;
+        const next = Math.max(0.1, 0.4 - this.t * 0.012).toFixed(1);
+        c.fillText(next + ' MI · THEN 1428 ELM ST.', x + 56, y + 42);
+        c.globalAlpha = 1;
+      }
+    }
+
+    // ─── Render pipeline ─────────────────────────────────────────────────
+    let visible = true;
+    new IntersectionObserver((entries) => { visible = entries[0].isIntersecting; }).observe(el.view);
+
+    function render() {
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = C.bg;
+      ctx.fillRect(0, 0, W, H);
+
+      const phase = PHASES[state.currentPhase];
+      if (phase.key === 'map') renderMapPhase();
+      else if (phase.key === 'alert') renderAlertPhase();
+      else if (phase.key === 'dive') renderDivePhase();
+      else cabin.render(ctx);
+
+      // Fades: out of the flash into the cabin, out of the cabin to black,
+      // and up from black onto the map.
+      let fade = 0, rgb = RGB.bg;
+      if (phase.key === 'map') fade = 1 - EASE.standard(clamp(state.t / 0.8));
+      else if (phase.key === 'cabin') {
+        const intro = 1 - EASE.out(clamp(state.t / 0.5));
+        const outro = smooth(phase.dur - 0.8, phase.dur, state.t);
+        if (intro > outro) { fade = intro; rgb = REDUCED ? RGB.bg : RGB.white; } else fade = outro;
+      }
+      if (fade > 0.001) {
+        ctx.fillStyle = rgba(rgb, fade);
+        ctx.fillRect(0, 0, W, H);
+      }
+    }
+
+    // ─── Sidebar HUDs ────────────────────────────────────────────────────
+    function setText(node, text, cls) {
+      if (!node) return;
+      if (node.textContent !== text) node.textContent = text;
+      if (cls !== undefined && node.dataset.cls !== cls) {
+        if (node.dataset.cls) node.classList.remove(node.dataset.cls);
+        if (cls) node.classList.add(cls);
+        node.dataset.cls = cls;
+      }
+    }
+    const nowStamp = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); };
+
+    let lastQuietLog = -10;
+    function log(text, cls = '', quiet = false) {
+      if (quiet) {                                             // pings: at most one line a second
+        if (state.clock - lastQuietLog < 1.1) return;
+        lastQuietLog = state.clock;
+      }
+      const li = document.createElement('li');
+      if (cls) li.className = cls;
+      const time = document.createElement('time');
+      time.textContent = nowStamp();
+      li.append(time, text);
+      el.log.prepend(li);
+      while (el.log.children.length > 12) el.log.lastElementChild.remove();
+    }
+
+    const TRADES = ['HVAC', 'PLUMBING', 'ELECTRICAL', 'APPLIANCE', 'LOCKSMITH', 'GARAGE_DOOR', 'ROOFING', 'HANDYMAN', 'PEST_CONTROL', 'GUTTER'];
+    const STATUSES = [['DISPATCH', 'd'], ['EN_ROUTE', 'w'], ['ON_SITE', 'w'], ['RESOLVED', 'g'], ['VERIFIED', 'g']];
+    let recordCount = 1284;
+    let pinned = null;
+    const hinId = () => '#HIN-' + pad((Math.random() * 10000) | 0, 4) + '-' + 'XYKMRTZ'[(Math.random() * 7) | 0];
+
+    function recordRow(id, status, cls) {
+      const li = document.createElement('li');
+      const a = document.createElement('span'); a.className = 'id'; a.textContent = id;
+      const b = document.createElement('time'); b.textContent = nowStamp();
+      const s = document.createElement('span'); s.className = 'st ' + cls; s.textContent = status;
+      li.append(a, b, s);
+      return li;
+    }
+    function addRecord(id, status, cls) {
+      if (!id) {
+        const [st, c] = pick(STATUSES);
+        id = hinId(); status = pick(TRADES) + '_' + st; cls = c;
+      }
+      const li = recordRow(id, status, cls);
+      if (pinned && pinned.isConnected) pinned.after(li); else el.feed.prepend(li);
+      while (el.feed.children.length > 14) el.feed.lastElementChild.remove();
+      recordCount++;
+      setText(el.count, recordCount.toLocaleString('en-US'));
+      // Light up a home on the map when its record moves.
+      if (city && city.homes.length) pick(city.homes).lit = state.clock;
+    }
+    function pinRecord(id, status, cls) {
+      if (pinned && pinned.isConnected) {
+        const st = pinned.querySelector('.st');
+        st.textContent = status; st.className = 'st ' + cls;
+        pinned.classList.toggle('pin', cls === 'd');
+        return;
+      }
+      pinned = recordRow(id, status, cls);
+      pinned.classList.add('pin');
+      el.feed.prepend(pinned);
+      recordCount++;
+      setText(el.count, recordCount.toLocaleString('en-US'));
+    }
+    function unpinRecord() {
+      if (pinned) pinned.classList.remove('pin');
+      pinned = null;
+    }
+
+    // Timed HUD updates, run from the animation loop (no timers of their own).
+    const tasks = [];
+    function every(interval, jitter, fn) { tasks.push({ interval, jitter, next: 0, fn }); }
+    function runTasks(now) {
+      for (const task of tasks) {
+        if (now < task.next) continue;
+        task.fn();
+        task.next = now + task.interval + Math.random() * task.jitter;
+      }
+    }
+    let sync = 100;
+    every(1, 0, () => {
+      setText(el.clock, nowStamp() + ' LOCAL');
+      const up = Math.floor((performance.now() - state.started) / 1000);
+      setText(el.uptime, pad(Math.floor(up / 3600)) + ':' + pad(Math.floor(up / 60) % 60) + ':' + pad(up % 60));
+    });
+    every(0.9, 0.6, () => setText(el.latency, Math.round(rand(29, 47)) + ' MS'));
+    every(1.4, 0.8, () => setText(el.gps, '±' + rand(1.7, 2.6).toFixed(1) + ' M'));
+    every(1.1, 0.5, () => setText(el.packets, rand(11.2, 14.8).toFixed(1) + 'K/S'));
+    every(7, 2, () => { sync = 94; });
+    every(0.12, 0, () => {
+      if (sync >= 100) return setText(el.sync, '100%', 'ok');
+      sync = Math.min(100, sync + 1);
+      setText(el.sync, sync < 100 ? 'SYNCING ' + sync + '%' : '100%', sync < 100 ? 'warn' : 'ok');
+    });
+    every(1.9, 1.1, () => addRecord());
+
+    function updateHud(now) {
+      runTasks(now);
+      const phase = PHASES[state.currentPhase], k = clamp(state.t / phase.dur);
+      meterBar.style.transform = 'scaleX(' + k.toFixed(3) + ')';
+      timelineBars.forEach((b, i) => {
+        const v = i < state.currentPhase ? 1 : i === state.currentPhase ? k : 0;
+        b.style.transform = 'scaleX(' + v.toFixed(3) + ')';
+      });
+    }
+
+    // Seed the feed.
+    [
+      ['#HIN-3317-K', 'ELECTRICAL_VERIFIED', 'g'],
+      ['#HIN-7720-M', 'APPLIANCE_ON_SITE', 'w'],
+      ['#HIN-0458-T', 'LOCKSMITH_EN_ROUTE', 'w'],
+      ['#HIN-5096-R', 'ROOFING_DISPATCH', 'd'],
+      ['#HIN-2281-Z', 'HVAC_RESOLVED', 'g'],
+      ['#HIN-1142-Y', 'PLUMBING_RESOLVED', 'g'],
+    ].forEach(([id, st, c]) => el.feed.append(recordRow(id, st, c)));
+
+    // ─── Keys: 1 to 4 jump to a phase, space pauses ──────────────────────
+    window.addEventListener('keydown', (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key >= '1' && e.key <= '4') {
+        const target = Number(e.key) - 1;
+        // The later phases need the map's pro; go through the phases in order.
+        if (!city || target < state.currentPhase) enterPhase(0);
+        while (state.currentPhase < target) enterPhase(state.currentPhase + 1);
+      } else if (e.key === ' ' && e.target === document.body) {
+        e.preventDefault();
+        state.paused = !state.paused;
+      }
+    });
+
+    // ─── Main loop ───────────────────────────────────────────────────────
+    resize();
+    enterPhase(0);
+    document.fonts && document.fonts.load('800 16px Sora').catch(() => {});
+
+    let last = performance.now();
+    function frame(now) {
+      const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));  // a long pause resumes, it does not jump
+      last = now;
+      if (!state.paused) update(dt);
+      if (visible) render();
+      updateHud(now / 1000);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>
