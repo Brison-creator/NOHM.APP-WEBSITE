@@ -6,15 +6,15 @@
   <title>Get Quotes | NOHM</title>
   <meta name="description" content="Bigger job? Get quotes from three local companies. No pressure, all in the NOHM app." />
   <meta name="theme-color" content="#26272b" />
-  <link rel="preconnect" href="https://api.fontshare.com" />
-  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-family: var(--font-text);
       -webkit-font-smoothing: antialiased;
       color: #171a20;
     }
@@ -27,15 +27,15 @@
       background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
     }
     .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
-    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.08; }
+    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
 
     /* The long read: one column, generous space, Tesla's quiet type. */
     .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
     .part { padding: 48px 0 8px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
     .part:last-child { border-bottom: 0; }
-    .eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; }
-    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.15; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; font-weight: var(--weight-ui); }
+    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); line-height: 1.15; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .part p { margin: 0 0 18px; font-size: 17px; line-height: 1.65; color: #393c41; }
 
     /* The standard itself: a checked list in a gray card. */
@@ -56,16 +56,16 @@
     /* Two short promises side by side on wide screens. */
     .facts { display: grid; gap: 12px; margin: 8px 0 28px; }
     .fact { background: #f4f4f4; border-radius: 12px; padding: 20px 22px; }
-    .fact b { display: block; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .fact b { display: block; font-size: 17px; margin-bottom: 4px; font-weight: var(--weight-ui); }
     .fact span { font-size: 15px; line-height: 1.5; color: #393c41; }
 
     .end { text-align: center; padding: 56px 24px 48px; }
-    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
     .btn {
       display: flex; align-items: center; justify-content: center;
       height: 44px; padding: 0 12px; border-radius: 4px;
-      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
     }
     .btn.main { background: #393c41; color: #fff; }
     .btn.main:hover { background: #2b2d31; }
@@ -75,36 +75,36 @@
 
     /* The standard as a short spec list, like Tesla's specs. */
     .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 8px; }
-    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
-    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: var(--weight-body-strong); border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
     .spec li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
     .trio { max-width: 1200px; margin: 0 auto; padding: 24px 24px 8px; display: grid; gap: 12px; }
-    .trio .fact a { color: #171a20; font-weight: 600; }
+    .trio .fact a { color: #171a20; font-weight: var(--weight-ui); }
     @media (min-width: 900px) {
       .spec ul { grid-template-columns: repeat(3, 1fr); }
       .trio { grid-template-columns: repeat(3, 1fr); }
     }
 
     .steps { max-width: 760px; margin: 0 auto; padding: 48px 24px 8px; }
-    .steps h2, .qfaq h2 { margin: 0 0 20px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .steps h2, .qfaq h2 { margin: 0 0 20px; font-size: clamp(28px, 3vw, 40px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .steps ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
     .steps li { counter-increment: s; position: relative; padding: 0 0 26px 56px; }
-    .steps li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%; background: #171a20; color: #fff; display: grid; place-items: center; font-weight: 600; }
-    .steps b { display: block; font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+    .steps li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%; background: #171a20; color: #fff; display: grid; place-items: center; font-weight: var(--weight-ui); }
+    .steps b { display: block; font-size: 19px; margin-bottom: 4px; font-weight: var(--weight-ui); }
     .steps span { font-size: 16px; line-height: 1.5; color: #393c41; }
 
     .nps { max-width: 760px; margin: 0 auto; padding: 24px 24px 8px; }
-    .nps h2 { margin: 0 0 6px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .nps h2 { margin: 0 0 6px; font-size: clamp(28px, 3vw, 40px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .nps .sub3 { margin: 0 0 18px; font-size: 16px; color: #5c5e62; }
     .nps ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
-    .nps li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0,0,0,.07); }
+    .nps li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: var(--weight-body-strong); border-bottom: 1px solid rgba(0,0,0,.07); }
     .nps li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
     .qtrades { max-width: 760px; margin: 0 auto; padding: 16px 24px 8px; }
     .qtrades p { margin: 0; font-size: 16px; color: #5c5e62; }
     .qfaq { max-width: 760px; margin: 0 auto; padding: 40px 24px 8px; }
     .qfaq details { border-bottom: 1px solid rgba(0,0,0,0.09); }
-    .qfaq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; font-weight: 500; position: relative; }
+    .qfaq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; position: relative; font-weight: var(--weight-body-strong); letter-spacing: var(--tracking-body); }
     .qfaq summary::-webkit-details-marker { display: none; }
     .qfaq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform .2s; }
     .qfaq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }

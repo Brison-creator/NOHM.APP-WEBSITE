@@ -9,8 +9,8 @@
   border-bottom: 1px solid #3a3b40;
 }
 .bar a {
-  font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
-  font-weight: 700; font-size: 19px; line-height: 1; letter-spacing: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-hero); font-size: 19px; line-height: 1; letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
   color: #fff; text-decoration: none;
 }
 .bar { justify-content: space-between; }
@@ -19,7 +19,7 @@
    (Tesla style: a white sheet, a list of links with chevrons). Built by
    /menu.js, which every page loads. */
 .menu-btn {
-  font: 500 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font: var(--weight-ui) 14px/1 var(--font-text);
   color: #fff;
   background: rgba(255, 255, 255, 0.16);
   border: 0; border-radius: 4px;
@@ -32,7 +32,7 @@
   position: fixed; inset: 0; z-index: 100;
   display: none; flex-direction: column;
   background: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-text);
   overflow-y: auto;
 }
 .menu.open { display: flex; }
@@ -46,7 +46,7 @@
 .menu li a {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 12px; border-radius: 4px;
-  font-size: 17px; font-weight: 500; color: #171a20; text-decoration: none;
+  font-size: 17px; color: #171a20; text-decoration: none; font-weight: var(--weight-ui);
 }
 .menu li a:hover { background: #f4f4f4; }
 .menu li a::after {

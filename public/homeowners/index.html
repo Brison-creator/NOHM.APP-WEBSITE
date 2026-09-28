@@ -6,16 +6,16 @@
   <title>Homeowners | NOHM</title>
   <meta name="description" content="Home is for living. NOHM handles the rest. Local pros, clear fees, every repair saved." />
   <meta name="theme-color" content="#26272b" />
-  <link rel="preconnect" href="https://api.fontshare.com" />
-  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <link rel="stylesheet" href="/features.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-family: var(--font-text);
       -webkit-font-smoothing: antialiased;
       color: #171a20;
     }
@@ -28,15 +28,15 @@
       background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
     }
     .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
-    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.08; }
+    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
 
     /* The long read: one column, generous space, Tesla's quiet type. */
     .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
     .part { padding: 48px 0 8px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
     .part:last-child { border-bottom: 0; }
-    .eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; }
-    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.15; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; font-weight: var(--weight-ui); }
+    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); line-height: 1.15; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .part p { margin: 0 0 18px; font-size: 17px; line-height: 1.65; color: #393c41; }
 
     /* The standard itself: a checked list in a gray card. */
@@ -57,16 +57,16 @@
     /* Two short promises side by side on wide screens. */
     .facts { display: grid; gap: 12px; margin: 8px 0 28px; }
     .fact { background: #f4f4f4; border-radius: 12px; padding: 20px 22px; }
-    .fact b { display: block; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .fact b { display: block; font-size: 17px; margin-bottom: 4px; font-weight: var(--weight-ui); }
     .fact span { font-size: 15px; line-height: 1.5; color: #393c41; }
 
     .end { text-align: center; padding: 56px 24px 48px; }
-    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spacing: -0.012em; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
     .btn {
       display: flex; align-items: center; justify-content: center;
       height: 44px; padding: 0 12px; border-radius: 4px;
-      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
     }
     .btn.main { background: #393c41; color: #fff; }
     .btn.main:hover { background: #2b2d31; }
@@ -76,12 +76,12 @@
 
     /* The standard as a short spec list, like Tesla's specs. */
     .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 8px; }
-    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; }
+    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
-    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: 500; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: var(--weight-body-strong); border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
     .spec li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
     .trio { max-width: 1200px; margin: 0 auto; padding: 24px 24px 8px; display: grid; gap: 12px; }
-    .trio .fact a { color: #171a20; font-weight: 600; }
+    .trio .fact a { color: #171a20; font-weight: var(--weight-ui); }
     @media (min-width: 900px) {
       .spec ul { grid-template-columns: repeat(3, 1fr); }
       .trio { grid-template-columns: repeat(3, 1fr); }
@@ -89,19 +89,19 @@
 
     /* Trades as simple tiles. */
     .trades { max-width: 1200px; margin: 0 auto; padding: 56px 24px 8px; }
-    .trades h2, .fees h2, .area h2, .faq h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+    .trades h2, .fees h2, .area h2, .faq h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .tiles div { background: #f4f4f4; border-radius: 12px; padding: 18px 16px; font-size: 16px; font-weight: 600; }
-    .tiles div.more { background: #fff; border: 1px dashed #c9cacc; color: #5c5e62; font-weight: 500; }
+    .tiles div { background: #f4f4f4; border-radius: 12px; padding: 18px 16px; font-size: 16px; font-weight: var(--weight-ui); }
+    .tiles div.more { background: #fff; border: 1px dashed #c9cacc; color: #5c5e62; font-weight: var(--weight-body-strong); }
 
     /* Fees, like Tesla's big-number stats. */
     .fees { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
-    .launch { display: inline-block; margin: 0 0 16px; padding: 6px 12px; border-radius: 999px; background: #171a20; color: #fff; font-size: 13px; font-weight: 600; }
+    .launch { display: inline-block; margin: 0 0 16px; padding: 6px 12px; border-radius: 999px; background: #171a20; color: #fff; font-size: 13px; font-weight: var(--weight-ui); }
     .fee-grid { display: grid; gap: 12px; }
     .fee { background: #f4f4f4; border-radius: 12px; padding: 24px 22px; }
-    .fee h3 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+    .fee h3 { margin: 0 0 4px; font-size: 22px; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-title); }
     .fee .price { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 8px; }
-    .fee .price b { font-size: 52px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
+    .fee .price b { font-size: 52px; line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .fee .price s { font-size: 20px; color: #86868b; }
     .fee p { margin: 0; font-size: 16px; line-height: 1.5; color: #393c41; }
     .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #5c5e62; }
@@ -111,7 +111,7 @@
     /* Different faces: the crew photo full width with a short line under it. */
     .crew { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
     .crew img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 30%; border-radius: 12px; }
-    .crew h2 { margin: 22px 0 8px; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+    .crew h2 { margin: 22px 0 8px; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .crew p { margin: 0; font-size: 18px; line-height: 1.5; color: #5c5e62; }
 
     /* NOHM Now: the same clock on both screens, homeowner and pro side by side. */
@@ -120,22 +120,22 @@
     .sides img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; }
     .sides figure:first-child img { object-position: 20% 30%; }
     .sides figure:last-child img { object-position: 70% 40%; }
-    .sides figcaption { margin-top: 8px; font-size: 14px; font-weight: 600; color: #171a20; }
+    .sides figcaption { margin-top: 8px; font-size: 14px; color: #171a20; font-weight: var(--weight-ui); }
     /* NOHM Now: tall photo beside the promise on wide screens. */
     .now { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; display: grid; gap: 24px; align-items: center; }
     .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 40% 20%; border-radius: 12px; }
-    .now h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 46px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.08; }
+    .now h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .now .words p:not(.eyebrow) { margin: 0 0 22px; font-size: 17px; line-height: 1.55; color: #393c41; }
     .now .btn { display: inline-flex; min-width: 200px; }
     .area { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
     .area p { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #393c41; }
     .area-btns { display: flex; flex-wrap: wrap; gap: 12px; }
     .area .btn { display: inline-flex; min-width: 240px; }
-    .area .made { margin: 20px 0 0; font-size: 15px; font-weight: 500; color: #171a20; }
+    .area .made { margin: 20px 0 0; font-size: 15px; font-weight: var(--weight-body-strong); color: #171a20; }
 
     .faq { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
     .faq details { border-bottom: 1px solid rgba(0, 0, 0, 0.09); }
-    .faq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; font-weight: 500; position: relative; }
+    .faq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; position: relative; font-weight: var(--weight-body-strong); letter-spacing: var(--tracking-body); }
     .faq summary::-webkit-details-marker { display: none; }
     .faq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform 0.2s ease; }
     .faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
@@ -308,7 +308,7 @@
       <details><summary>Is the repair free if NOHM Now runs late?</summary><p>No. Only the NOHM Now fee is waived. You still pay the pro for diagnostics, labor, parts and repairs.</p></details>
       <details><summary>Will I know the price first?</summary><p>Yes. Every pro explains the price before work begins and gets your approval before doing anything extra.</p></details>
       <details><summary>How long does launch pricing last?</summary><p>Until NOHM reaches <span data-launch-target>1,000</span> activated homeowner accounts. Then fees return to the regular price.</p></details>
-      <details><summary>What if something goes wrong?</summary><p>Most things, like the quality of the work, are between you and your pro. NOHM steps in on no-shows, unsafe conduct and charges you didn&rsquo;t approve. <a href="/step-in" style="color:#171a20;font-weight:600;">Learn more</a></p></details>
+      <details><summary>What if something goes wrong?</summary><p>Most things, like the quality of the work, are between you and your pro. NOHM steps in on no-shows, unsafe conduct and charges you didn&rsquo;t approve. <a href="/step-in" style="color:#171a20;font-weight: var(--weight-ui);">Learn more</a></p></details>
     </section>
 
     <section class="end">

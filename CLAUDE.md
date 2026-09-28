@@ -12,15 +12,20 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
 - Spacing matches tesla.com on phones: cards inset 12px from the screen edge with 12px corners, 24px between stacked cards, text 24px from the edge (16px inside a card), 64px under a text section's last line, sliding cards 16px apart with ~17px of the next card peeking.
 - Every page loads `/menu.js`, which puts the **Menu** button in the bar and builds the full-screen menu. New pages go in its list.
 
-- **Design follows Tesla / Starlink:** white background, charcoal body text `#393c41`, near-black headings `#171a20`, medium-weight headings, 4px corners, lots of space.
+- **Design follows Tesla / Starlink:** white background, charcoal body text `#393c41`, near-black headings `#171a20`, 4px corners, lots of space.
 - **Every page carries the top bar.** Link `/bar.css` in the head and open `<body>` with:
   ```html
   <header class="bar"><a href="/">NOHM</a></header>
   ```
   Also set `<meta name="theme-color" content="#26272b" />` so the phone's status bar matches.
-- **Wordmark font is Panchang** (600 for headlines, 700 in the bar). Load it from Fontshare:
-  `https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap`.
-  Never commit the font files; the ITF Free Font License forbids redistributing them and this repo is public.
+- **Typography lives in `/type.css`**, which every page links first (after preloading the two font files). Use its tokens, never a literal font stack or weight:
+  - `--font-display` **Sora**: hero and major headlines 800 (`--weight-hero`), section headings 700 (`--weight-heading`), tracking `--tracking-headline` (-0.04em) plus `--word-spacing-headline`; small titles use `--tracking-title`.
+  - `--font-text` **Manrope**: body 400/500 (`--weight-body`, `--weight-body-strong`), navigation, buttons, forms and labels 600/700 (`--weight-ui`, `--weight-ui-strong`), normal tracking. Button labels use `--size-button`.
+  - `h1`–`h4` pick up Sora by default; for anything else use `.t-hero`, `.t-heading`, `.t-title`, `.t-body`, `.t-lede`, `.t-ui`.
+  - The fonts are self-hosted WOFF2 in `public/fonts/` (official google/fonts builds, cut to the weights above and Latin), with their SIL OFL licenses beside them. A new weight means rebuilding the file, not adding a CDN link.
+  - The bar's "NOHM" is Sora 800.
+- **"NOHM it." is a protected brand treatment**: the homepage's `h1.mark`, in **Panchang** 600 with its own size and spacing. Don't change it, and don't use Panchang for anything else. Panchang loads from Fontshare on the homepage only
+  (`https://api.fontshare.com/v2/css?f[]=panchang@600&display=swap`); never commit its files, since the ITF Free Font License forbids redistributing them and this repo is public.
 - Palette is white, black and NOHM blue, nothing else:
   - background `#ffffff`; top bar near-black with a touch of gray (`#26272b` → `#16171a`, hairline `#3a3b40`); `theme-color` `#26272b`
   - headlines and the wordmark `#171a20`; body text `#393c41`; small print `#86868b`

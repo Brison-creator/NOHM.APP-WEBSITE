@@ -7,12 +7,16 @@
   <title>NOHM</title>
   <meta name="description" content="It's always something. NOHM it. Find and book a local pro for home repairs." />
   <meta name="theme-color" content="#26272b" />
-  <!-- Panchang, the NOHM wordmark face. Free for commercial use under the ITF
-       Free Font License, which forbids redistributing the files, so it loads
-       from Fontshare rather than living in this public repo. -->
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <!-- "NOHM it." is the one place Panchang is used: a protected brand
+       treatment (see .mark), never for anything else. Free for commercial use
+       under the ITF Free Font License, which forbids redistributing the files,
+       so it loads from Fontshare rather than living in this public repo. -->
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600,700&display=swap" />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600&display=swap" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <link rel="stylesheet" href="/features.css" />
@@ -23,7 +27,7 @@
        phones. */
     html, body { margin: 0; background: #fff; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-family: var(--font-text);
       -webkit-font-smoothing: antialiased;
       color: #171a20;
     }
@@ -77,11 +81,10 @@
     .slide h1, .slide h2 {
       margin: 0;
       font-size: clamp(34px, 4vw, 48px);
-      font-weight: 500;
-      letter-spacing: -0.01em;
       line-height: 1.1;
-      text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3); font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline);
     }
+    .slide h1:not(.mark), .slide h2 { word-spacing: var(--word-spacing-headline); }
     .slide h1.mark {
       font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
       font-weight: 600; letter-spacing: 0;
@@ -99,7 +102,7 @@
     .js #leak-copy .lede { transform: scale(.85); transition: opacity .5s ease, transform .6s cubic-bezier(.2, 1.6, .4, 1); }
     .js #leak-copy.s1 .lede, .js #leak-copy.s2 h1, .js #leak-copy.s3 .pair { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .pair { opacity: 1; transform: none; transition: none; } }
-    #leak-copy .lede.above { font-size: clamp(20px, 2vw, 26px); font-weight: 500; }
+    #leak-copy .lede.above { font-size: clamp(20px, 2vw, 26px); line-height: 1.2; font-weight: var(--weight-body-strong); letter-spacing: var(--tracking-body); }
     /* The setup line sits above the wordmark on the first slide. */
     .lede.above { margin: 0 0 10px; }
     .lede.above + h1 { margin-bottom: 22px; }
@@ -113,7 +116,7 @@
     .btn {
       display: flex; align-items: center; justify-content: center;
       height: 44px; padding: 0 12px; border-radius: 4px;
-      font-size: 15px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
     }
     .btn.main { background: #393c41; color: #fff; }
     .btn.main:hover { background: #2b2d31; }
@@ -133,7 +136,7 @@
 
     /* Services: the come-fix-done trades as gray tiles with a line icon. */
     .services, .quotes { max-width: 1200px; margin: 0 auto; padding: 48px 24px 64px; }
-    .services h2, .quotes h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+    .services h2, .quotes h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .svc-lede { margin: 8px 0 22px; font-size: 18px; color: #5c5e62; }
     .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     /* White cards with a photo slot. To fill one, add public/img/services/<trade>.jpg
@@ -142,7 +145,7 @@
     .svc-img { position: relative; aspect-ratio: 4 / 3; background: #f4f4f4; display: grid; place-items: center; }
     .svc-img svg { width: 30px; height: 30px; fill: none; stroke: #b8b9bc; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
     .svc-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .svc b { padding: 12px 14px 2px; font-size: 16px; font-weight: 600; }
+    .svc b { padding: 12px 14px 2px; font-size: 16px; font-weight: var(--weight-ui); }
     .svc span { padding: 0 14px 14px; font-size: 13px; line-height: 1.35; color: #5c5e62; }
 
     .svc-more { display: inline-block; margin-top: 16px; font-size: 14px; color: #5c5e62; text-decoration: underline; text-underline-offset: 3px; }
@@ -152,7 +155,7 @@
     .quotes { padding-top: 56px; }
     .q-points { list-style: none; margin: 24px 0 18px; padding: 0; display: grid; gap: 14px; }
     .q-points li { display: flex; align-items: center; gap: 16px; }
-    .q-points b { flex: 0 0 56px; font-size: 48px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
+    .q-points b { flex: 0 0 56px; font-size: 48px; line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .q-points span { font-size: 17px; color: #393c41; }
     .q-img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 55% 50%; border-radius: 12px; margin-bottom: 24px; }
     .q-trades { margin: 0 0 24px; font-size: 15px; color: #5c5e62; }
@@ -163,9 +166,9 @@
     .reel { margin: 24px 12px 0; padding: 48px 0 36px; background: #f4f4f4; border-radius: 12px; overflow: hidden; }
     .reel .head { padding: 0 24px 32px; max-width: 1200px; margin: 0 auto; }
     .reel h2 {
-      margin: 0; font-size: clamp(40px, 5vw, 64px); font-weight: 600; letter-spacing: -0.025em; line-height: 1.02;
+      margin: 0; font-size: clamp(40px, 5vw, 64px); line-height: 1.02;
       background: linear-gradient(100deg, #171a20 20%, #356CA3 60%, #171a20 95%);
-      -webkit-background-clip: text; background-clip: text; color: transparent;
+      -webkit-background-clip: text; background-clip: text; color: transparent; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
     }
     .reel .head p { margin: 12px 0 0; font-size: clamp(17px, 1.6vw, 21px); line-height: 1.45; color: #5c5e62; }
     .reel-row {
@@ -177,7 +180,7 @@
     .reel-item .media { position: relative; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #dcdde0; transform: scale(0.88); transition: transform .35s ease; }
     .reel-item.on .media { transform: scale(1); }
     .reel-item img, .reel-item video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .reel-item figcaption { margin-top: 18px; text-align: center; font-size: 16px; font-weight: 500; color: #171a20; opacity: 0; transition: opacity .3s; }
+    .reel-item figcaption { margin-top: 18px; text-align: center; font-size: 16px; font-weight: var(--weight-body-strong); color: #171a20; opacity: 0; transition: opacity .3s; }
     .reel-item.on figcaption { opacity: 1; }
     @media (min-width: 900px) {
       .reel { margin: 24px 32px 0; }
@@ -188,9 +191,9 @@
 
     /* The NOHM Promise: big numbers like Tesla's stats. */
     .promise { max-width: 1200px; margin: 0 auto; padding: 48px 24px 64px; }
-    .promise h2 { margin: 0 0 28px; font-size: clamp(38px, 4.4vw, 56px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+    .promise h2 { margin: 0 0 28px; font-size: clamp(38px, 4.4vw, 56px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; margin-bottom: 34px; }
-    .p b { display: block; font-size: clamp(52px, 5.6vw, 72px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+    .p b { display: block; font-size: clamp(52px, 5.6vw, 72px); line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .p span { display: block; margin-top: 8px; font-size: 16px; line-height: 1.4; color: #393c41; }
     .markets { margin: 18px 0 0; font-size: 13px; color: #86868b; }
     .pair.left { margin: 0; max-width: 540px; }
@@ -204,7 +207,7 @@
     .vcard video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 80% 30%; }
     .vcard::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.28) 40%, rgba(0,0,0,0) 62%); }
     .vcard .body { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; padding: 0 16px 24px; color: #fff; }
-    .vcard h2 { margin: 0; font-size: clamp(34px, 3.6vw, 48px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.05; }
+    .vcard h2 { margin: 0; font-size: clamp(34px, 3.6vw, 48px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .vcard p { margin: 8px 0 20px; font-size: clamp(17px, 1.4vw, 19px); }
     .vcard .pair { max-width: 480px; margin: 0; }
     @media (min-width: 900px) {
@@ -223,7 +226,7 @@
       background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25) 36%, rgba(0, 0, 0, 0) 58%);
     }
     .panel .copy { position: absolute; z-index: 1; left: 0; right: 0; top: 8svh; padding: 0 24px; text-align: center; color: #fff; }
-    .panel h2 { margin: 0; font-size: clamp(34px, 4vw, 48px); font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3); }
+    .panel h2 { margin: 0; font-size: clamp(34px, 4vw, 48px); line-height: 1.1; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3); font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .panel .lede { margin: 10px 0 22px; }
     .panel img.pro-now { object-position: 50% 45%; }
     /* Photo cards that slide sideways, like Tesla's Solar Panels row: the
@@ -256,7 +259,7 @@
       background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0) 62%);
     }
     .card .body { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; padding: 0 16px 24px; color: #fff; }
-    .card h2 { margin: 0; font-size: clamp(34px, 3.4vw, 44px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.05; }
+    .card h2 { margin: 0; font-size: clamp(34px, 3.4vw, 44px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .card p { margin: 8px 0 20px; font-size: clamp(17px, 1.4vw, 19px); line-height: 1.35; }
     .card .pair { max-width: none; }
     .card-dots { display: flex; justify-content: center; gap: 10px; padding: 20px 0 0; }
@@ -279,7 +282,7 @@
       display: flex; align-items: center; justify-content: center; gap: 10px;
       height: 48px; border-radius: 4px;
       background: #f4f4f4; border: 1px solid #d0d1d2;
-      color: #393c41; font-size: 16px; font-weight: 500; text-decoration: none;
+      color: #393c41; font-size: 16px; text-decoration: none; font-weight: var(--weight-ui);
     }
     .dock .chat { flex: 0 0 60px; }
     .dock .get { flex: 1; }
