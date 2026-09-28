@@ -3,6 +3,10 @@
    on wide screens all of them sit side by side. Pair with /features.js. */
 .features { padding: 48px 0 64px; font-family: var(--font-text); color: #171a20; }
 .features .head { padding: 0 24px 24px; max-width: 1200px; margin: 0 auto; }
+.features .free { padding: 0 24px 40px; max-width: 1200px; margin: 0 auto; }
+.features .free p { margin: 0; max-width: 720px; font-size: 17px; line-height: 1.55; color: #393c41; }
+.features .free .free-title { margin: 0 0 12px; font-family: var(--font-display); font-size: clamp(24px, 2.6vw, 34px); line-height: 1.15; font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); color: #171a20; }
+@media (min-width: 900px) { .features .free { padding-bottom: 56px; } .features .free p { font-size: 18px; } }
 .features .head h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
 .f-row {
   display: flex; gap: 12px;
