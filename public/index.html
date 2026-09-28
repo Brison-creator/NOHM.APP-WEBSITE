@@ -216,6 +216,12 @@
     .btn.soft:hover { background: #e9e9e9; }
 
     /* Full-width video card right under the hero, Tesla style. */
+    /* What NOHM is, in one card between the hero and the first video. */
+    .os { margin: 24px 12px 0; padding: 40px 16px 40px; display: grid; gap: 20px; background: #f4f4f4; border-radius: 12px; color: #171a20; }
+    .os h2 { margin: 0; font-size: clamp(36px, 5vw, 64px); line-height: 1.02; font-weight: var(--weight-hero); }
+    .os .os-lede { margin: 16px 0 0; font-size: clamp(20px, 2vw, 26px); line-height: 1.3; font-weight: var(--weight-body-strong); }
+    .os .copy p { margin: 0 0 14px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .os .copy p.close { margin: 0; color: #171a20; font-weight: var(--weight-ui); }
     .vcard { position: relative; margin: 24px 12px 0; height: min(72svh, 620px); min-height: 420px; border-radius: 12px; overflow: hidden; background: #16171a; }
     .vcard video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 80% 30%; }
     .vcard::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.28) 40%, rgba(0,0,0,0) 62%); }
@@ -224,6 +230,8 @@
     .vcard p { margin: 8px 0 20px; font-size: clamp(17px, 1.4vw, 19px); }
     .vcard .pair { max-width: 480px; margin: 0; }
     @media (min-width: 900px) {
+      .os { margin: 24px 32px 0; padding: 72px 64px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: end; }
+      .os .copy p { font-size: 18px; }
       .vcard { margin: 24px 32px 0; height: min(80svh, 720px); }
       .vcard video { object-position: 50% 15%; }
       .vcard .body { padding: 0 40px 40px; }
@@ -392,6 +400,17 @@
         <button type="button" aria-label="Show slide 1" aria-current="true"></button>
         <button type="button" aria-label="Show slide 2" aria-current="false"></button>
         <button type="button" aria-label="Show slide 3" aria-current="false"></button>
+      </div>
+    </section>
+
+    <section class="os" aria-labelledby="os-title">
+      <div>
+        <h2 id="os-title">The Home Operating System.</h2>
+        <p class="os-lede">No calling around. No wondering who to trust.</p>
+      </div>
+      <div class="copy">
+        <p>NOHM connects homeowners with trusted local companies and keeps every repair in one permanent home record. Contractors keep their own name and get real work.</p>
+        <p class="close">No games. Just your home, inside NOHM, handled.</p>
       </div>
     </section>
 
