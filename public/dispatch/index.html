@@ -293,12 +293,16 @@
     const lctx = layer.getContext('2d');
     const LAYER_SCALE = 0.5;                                   // half resolution: softer and cheaper
     let W = 1, H = 1, DPR = 1, INV_R2 = 1;
+    // Pixel density we render at. Starts sharp; the frame governor in the
+    // main loop steps it down on devices that cannot hold 60fps.
+    const DENSITY_STEPS = [2, 1.5, 1, 0.75];
+    let densityStep = 0;
 
     function resize() {
       const r = el.view.getBoundingClientRect();
       const w = Math.max(1, Math.round(r.width));
       const h = Math.max(1, Math.round(r.height));
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, DENSITY_STEPS[densityStep]);
       if (w === W && h === H && dpr === DPR) return;
       W = w; H = h; DPR = dpr;
       canvas.width = Math.round(W * DPR);
@@ -328,6 +332,23 @@
       c.globalAlpha = alpha;
       c.drawImage(sprite, x - r, y - r, r * 2, r * 2);
       c.globalAlpha = 1;
+    }
+
+    // Layers that only change with the canvas size, drawn once and reused.
+    const layers = { key: '' };
+    function cachedLayer(name, draw) {
+      const key = W + 'x' + H + '@' + DPR;
+      if (layers.key !== key) { for (const k in layers) if (k !== 'key') delete layers[k]; layers.key = key; }
+      if (!layers[name]) {
+        const c = document.createElement('canvas');
+        c.width = Math.round(W * DPR);
+        c.height = Math.round(H * DPR);
+        const g = c.getContext('2d');
+        g.setTransform(DPR, 0, 0, DPR, 0, 0);
+        draw(g);
+        layers[name] = c;
+      }
+      return layers[name];
     }
 
     // Scanlines for the holographic panel.
@@ -971,11 +992,16 @@
       ctx.globalCompositeOperation = 'source-over';
 
       // An amber edge that breathes.
-      const vign = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.62);
-      vign.addColorStop(0, rgba(RGB.amber, 0));
-      vign.addColorStop(1, rgba(RGB.amber, (0.07 + 0.05 * Math.sin(clock * 8)) * dim));
-      ctx.fillStyle = vign;
-      ctx.fillRect(0, 0, W, H);
+      const vignette = cachedLayer('vignette', (g) => {
+        const grad = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.62);
+        grad.addColorStop(0, rgba(RGB.amber, 0));
+        grad.addColorStop(1, rgba(RGB.amber, 1));
+        g.fillStyle = grad;
+        g.fillRect(0, 0, W, H);
+      });
+      ctx.globalAlpha = (0.07 + 0.05 * Math.sin(clock * 8)) * dim;
+      ctx.drawImage(vignette, 0, 0, W, H);
+      ctx.globalAlpha = 1;
 
       drawModal(ctx, hx, hy, t, clock);
       drawMapChrome(ctx, true);
@@ -1085,7 +1111,7 @@
       ctx.drawImage(layer, 0, 0, W, H);
 
       // Zoom blur: the same frame, scaled out from the center and added.
-      const passes = REDUCED ? 2 : 7;
+      const passes = REDUCED ? 2 : densityStep >= 2 ? 4 : 6;  // fewer layers on devices the governor stepped down
       ctx.globalCompositeOperation = 'lighter';
       for (let i = 1; i <= passes; i++) {
         const s = 1 + i * 0.05 * e;
@@ -1230,18 +1256,20 @@
         const NEAR = 1.6, FAR = 150;
 
         // Sky and ground.
-        const sky = c.createLinearGradient(0, 0, 0, hz);
-        sky.addColorStop(0, C.bg);
-        sky.addColorStop(1, '#07120E');
-        c.fillStyle = sky;
-        c.fillRect(0, 0, W, hz + 1);
-        c.fillStyle = '#04060A';
-        c.fillRect(0, hz, W, H - hz);
-        const glow = c.createRadialGradient(W / 2, hz, 0, W / 2, hz, W * 0.6);
-        glow.addColorStop(0, 'rgba(0, 230, 118, 0.08)');
-        glow.addColorStop(1, 'rgba(0, 230, 118, 0)');
-        c.fillStyle = glow;
-        c.fillRect(0, 0, W, H);
+        c.drawImage(cachedLayer('cabinBack', (g) => {
+          const sky = g.createLinearGradient(0, 0, 0, hz);
+          sky.addColorStop(0, C.bg);
+          sky.addColorStop(1, '#07120E');
+          g.fillStyle = sky;
+          g.fillRect(0, 0, W, hz + 1);
+          g.fillStyle = '#04060A';
+          g.fillRect(0, hz, W, H - hz);
+          const glow = g.createRadialGradient(W / 2, hz, 0, W / 2, hz, W * 0.6);
+          glow.addColorStop(0, 'rgba(0, 230, 118, 0.08)');
+          glow.addColorStop(1, 'rgba(0, 230, 118, 0)');
+          g.fillStyle = glow;
+          g.fillRect(0, 0, W, H);
+        }), 0, 0, W, H);
 
         // Ground grid: the city's streets, now in perspective.
         c.strokeStyle = C.grid;
@@ -1393,7 +1421,7 @@
         c.fillStyle = rgba(RGB.green, 0.9);
         c.fillText('HIN-8902-X · ' + miles + ' MI', dx + 10, top + 10);
 
-        this.drawFrame(c);
+        c.drawImage(cachedLayer('cabinFrame', (g) => this.drawFrame(g)), 0, 0, W, H);
 
         const boot = (i) => EASE.out(clamp((t - 0.3 - i * 0.12) / 0.45));
         const roofY = H * 0.075;
@@ -1780,9 +1808,24 @@
     document.fonts && document.fonts.load('800 16px Sora').catch(() => {});
 
     let last = performance.now();
+    const governor = { sum: 0, frames: 0, settleUntil: performance.now() + 1500 };
     function frame(now) {
-      const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));  // a long pause resumes, it does not jump
+      const raw = Math.max(0, (now - last) / 1000);
+      const dt = Math.min(0.05, raw);                         // a long pause resumes, it does not jump
       last = now;
+      // Averaging under ~48fps for 45 frames: render at the next lower density.
+      if (visible && !state.paused && !document.hidden && now > governor.settleUntil && raw < 0.25) {
+        governor.sum += raw;
+        if (++governor.frames >= 45) {
+          if (governor.sum / governor.frames > 0.021 && densityStep < DENSITY_STEPS.length - 1) {
+            densityStep++;
+            resize();
+            governor.settleUntil = now + 1000;
+          }
+          governor.sum = 0;
+          governor.frames = 0;
+        }
+      }
       if (!state.paused) update(dt);
       if (visible) render();
       updateHud(now / 1000);
