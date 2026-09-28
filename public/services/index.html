@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>All Services | NOHM</title>
+  <meta name="description" content="Every service on NOHM: plumbing, HVAC, electrical, appliance repair, locksmith, pressure washing, handyman, landscaping and lawn care, gutters, garage doors, pest control, painting, flooring, house cleaning and tree service." />
+  <meta name="theme-color" content="#26272b" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body {
+      font-family: var(--font-text);
+      -webkit-font-smoothing: antialiased;
+      color: #171a20;
+    }
+
+    /* Every service, as the homepage's cards. To give one a photo, add
+       public/img/services/<trade>.jpg; until then it shows a faint icon. */
+    .all { max-width: 1200px; margin: 0 auto; padding: 48px 24px 64px; }
+    .all h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.05; }
+    .lede { margin: 8px 0 22px; font-size: 18px; color: #5c5e62; }
+    .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .svc { background: #fff; border: 1px solid #e3e4e6; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .svc-img { position: relative; aspect-ratio: 4 / 3; background: #f4f4f4; display: grid; place-items: center; }
+    .svc-img svg { width: 30px; height: 30px; fill: none; stroke: #b8b9bc; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .svc-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .svc b { display: block; padding: 12px 14px 2px; font-size: 16px; font-weight: var(--weight-ui); }
+    .svc span { display: block; padding: 0 14px 14px; font-size: 13px; line-height: 1.35; color: #5c5e62; }
+    .svc-more { display: inline-block; margin-top: 16px; font-size: 14px; color: #5c5e62; text-decoration: underline; text-underline-offset: 3px; }
+    .svc-more:hover { color: #171a20; }
+
+    .end { text-align: center; padding: 8px 24px 48px; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
+    }
+    .btn.main { background: #393c41; color: #fff; }
+    .btn.main:hover { background: #2b2d31; }
+    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    .btn.plain:hover { background: #eeeeee; }
+
+    @media (min-width: 700px) { .svc-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1100px) { .svc-grid { grid-template-columns: repeat(5, 1fr); } }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main>
+    <section class="all" aria-labelledby="all-title">
+      <h1 id="all-title">All Services</h1>
+      <p class="lede">Come. Fix. Done.</p>
+      <ul class="svc-grid">
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 9 7 12 3z"/></svg><img src="/img/services/plumbing.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Plumbing</b><span>Leaks, clogs, water heaters</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.2 7l15.6 10M4.2 17L19.8 7"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5"/></svg><img src="/img/services/hvac.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>HVAC</b><span>No heat, no AC</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13.5h6L10 22l8-11.5h-6L13 2z"/></svg><img src="/img/services/electrical.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Electrical</b><span>Outages, outlets, breakers</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2"/><circle cx="12" cy="13.5" r="4.5"/><path d="M7.5 6h.01M10.5 6h.01"/></svg><img src="/img/services/appliance.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Appliance</b><span>Washers, dryers, fridges</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><img src="/img/services/locksmith.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Locksmith</b><span>Locked out, rekeys</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h9l3-3h3v6h-3l-3-3"/><path d="M18 10h3"/><path d="M7 10v4a2 2 0 0 0 2 2h1"/><path d="M19 14l2 3M17 15l1 4M21 12l2 1"/></svg><img src="/img/services/pressure-washing.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Pressure Washing</b><span>Driveways, siding, decks</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5l4 4-9.5 9.5-4-4z"/><path d="M13 4l2-2 7 7-2 2"/><path d="M5 15l-2.5 2.5 4 4L9 19"/></svg><img src="/img/services/handyman.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Handyman</b><span>Small fixes, drywall patches</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20c0-8.5 5-14 15-15-.5 9.5-6.5 14.5-15 15z"/><path d="M5 20l8-8"/><path d="M2 21h20"/></svg><img src="/img/services/landscaping.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Landscaping &amp; Lawn Care</b><span>Mowing, beds, yard cleanups</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-6 10 6"/><path d="M3 12h18v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 14z"/><path d="M17.5 15.5V21"/></svg><img src="/img/services/gutters.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Gutter Service</b><span>Cleaning, repairs, guards</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"/><path d="M6.5 21v-9h11v9M6.5 15h11M6.5 18h11"/></svg><img src="/img/services/garage-door.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Garage Door Service</b><span>Stuck doors, springs, openers</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="14" rx="4.5" ry="6"/><path d="M12 8v12M9.5 4.5L10.8 8M14.5 4.5L13.2 8M7.5 12H4M7.5 16.5l-3 2M16.5 12H20M16.5 16.5l3 2"/></svg><img src="/img/services/pest-control.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Pest Control</b><span>Ants, roaches, rodents</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="15" height="6" rx="1.5"/><path d="M18 6h3v6h-9v3"/><rect x="10.5" y="15" width="3" height="6.5" rx="1"/></svg><img src="/img/services/painting.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Painting</b><span>Interior, exterior, touch-ups</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v6M15 9v6M8 15v6"/></svg><img src="/img/services/flooring.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Flooring</b><span>Installs, repairs, refinishing</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z"/><path d="M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg><img src="/img/services/house-cleaning.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>House Cleaning</b><span>Regular, deep, move-out</span>
+        </li>
+        <li class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l6 8h-3l4 6H5l4-6H6z"/><path d="M12 16v6"/></svg><img src="/img/services/tree-service.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Tree Service</b><span>Trimming, removal, storm cleanup</span>
+        </li>
+      </ul>
+      <a class="svc-more" href="/quotes">don&rsquo;t see what you need? click here</a>
+    </section>
+
+    <section class="end">
+      <h2>It&rsquo;s always something. NOHM it.</h2>
+      <div class="pair">
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+        <a class="btn plain" href="/quotes">Get Quotes</a>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM &copy; 2026</span>
+    <a href="/homeowners">Homeowners</a>
+    <a href="/local-pros">Local Pros</a>
+    <a href="/pros">For Pros</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+  <script src="/download.js" defer></script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>

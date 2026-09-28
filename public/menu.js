@@ -25,6 +25,7 @@
     '<ul>' +
     '<li><a href="/">Home</a></li>' +
     '<li><a href="/homeowners">Homeowners</a></li>' +
+    '<li><a href="/services">All Services</a></li>' +
     '<li><a href="/local-pros">Local Pros</a></li>' +
     '<li><a href="/quotes">Get Quotes</a></li>' +
     '<li><a href="/pros">For Pros</a></li>' +
