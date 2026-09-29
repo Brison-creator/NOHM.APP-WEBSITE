@@ -24,6 +24,7 @@
     '</button></div>' +
     '<ul>' +
     '<li><a href="/">Home</a></li>' +
+    '<li><a href="/how-it-works">How It Works</a></li>' +
     '<li><a href="/homeowners">Homeowners</a></li>' +
     '<li><a href="/services">All Services</a></li>' +
     '<li><a href="/local-pros">Local Pros</a></li>' +
