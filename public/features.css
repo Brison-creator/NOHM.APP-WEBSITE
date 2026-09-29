@@ -17,7 +17,7 @@
 }
 .f-row::-webkit-scrollbar { display: none; }
 .f-item { flex: 0 0 calc(100% - 36px); scroll-snap-align: start; }
-.f-item img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: #f4f4f4; }
+.f-item img, .f-item video { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: #f4f4f4; }
 .f-item h3 { margin: 22px 0 8px; font-size: clamp(28px, 2.6vw, 36px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
 .f-item p { margin: 0; font-size: 18px; line-height: 1.5; color: #5c5e62; }
 .f-dots { display: flex; justify-content: center; gap: 10px; padding: 22px 0 0; }
