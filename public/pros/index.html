@@ -124,6 +124,14 @@
     .tq .eyebrow { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #86868b; font-weight: var(--weight-ui); }
     .tq .tq-lede { margin: 0 0 18px; max-width: 760px; font-size: 17px; line-height: 1.55; color: #393c41; }
     @media (max-width: 899px) { .spec.tq ul { grid-template-columns: 1fr; } }
+    .tq-photo { margin: 0 0 20px; }
+    .tq-photo img { display: block; width: 100%; height: auto; max-height: 64svh; object-fit: cover; object-position: 50% 30%; border-radius: 12px; }
+    @media (min-width: 900px) {
+      .spec.tq { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 48px; align-items: center; }
+      .tq-photo { margin: 0; }
+      .tq-photo img { max-height: 760px; }
+      .spec.tq ul { grid-template-columns: 1fr 1fr; }
+    }
     .tq .tq-price { margin-top: 14px; padding: 18px 20px; border-radius: 12px; background: #171a20; color: #fff; }
     .tq .tq-price p { margin: 0; font-size: 16px; line-height: 1.55; color: #d0d1d2; }
     .tq .tq-price p + p { margin-top: 8px; }
@@ -219,9 +227,17 @@
     </section>
 
     <section class="spec tq" aria-labelledby="tq-title">
+      <figure class="tq-photo">
+        <picture>
+          <source type="image/webp" srcset="/img/panel-pros-720.webp 720w, /img/panel-pros-1122.webp 1122w" sizes="(min-width: 900px) 40vw, 100vw" />
+          <img src="/img/panel-pros-720.jpg" srcset="/img/panel-pros-720.jpg 720w, /img/panel-pros-1122.jpg 1122w" sizes="(min-width: 900px) 40vw, 100vw"
+               width="1122" height="1402" loading="lazy" alt="Two NOHM electricians testing a breaker panel" />
+        </picture>
+      </figure>
+      <div class="tq-words">
       <p class="eyebrow">Three Quotes</p>
       <h2 id="tq-title">Real replacement jobs.<br />Fair turns.</h2>
-      <p class="tq-lede">Homeowners replacing an HVAC system, water heater, electrical panel or standby generator show the job once with guided photos, a short video and the data plate. Up to three pros quote it, and the homeowner compares full prices side by side.</p>
+      <p class="tq-lede">HVAC, water heaters, electrical panels and generators. Up to three pros quote the same job, from the homeowner&rsquo;s photos and video.</p>
       <ul>
         <li>Offers go out in a fair rotation by county and trade</li>
         <li>30 minutes to accept or pass on each offer</li>
@@ -233,6 +249,7 @@
       <div class="tq-price">
         <p><b>You enter the full price the homeowner pays. NOHM&rsquo;s 5% is inside it.</b></p>
         <p>Quote $10,000: the homeowner pays NOHM a $500 deposit in the app and pays you $9,500 directly. You see the customer price, NOHM&rsquo;s fee and your payout before you submit.</p>
+      </div>
       </div>
     </section>
 

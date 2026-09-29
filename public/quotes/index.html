@@ -29,6 +29,26 @@
     .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
     .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+    .top .pair { margin-top: 22px; }
+
+    /* Tesla-style panels: one picture or video, one headline, one line. */
+    .panel { position: relative; height: calc(100svh - 110px); min-height: 480px; margin: 24px 12px 0; border-radius: 12px; overflow: hidden; background: #16171a; }
+    .panel img, .panel video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .panel::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(rgba(0,0,0,.66), rgba(0,0,0,.34) 38%, rgba(0,0,0,0) 60%); }
+    .panel .copy { position: absolute; z-index: 1; left: 0; right: 0; top: 8svh; padding: 0 24px; text-align: center; color: #fff; }
+    .panel h2 { margin: 0; font-size: clamp(34px, 4vw, 48px); line-height: 1.1; text-shadow: 0 1px 14px rgba(0,0,0,.3); font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .panel .lede { margin: 10px auto 0; max-width: 560px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.45; text-shadow: 0 1px 10px rgba(0,0,0,.35); }
+    .panel img.p-washer { object-position: 62% 50%; }
+    .panel img.p-pros { object-position: 50% 30%; }
+    .panel video { object-position: 70% 30%; }
+
+    /* The price as three big numbers, like Tesla's specs. */
+    .stats { max-width: 1200px; margin: 0 auto; padding: 64px 24px 40px; }
+    .stats h2 { margin: 0 0 28px; font-size: clamp(30px, 3.6vw, 48px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .s-grid { display: grid; grid-template-columns: 1fr; gap: 22px; }
+    .s b { display: block; font-size: clamp(40px, 5vw, 64px); line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); }
+    .s span { display: block; margin-top: 8px; font-size: 16px; color: #393c41; }
+    .spec .avail { margin: 16px 0 0; font-size: 15px; line-height: 1.55; color: #5c5e62; }
 
     /* The long read: one column, generous space, Tesla's quiet type. */
     .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
@@ -86,33 +106,7 @@
       .trio { grid-template-columns: repeat(3, 1fr); }
     }
 
-    .steps { max-width: 760px; margin: 0 auto; padding: 48px 24px 8px; }
-    .steps h2, .qfaq h2 { margin: 0 0 20px; font-size: clamp(28px, 3vw, 40px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .steps ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
-    .steps li { counter-increment: s; position: relative; padding: 0 0 26px 56px; }
-    .steps li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%; background: #171a20; color: #fff; display: grid; place-items: center; font-weight: var(--weight-ui); }
-    .steps b { display: block; font-size: 19px; margin-bottom: 4px; font-weight: var(--weight-ui); }
-    .steps span { font-size: 16px; line-height: 1.5; color: #393c41; }
 
-    .nps { max-width: 760px; margin: 0 auto; padding: 24px 24px 8px; }
-    .nps h2 { margin: 0 0 6px; font-size: clamp(28px, 3vw, 40px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .nps .sub3 { margin: 0 0 18px; font-size: 16px; color: #5c5e62; }
-    .nps ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
-    .nps li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: var(--weight-body-strong); border-bottom: 1px solid rgba(0,0,0,.07); }
-    .nps li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
-    .qtrades { max-width: 760px; margin: 0 auto; padding: 32px 24px 8px; }
-    .qtrades h2 { margin: 0 0 10px; font-size: clamp(22px, 2.2vw, 28px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); }
-    .qtrades p { margin: 0; font-size: 17px; line-height: 1.6; color: #171a20; font-weight: var(--weight-body-strong); }
-    .qtrades p.more { margin-top: 10px; font-size: 15px; color: #5c5e62; font-weight: normal; }
-    .qtrades a { color: #171a20; font-weight: var(--weight-ui); }
-    .price { padding-top: 40px; }
-    .price .example { background: #f4f4f4; border-radius: 12px; padding: 6px 20px; }
-    .price .row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; font-size: 16px; color: #393c41; border-bottom: 1px solid rgba(0,0,0,.07); }
-    .price .row:last-child { border-bottom: 0; }
-    .price .row b { color: #171a20; font-weight: var(--weight-ui); white-space: nowrap; }
-    .price .row.total { font-weight: var(--weight-ui); color: #171a20; }
-    .price .row.total b { font-size: 20px; }
-    .price .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.55; color: #5c5e62; }
     .qfaq { max-width: 760px; margin: 0 auto; padding: 40px 24px 8px; }
     .qfaq details { border-bottom: 1px solid rgba(0,0,0,0.09); }
     .qfaq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; position: relative; font-weight: var(--weight-body-strong); letter-spacing: var(--tracking-body); }
@@ -122,6 +116,10 @@
     .qfaq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
 
     @media (min-width: 900px) {
+      .panel { height: 100svh; margin: 24px 32px 0; }
+      .panel .copy { top: calc(52px + 9svh); }
+      .panel video { object-position: 50% 15%; }
+      .s-grid { grid-template-columns: repeat(3, 1fr); }
       .top img { object-position: 50% 25%; }
       .top .copy { bottom: 64px; }
       .facts { grid-template-columns: 1fr 1fr; }
@@ -139,61 +137,84 @@
              alt="A local HVAC pro with a NOHM patch walking a homeowner through his outdoor AC unit, tablet in hand" />
       </picture>
       <div class="copy">
-        <h1>Replacing something big?<br />Get Three Quotes.</h1>
-        <p>Show the job once. Up to three verified local pros quote the same work, side by side. No sales visits, no pressure.</p>
+        <h1>Get Three Quotes.</h1>
+        <p>Replacing something big? Up to three local pros quote it, side by side.</p>
+        <div class="pair">
+          <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Three Quotes</a>
+          <a class="btn plain" href="#how">How It Works</a>
+        </div>
       </div>
     </section>
 
-    <section class="steps">
-      <h2>How it works.</h2>
-      <ol>
-        <li><b>Show the job once</b><span>The app walks you through a few photos and a 15-second video of what you&rsquo;re replacing, including the label. No one has to come out just to give you a price.</span></li>
-        <li><b>Up to three local pros quote</b><span>Verified pros who serve your area take turns in a fair rotation. Each one quotes the same job from the same photos, with the brand, model and warranty spelled out.</span></li>
-        <li><b>Compare full prices side by side</b><span>Every quote shows the complete price you&rsquo;ll pay. They appear in the order they arrive, never ranked by price, and you can message pros in the app.</span></li>
-        <li><b>Choose once the quotes are in</b><span>When every quote is in or the quote window closes, pick the one you want and tell us why. Or don&rsquo;t pick any.</span></li>
-        <li><b>Secure your pro</b><span>Pay the 5% project deposit in the app. It&rsquo;s part of your total, not extra. Only then does your pro get your name, address and phone number.</span></li>
-        <li><b>Checked on site, saved for good</b><span>Your pro confirms everything in person before work starts. When the job is done, the new equipment, model, serial number, photos and warranty go into your Home Record, with reminders before warranties run out.</span></li>
-      </ol>
-    </section>
-
-    <section class="nps price">
-      <h2>The price you see is your total.</h2>
-      <p class="sub3">NOHM&rsquo;s 5% is already inside every quote. Nothing is added at checkout.</p>
-      <div class="example">
-        <div class="row total"><span>Project price (your total)</span><b>$10,000</b></div>
-        <div class="row"><span>5% project deposit, paid in the app (included)</span><b>$500</b></div>
-        <div class="row"><span>Balance, paid to your pro under their terms</span><b>$9,500</b></div>
+    <section class="panel" id="how" aria-label="Show the job once">
+      <picture>
+        <source type="image/webp" srcset="/img/washer-960.webp 960w, /img/washer-1536.webp 1536w" sizes="100vw" />
+        <img class="p-washer" src="/img/washer-1536.jpg" srcset="/img/washer-960.jpg 960w, /img/washer-1536.jpg 1536w" sizes="100vw"
+             width="1536" height="1024" loading="lazy" alt="A homeowner crouched by his washer, showing the problem with his phone" />
+      </picture>
+      <div class="copy">
+        <h2>Show the job once.</h2>
+        <p class="lede">A few photos and a 15-second video from your phone. No sales visits.</p>
       </div>
-      <p class="fine">Some pros also offer financing through a lending partner. You apply on the partner&rsquo;s own secure page, and the quote never shows a monthly payment in place of the full price.</p>
     </section>
 
-    <section class="nps">
+    <section class="panel" aria-label="Three pros, same job">
+      <picture>
+        <source type="image/webp" srcset="/img/panel-pros-720.webp 720w, /img/panel-pros-1122.webp 1122w" sizes="100vw" />
+        <img class="p-pros" src="/img/panel-pros-1122.jpg" srcset="/img/panel-pros-720.jpg 720w, /img/panel-pros-1122.jpg 1122w" sizes="100vw"
+             width="1122" height="1402" loading="lazy" alt="Two NOHM electricians testing a breaker panel" />
+      </picture>
+      <div class="copy">
+        <h2>Three pros. Same job.</h2>
+        <p class="lede">Verified local pros take fair turns and quote from the same photos.</p>
+      </div>
+    </section>
+
+    <section class="stats" aria-labelledby="price-title">
+      <h2 id="price-title">The price you see is your total.</h2>
+      <div class="s-grid">
+        <div class="s"><b>$10,000</b><span>Your total, full price</span></div>
+        <div class="s"><b>$500</b><span>5% deposit in the app, included</span></div>
+        <div class="s"><b>$9,500</b><span>Paid to your pro</span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Checked on site, saved for good">
+      <video autoplay muted loop playsinline preload="metadata" poster="/video/furnace-poster.jpg"
+             aria-label="A NOHM HVAC pro laughing with a homeowner while working on his furnace">
+        <source media="(max-width: 899px)" src="/video/furnace-720.mp4" type="video/mp4" />
+        <source media="(max-width: 899px)" src="/video/furnace-720.webm" type="video/webm" />
+        <source src="/video/furnace-1168.mp4" type="video/mp4" />
+        <source src="/video/furnace-1168.webm" type="video/webm" />
+      </video>
+      <div class="copy">
+        <h2>Checked on site.<br />Saved for good.</h2>
+        <p class="lede">Your pro confirms it all first. The new equipment goes in your Home Record.</p>
+      </div>
+    </section>
+
+    <section class="spec">
       <h2>The No-Pressure Standard</h2>
-      <p class="sub3">Every pro who quotes on NOHM agrees to it.</p>
       <ul>
-        <li>No sales visits to get a price</li>
-        <li>No sales calls or pushy follow-ups</li>
-        <li>Written quotes with brand and model</li>
-        <li>Your address stays private until you choose</li>
+        <li>No sales visits</li>
+        <li>No sales calls</li>
+        <li>Brand and model in writing</li>
+        <li>Address private until you choose</li>
         <li>Messages stay in the app</li>
-        <li>Price changes only with photos and your OK</li>
+        <li>No surprise price changes</li>
       </ul>
-    </section>
-
-    <section class="qtrades">
-      <h2>Available now</h2>
-      <p>HVAC systems &middot; Packaged HVAC units &middot; Water heaters &middot; Tankless water heaters &middot; Electrical panels &middot; Standby generators</p>
-      <p class="more">More project types are on the way. For repairs, <a href="/services">book a local pro</a>.</p>
+      <p class="avail">Available now for HVAC systems, packaged units, water heaters, tankless water heaters, electrical panels and standby generators.</p>
     </section>
 
     <section class="qfaq">
       <h2>Questions.</h2>
       <details><summary>Does it cost anything to get quotes?</summary><p>No. Asking for quotes is free, and you don&rsquo;t have to choose one. If you do, the 5% project deposit is already part of the quoted price. It is not added on top.</p></details>
       <details><summary>Where does the 5% go?</summary><p>You pay it in the app to secure the pro you chose. It counts toward your total, and NOHM keeps it as its fee for running Three Quotes. You pay the rest to your pro under their payment terms.</p></details>
+      <details><summary>When can I choose?</summary><p>Once every quote is in, or when the quote window closes. Quotes appear in the order they arrive, never ranked by price, and you don&rsquo;t have to pick any.</p></details>
       <details><summary>Can I get the deposit back?</summary><p>Yes, if your pro doesn&rsquo;t show up, abandons the job, can&rsquo;t supply the quoted equipment or won&rsquo;t honor the accepted scope. If you cancel or change your mind after your pro is secured, the deposit is nonrefundable. If NOHM makes a mistake, NOHM refunds you.</p></details>
-      <details><summary>How fast do quotes come in?</summary><p>Pros are offered your job in turn and have a short window to accept. Everyone who accepts quotes within the same deadline, shown in the app. You can choose as soon as every quote is in.</p></details>
       <details><summary>Will pros call me?</summary><p>No. Pros message you inside NOHM, and your phone number and address stay private until you pay the deposit to the pro you chose.</p></details>
       <details><summary>What if the price changes on site?</summary><p>Your pro checks everything in person first. If something is different, like a unit that needs a bigger size, they must show photos and a reason, and the price only changes if you approve it.</p></details>
+      <details><summary>Can I finance it?</summary><p>Some pros offer financing through a lending partner. You apply on the partner&rsquo;s own secure page, and quotes always show the full price.</p></details>
       <details><summary>Do the pros who aren&rsquo;t chosen see my answer?</summary><p>They only see the main reason you picked, like &ldquo;Best overall price&rdquo;. Never your name, the winning pro, the winning price or anything you typed.</p></details>
     </section>
 
@@ -214,6 +235,12 @@
     <a href="/terms">Terms</a>
     <a href="/support">Support</a>
   </footer>
+  <script>
+    // Honor reduced motion: the panel video stays on its poster.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.panel video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+    }
+  </script>
   <script src="/download.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
