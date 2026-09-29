@@ -261,6 +261,16 @@
     .panel h2 { margin: 0; font-size: clamp(34px, 4vw, 48px); line-height: 1.1; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3); font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .panel .lede { margin: 10px 0 22px; }
     .panel img.pro-now { object-position: 50% 45%; }
+    /* Depth on the bottom two sections (the card row and For Local Pros):
+       each photo is a little taller than its frame and drifts slower than
+       the page as it scrolls past. Set by the drift script at the bottom;
+       off for anyone who prefers reduced motion. */
+    .js .card > picture img, .js .card > video, .js .panel > picture img {
+      top: -8%; bottom: auto; height: 116%; will-change: transform;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .js .card > picture img, .js .card > video, .js .panel > picture img { top: 0; height: 100%; transform: none !important; }
+    }
     /* Photo cards that slide sideways, like Tesla's Solar Panels row: the
        next card peeks in from the right, words and buttons sit on the bottom
        of the photo, dots underneath. */
@@ -807,6 +817,36 @@
       function solid() { bar.classList.toggle('solid', scrollY > hero.offsetHeight - bar.offsetHeight); }
       addEventListener('scroll', solid, { passive: true });
       solid();
+    })();
+  </script>
+  <script>
+    // Depth on the bottom two sections: their photos drift slower than the
+    // page (up to 6% of the photo's height, inside the 8% it overhangs its
+    // frame on each side), so they never show an edge.
+    (function () {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var items = [];
+      document.querySelectorAll('.card, .panel').forEach(function (frame) {
+        var media = frame.querySelector(':scope > picture img, :scope > video');
+        if (media) items.push({ frame: frame, media: media });
+      });
+      var queued = false;
+      function update() {
+        queued = false;
+        var vh = innerHeight;
+        items.forEach(function (it) {
+          var r = it.frame.getBoundingClientRect();
+          if (r.bottom < -100 || r.top > vh + 100) return;
+          // -1 as the frame's bottom leaves the top of the screen, +1 as its top enters at the bottom.
+          var p = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+          p = Math.max(-1, Math.min(1, p));
+          it.media.style.transform = 'translate3d(0,' + (p * 6).toFixed(2) + '%,0)';
+        });
+      }
+      function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+      addEventListener('scroll', queue, { passive: true });
+      addEventListener('resize', queue);
+      update();
     })();
   </script>
   <script src="/download.js" defer></script>
