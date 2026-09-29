@@ -5,13 +5,9 @@
 (function () {
   'use strict';
 
-  var root = document.getElementById('demo');
-  if (!root) return;
-
   // ── Constants ─────────────────────────────────────────────────────
   var EMAIL = 'test@nohm.app';
   var PASSWORD = 'password';
-  var KEY = 'nohm-demo-v1';
   var PAUSE_MINUTES = 30; // a failed card: time to update it before the pro is released
   var EXPRESS_SECONDS = 90; // an Express offer: time for the closest pro to take it
 
@@ -77,20 +73,35 @@
     pm: { label: 'Property Manager', line: 'Run your units and tenant repairs', ico: 'building' },
     tenant: { label: 'Tenant', line: 'Ask your landlord for repairs', ico: 'key' }
   };
-  var BOOKER = { homeowner: 'homeowner', pm: 'pm' };
+  var STORE = /android/i.test(navigator.userAgent)
+    ? 'https://play.google.com/store/apps/details?id=com.nohm.app'
+    : 'https://apps.apple.com/us/app/nohm-app/id6761128513';
 
   // ── State ─────────────────────────────────────────────────────────
+  // One world per page, shared by every phone on it (the booth shows two).
   function fresh() {
     return {
-      signedIn: false, role: null, view: 'signin', focus: null, err: null,
       card: 'ok', proOnShift: false, proLive: false, pro: 0,
       jobs: [], seq: 1041, draft: null, inbox: [],
-      invite: null, tenantIn: false, requests: [], records: [], pinEntry: ''
+      invite: null, tenantIn: false, requests: [], records: []
     };
   }
-  var S;
-  try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch (e) { S = fresh(); }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
+  // What one phone is showing.
+  function freshUI(role) {
+    return { signedIn: !!role, role: role || null, view: role ? 'home' : 'signin', focus: null, err: null, pinEntry: '' };
+  }
+  var S = null;
+  var apps = [];
+  var storeKey = null; // null on the booth: every visitor starts clean
+  function save() {
+    if (!storeKey) return;
+    try { localStorage.setItem(storeKey, JSON.stringify({ world: S, ui: apps[0] && apps[0].V })); } catch (e) { /* private mode */ }
+  }
+  function load(key) {
+    try { var d = JSON.parse(localStorage.getItem(key)); if (d && d.world && d.ui) return d; } catch (e) { /* none */ }
+    return null;
+  }
+  function renderAll() { apps.forEach(function (a) { a.render(); }); save(); }
 
   function esc(t) {
     return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
@@ -220,6 +231,23 @@
     }
   }
 
+  // ── One phone ─────────────────────────────────────────────────────
+  // opts.mode: 'web' (how-it-works), 'try' (full screen, from the QR code)
+  // or 'kiosk' (the booth: a fixed role per phone, no sign-in).
+  function mount(root, opts) {
+    opts = opts || {};
+    var MODE = opts.mode || 'web';
+    var KIOSK = MODE === 'kiosk';
+    var firstUI = null;
+    if (!S) {
+      storeKey = KIOSK ? null : 'nohm-' + MODE + '-v1';
+      var saved = storeKey && load(storeKey);
+      S = saved ? saved.world : fresh();
+      if (KIOSK) S.proOnShift = true;
+      firstUI = saved && saved.ui;
+    }
+    var V = KIOSK ? freshUI(opts.role) : (firstUI || freshUI(null));
+
   // ── Screens ───────────────────────────────────────────────────────
   function progress(j) {
     var at = STEP_OF[j.status] == null ? 0 : STEP_OF[j.status];
@@ -328,15 +356,23 @@
     }
     var mv = nextMove(j);
     if (j.pause) {
-      h += '<button class="d-btn sec" style="margin-top:16px" data-act="role" data-role="pro">Play the pro\u2019s part</button>';
+      h += KIOSK ? '<p class="d-small" style="margin-top:12px">The pro sees the same clock on their screen, on the right.</p>'
+        : '<button class="d-btn sec" style="margin-top:16px" data-act="role" data-role="pro">Play the pro\u2019s part</button>';
     }
-    if (mv && mv.who === 'pro') {
+    if (mv && mv.who === 'pro' && KIOSK) {
+      h += '<div class="d-card" style="margin-top:16px"><p class="d-small">It\u2019s the pro\u2019s move: tap it on their screen, on the right.</p>' +
+        '<button class="d-link" data-act="ff" data-id="' + j.id + '">Or fast-forward: ' + esc(mv.label.toLowerCase()) + '</button></div>';
+    } else if (mv && mv.who === 'pro') {
       h += '<div class="d-card" style="margin-top:16px"><p class="d-small">Demo: it’s the pro’s move.</p>' +
         '<button class="d-btn sec" data-act="role" data-role="pro">Play the pro’s part</button>' +
         '<button class="d-link" data-act="ff" data-id="' + j.id + '">Fast-forward: ' + esc(mv.label.toLowerCase()) + '</button></div>';
     }
     if (j.status === 'RELEASED' || (j.status === 'CONFIRMED' && j.rating)) {
-      h += '<button class="d-btn" data-act="go" data-view="home">Done</button>';
+      if (MODE === 'try') {
+        h += '<div class="d-card blue" style="margin-top:16px"><h3>That\u2019s NOHM.</h3><p>Free to download. Book a real pro the next time something breaks.</p>' +
+          '<a class="d-btn" href="' + STORE + '">Get the app</a></div>';
+      }
+      h += '<button class="d-btn' + (MODE === 'try' ? ' sec' : '') + '" data-act="go" data-view="home">Done</button>';
     }
     return h;
   }
@@ -345,10 +381,10 @@
     return '<div class="d-pad"><div class="d-mark">NOHM</div><p class="d-tagline">It’s always something.</p>' +
       '<div class="d-demo-login">Demo login: <b>' + EMAIL + '</b> · password <b>' + PASSWORD + '</b>' +
       '<button class="d-link" style="padding:6px 0 0;text-align:left" data-act="fill">Fill it in for me</button></div>' +
-      (S.err ? '<p class="d-error">' + esc(S.err) + '</p>' : '') +
+      (V.err ? '<p class="d-error">' + esc(V.err) + '</p>' : '') +
       '<form data-form="signin" novalidate>' +
-      '<label class="d-field"><span>Email</span><input id="d-email" type="email" autocomplete="off" placeholder="you@example.com" /></label>' +
-      '<label class="d-field"><span>Password</span><input id="d-pass" type="password" autocomplete="off" /></label>' +
+      '<label class="d-field"><span>Email</span><input id="d-email" type="email" autocomplete="off" placeholder="you@example.com"' + (MODE === 'try' ? ' value="' + EMAIL + '"' : '') + ' /></label>' +
+      '<label class="d-field"><span>Password</span><input id="d-pass" type="password" autocomplete="off"' + (MODE === 'try' ? ' value="' + PASSWORD + '"' : '') + ' /></label>' +
       '<button class="d-btn" type="submit">Sign in</button></form>' +
       '<p class="d-small" style="text-align:center;margin-top:14px">Sample data. Nothing here books a pro or charges a card.</p></div>';
   }
@@ -358,11 +394,11 @@
       Object.keys(ROLES).map(function (k) {
         var r = ROLES[k];
         return '<button class="d-pill" data-act="role" data-role="' + k + '">' + icon(r.ico) + '<span><b>' + r.label + '</b><span>' + r.line + '</span></span></button>';
-      }).join('') + '</div>';
+      }).join('') + (S.jobs.length || S.invite ? '<button class="d-link" data-act="reset">Start over with a fresh demo</button>' : '') + '</div>';
   }
 
   function inboxView() {
-    var mine = S.inbox.filter(function (m) { return m.to === S.role; });
+    var mine = S.inbox.filter(function (m) { return m.to === V.role; });
     mine.forEach(function (m) { m.seen = true; });
     return '<div class="d-pad"><button class="d-back" data-act="go" data-view="home">← Back</button><h1 class="d-h1">Messages from NOHM</h1>' +
       (mine.length ? '<ul class="d-list">' + mine.map(function (m) {
@@ -371,14 +407,14 @@
   }
 
   function chatView(j) {
-    var me = S.role === 'pro' ? 'pro' : 'booker';
-    var other = S.role === 'pro' ? (j.booker === 'pm' ? 'the property manager' : 'the homeowner') : proOf(j).name.split(' ')[0];
+    var me = V.role === 'pro' ? 'pro' : 'booker';
+    var other = V.role === 'pro' ? (j.booker === 'pm' ? 'the property manager' : 'the homeowner') : proOf(j).name.split(' ')[0];
     return '<div class="d-pad"><button class="d-back" data-act="go" data-view="job">← Back to the job</button><h1 class="d-h1">Message ' + esc(other) + '</h1>' +
       '<div class="d-msgs">' + (j.msgs.length ? j.msgs.map(function (m) {
         return '<div class="d-msg ' + (m.from === me ? 'me' : '') + '">' + esc(m.text) + '</div>';
       }).join('') : '<p class="d-small">Messages stay inside NOHM. Your phone number stays private.</p>') + '</div>' +
       '<form data-form="chat" data-id="' + j.id + '"><label class="d-field"><span>Message</span><input id="d-msg" maxlength="300" placeholder="' +
-      (S.role === 'pro' ? 'On my way, about 20 minutes out.' : 'Gate code is 1234. Dog is friendly.') + '" /></label>' +
+      (V.role === 'pro' ? 'On my way, about 20 minutes out.' : 'Gate code is 1234. Dog is friendly.') + '" /></label>' +
       '<button class="d-btn" type="submit">Send</button></form></div>';
   }
 
@@ -449,7 +485,7 @@
       '<button class="d-link" data-act="live">' + (S.proLive ? 'Ready Now: you’re live' : 'Ready Now: go live for four hours') + '</button></div>';
     var offers = S.jobs.filter(function (j) { return j.status === 'OFFERED' && (S.proOnShift || j.tier === 'NOW'); });
     h += '<h2 class="d-h2">Offers</h2>';
-    if (!offers.length) h += '<p class="d-small">' + (S.proOnShift ? 'No offers right now. Switch to the homeowner and book something.' : 'Go on shift to see offers.') + '</p>';
+    if (!offers.length) h += '<p class="d-small">' + (S.proOnShift ? (KIOSK ? 'No offers right now. Book something on the homeowner\u2019s screen.' : 'No offers right now. Switch to the homeowner and book something.') : 'Go on shift to see offers.') + '</p>';
     offers.forEach(function (j) {
       h += '<div class="d-card blue"><div class="d-row"><h3>' + esc(trade(j.trade).name) + (j.tier !== 'STANDARD' ? ' · ' + (j.tier === 'NOW' ? 'NOHM Now' : 'Express') : '') + '</h3>' +
         (j.tier === 'EXPRESS' ? '<span class="d-timer" data-offer="' + j.offerEnds + '" style="font-size:20px">' + clock(j.offerEnds - now()) + '</span>' : '') + '</div>' +
@@ -497,7 +533,10 @@
       h += '<button class="d-btn sec" data-act="chat" data-id="' + j.id + '">Message ' + (j.booker === 'pm' ? 'the property manager' : 'the homeowner') + (j.msgs.length ? ' (' + j.msgs.length + ')' : '') + '</button>';
     }
     var mv = nextMove(j);
-    if (mv && mv.who !== 'pro') {
+    if (mv && mv.who !== 'pro' && KIOSK) {
+      h += '<div class="d-card" style="margin-top:16px"><p class="d-small">It\u2019s the homeowner\u2019s move: tap it on their screen, on the left.</p>' +
+        '<button class="d-link" data-act="ff" data-id="' + j.id + '">Or fast-forward: ' + esc(mv.label.toLowerCase()) + '</button></div>';
+    } else if (mv && mv.who !== 'pro') {
       h += '<div class="d-card" style="margin-top:16px"><p class="d-small">Demo: it’s the ' + (mv.who === 'pm' ? 'property manager' : 'homeowner') + '’s move.</p>' +
         '<button class="d-btn sec" data-act="role" data-role="' + mv.who + '">Play their part</button>' +
         '<button class="d-link" data-act="ff" data-id="' + j.id + '">Fast-forward: ' + esc(mv.label.toLowerCase()) + '</button></div>';
@@ -510,10 +549,10 @@
   }
 
   function pinView(j) {
-    var dots = [0, 1, 2, 3].map(function (i) { return '<span>' + (S.pinEntry[i] ? '•' : '') + '</span>'; }).join('');
+    var dots = [0, 1, 2, 3].map(function (i) { return '<span>' + (V.pinEntry[i] ? '•' : '') + '</span>'; }).join('');
     return '<div class="d-pad"><button class="d-back" data-act="go" data-view="job">← Back</button><h1 class="d-h1">Homeowner’s code</h1>' +
       '<p class="d-sub">Ask for the 4-digit code on their screen. It proves you’re the pro they booked.</p>' +
-      (S.err ? '<p class="d-error">' + esc(S.err) + '</p>' : '') +
+      (V.err ? '<p class="d-error">' + esc(V.err) + '</p>' : '') +
       '<div class="d-pin">' + dots + '</div><div class="d-keys">' +
       ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map(function (k) {
         return k === '' ? '<span></span>' : '<button class="d-key" data-act="key" data-k="' + k + '" aria-label="' + (k === '⌫' ? 'Delete' : k) + '">' + k + '</button>';
@@ -580,7 +619,7 @@
       }
       return h + '<p class="d-sub">' + BUILDING.name + ' invited you to unit 1A.</p>' +
         '<div class="d-card"><h3>' + BUILDING.name + ' · 1A</h3><p>' + money(TENANT.rent) + ' a month, due the 1st.</p></div>' +
-        (S.err ? '<p class="d-error">' + esc(S.err) + '</p>' : '') +
+        (V.err ? '<p class="d-error">' + esc(V.err) + '</p>' : '') +
         '<form data-form="join"><label class="d-field"><span>Code from the text</span><input id="d-code" inputmode="numeric" maxlength="6" placeholder="6 digits" /></label>' +
         '<button class="d-btn" type="submit">Join</button></form><p class="d-small" style="margin-top:8px">Demo: the code is ' + S.invite.code + '.</p></div>';
     }
@@ -611,27 +650,27 @@
 
   // ── Guide ("What's happening") ────────────────────────────────────
   function guide() {
-    var j = S.focus && job(S.focus);
-    if (!S.signedIn) return ['Sign in to start.', 'Use the demo login. It works for every role, and nothing here reaches a real pro or a real card.'];
-    if (!S.role) return ['Pick who you want to be.', 'You can switch roles any time and keep the same job going, so you can see both sides of it.'];
+    var j = V.focus && job(V.focus);
+    if (!V.signedIn) return ['Sign in to start.', 'Use the demo login. It works for every role, and nothing here reaches a real pro or a real card.'];
+    if (!V.role) return ['Pick who you want to be.', 'You can switch roles any time and keep the same job going, so you can see both sides of it.'];
     if (j && j.pause) return ['The job is paused.', 'A card didn’t go through. The homeowner has ' + PAUSE_MINUTES + ' minutes to update it, and both sides see the same clock. Fix the card and the job picks right back up; if time runs out, the pro is released and free to take another job.'];
-    if (S.role === 'homeowner') {
-      if (!j || S.view === 'home') return S.card === 'declined'
+    if (V.role === 'homeowner') {
+      if (!j || V.view === 'home') return S.card === 'declined'
         ? ['Your card is set to decline.', 'Book an Express job, or approve an estimate, to see how NOHM pauses the job and gives you time to fix the card.']
         : ['Book a repair.', 'Tap a service. Standard gets you a pro in a day or two with no NOHM fee; Express is same day; NOHM Now sends a pro who’s ready right now.'];
       return guideForJob(j);
     }
-    if (S.role === 'pro') {
-      if (!j || S.view === 'home') return S.proOnShift ? ['You’re on shift.', 'Offers show up here when a homeowner books your trade. Switch to the homeowner and book one, then come back.'] : ['You’re an approved pro.', 'Go on shift to start getting offers. Ready Now puts you live for four hours for NOHM Now jobs.'];
+    if (V.role === 'pro') {
+      if (!j || V.view === 'home') return S.proOnShift ? ['You’re on shift.', (KIOSK ? 'Offers show up here when the homeowner, on the left, books a repair.' : 'Offers show up here when a homeowner books your trade. Switch to the homeowner and book one, then come back.')] : ['You’re an approved pro.', 'Go on shift to start getting offers. Ready Now puts you live for four hours for NOHM Now jobs.'];
       return guideForJob(j);
     }
-    if (S.role === 'pm') return j && S.view === 'job' ? guideForJob(j) : S.tenantIn ? ['Your tenant is in.', 'When they send a repair request, approve it here and it goes to a pro. You approve the estimate and confirm the work.'] : ['Your building.', 'Invite a tenant to unit 1A. They get a code by text and join from the app.'];
+    if (V.role === 'pm') return j && V.view === 'job' ? guideForJob(j) : S.tenantIn ? ['Your tenant is in.', 'When they send a repair request, approve it here and it goes to a pro. You approve the estimate and confirm the work.'] : ['Your building.', 'Invite a tenant to unit 1A. They get a code by text and join from the app.'];
     return S.tenantIn ? ['You’re in.', 'Send a repair request. Your landlord approves it and a pro takes it from there. You see every step.'] : ['Join your rental.', 'Your landlord invites you by text. Once you join, repair requests go straight to them.'];
   }
   function guideForJob(j) {
     var g = {
       MATCHING: ['Pick your pro.', 'With Standard you choose from pros in your trade who are open, with their ratings and how many jobs they’ve done on NOHM.'],
-      OFFERED: j.tier === 'EXPRESS' ? ['Express goes to the closest pro.', 'They have ' + EXPRESS_SECONDS + ' seconds to take it before it moves to the next one. The Express fee is held when a pro accepts.'] : ['Waiting on the pro.', 'Your pro gets the offer and accepts it. Switch to Service Pro to accept it yourself, or fast-forward.'],
+      OFFERED: j.tier === 'EXPRESS' ? ['Express goes to the closest pro.', 'They have ' + EXPRESS_SECONDS + ' seconds to take it before it moves to the next one. The Express fee is held when a pro accepts.'] : ['Waiting on the pro.', (KIOSK ? 'Your pro gets the offer on their screen and accepts it.' : 'Your pro gets the offer and accepts it. Switch to Service Pro to accept it yourself, or fast-forward.')],
       SCHEDULED: ['Booked.', 'The pro can set off an hour before your window. Until then you can message each other inside NOHM.'],
       ACCEPTED: ['Accepted.', 'Your pro is getting ready to head your way.'],
       EN_ROUTE: ['On the way.', 'You get a 4-digit code. The pro enters it at your door, which proves the right person is at your home.'],
@@ -651,50 +690,50 @@
   var lastView = null;
   function render() {
     var scroller = root.querySelector('.d-screen');
-    var keep = scroller && lastView === S.view + S.role + S.focus ? scroller.scrollTop : 0;
+    var keep = scroller && lastView === V.view + V.role + V.focus ? scroller.scrollTop : 0;
     var body;
-    var j = S.focus && job(S.focus);
-    if (!S.signedIn) body = signinView();
-    else if (!S.role) body = rolesView();
-    else if (S.view === 'inbox') body = inboxView();
-    else if (S.view === 'chat' && j) body = chatView(j);
-    else if (S.role === 'homeowner') {
-      if (S.view === 'request' && S.draft) body = hoRequest();
-      else if (S.view === 'job' && j) body = j.status === 'MATCHING' ? hoPick(j) : '<div class="d-pad">' + bookerJob(j) + '</div>';
+    var j = V.focus && job(V.focus);
+    if (!V.signedIn) body = signinView();
+    else if (!V.role) body = rolesView();
+    else if (V.view === 'inbox') body = inboxView();
+    else if (V.view === 'chat' && j) body = chatView(j);
+    else if (V.role === 'homeowner') {
+      if (V.view === 'request' && S.draft) body = hoRequest();
+      else if (V.view === 'job' && j) body = j.status === 'MATCHING' ? hoPick(j) : '<div class="d-pad">' + bookerJob(j) + '</div>';
       else body = hoHome();
-    } else if (S.role === 'pro') {
-      if (S.view === 'pin' && j) body = pinView(j);
-      else if (S.view === 'findings' && j) body = findingsView(j);
-      else if (S.view === 'job' && j) body = proJob(j);
+    } else if (V.role === 'pro') {
+      if (V.view === 'pin' && j) body = pinView(j);
+      else if (V.view === 'findings' && j) body = findingsView(j);
+      else if (V.view === 'job' && j) body = proJob(j);
       else body = proHome();
-    } else if (S.role === 'pm') {
-      if (S.view === 'invite') body = inviteView();
-      else if (S.view === 'job' && j) body = '<div class="d-pad">' + bookerJob(j) + '</div>';
+    } else if (V.role === 'pm') {
+      if (V.view === 'invite') body = inviteView();
+      else if (V.view === 'job' && j) body = '<div class="d-pad">' + bookerJob(j) + '</div>';
       else body = pmHome();
     } else {
-      body = S.view === 'tn-request' ? tnRequest() : tnHome();
+      body = V.view === 'tn-request' ? tnRequest() : tnHome();
     }
 
     var top = '<div class="d-top"><span class="d-tag">Demo</span><span class="d-who">' +
-      (S.role ? '<b>' + ROLES[S.role].label + '</b>' : S.signedIn ? 'Signed in' : 'Sample data only') + '</span>' +
-      (S.role ? '<button class="d-mini" data-act="go" data-view="inbox">Inbox' + (unread(S.role) ? ' (' + unread(S.role) + ')' : '') + '</button>' +
-        '<button class="d-mini" data-act="switch">Switch</button>' : '') +
-      (S.signedIn ? '<button class="d-mini" data-act="reset" aria-label="Start over">Start over</button>' : '') + '</div>';
+      (V.role ? '<b>' + ROLES[V.role].label + '</b>' : V.signedIn ? 'Signed in' : 'Sample data only') + '</span>' +
+      (V.role ? '<button class="d-mini" data-act="go" data-view="inbox">Inbox' + (unread(V.role) ? ' (' + unread(V.role) + ')' : '') + '</button>' +
+        (KIOSK ? '' : '<button class="d-mini" data-act="switch">Switch</button>') : '') + '</div>';
     var g = guide();
     root.innerHTML = top + '<div class="d-screen">' + body + '</div>' +
       '<div class="d-hint"><span><b>' + esc(g[0]) + '</b> ' + esc(g[1]) + '</span></div>';
-    var gt = document.getElementById('guide-title'), gb = document.getElementById('guide-body');
-    if (gt) gt.textContent = g[0];
-    if (gb) gb.textContent = g[1];
+    if (opts.guide) {
+      var gt = document.getElementById('guide-title'), gb = document.getElementById('guide-body');
+      if (gt) gt.textContent = g[0];
+      if (gb) gb.textContent = g[1];
+    }
     var sc = root.querySelector('.d-screen');
     if (sc) sc.scrollTop = keep;
-    lastView = S.view + S.role + S.focus;
-    save();
+    lastView = V.view + V.role + V.focus;
   }
 
   // ── Actions ───────────────────────────────────────────────────────
-  function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
-  function go(view, focus) { S.view = view; if (focus !== undefined) S.focus = focus; S.err = null; }
+  function val(id) { var el = root.querySelector('#' + id); return el ? el.value.trim() : ''; }
+  function go(view, focus) { V.view = view; if (focus !== undefined) V.focus = focus; V.err = null; }
 
   var ACTIONS = {
     fill: function () {
@@ -703,13 +742,13 @@
       return false;
     },
     role: function (el) {
-      S.role = el.dataset.role; S.err = null; S.pinEntry = '';
+      V.role = el.dataset.role; V.err = null; V.pinEntry = '';
       // Stay on the same job when the new role is part of it.
-      var j = S.view === 'job' && S.focus && job(S.focus);
-      if (!(j && (S.role === 'pro' || j.booker === S.role))) go('home');
+      var j = V.view === 'job' && V.focus && job(V.focus);
+      if (!(j && (V.role === 'pro' || j.booker === V.role))) go('home');
     },
-    switch: function () { S.role = null; go('home'); },
-    reset: function () { S = fresh(); S.signedIn = true; },
+    switch: function () { V.role = null; go('home'); },
+    reset: function () { resetAll(); return false; },
     go: function (el) { go(el.dataset.view); },
     open: function (el) { go('job', el.dataset.id); var j = job(el.dataset.id); if (j && j.status === 'RELEASED') j.seenReleased = true; },
     chat: function (el) { go('chat', el.dataset.id); },
@@ -726,7 +765,7 @@
         notify('pro', 'Express offer', 'A ' + trade(j.trade).name.toLowerCase() + ' job nearby. You have ' + EXPRESS_SECONDS + ' seconds to take it.');
         go('job', j.id);
       } else if (d.tier === 'NOW' && S.card === 'declined') {
-        S.err = null;
+        V.err = null;
         notify('homeowner', 'We didn’t book that', 'Your card didn’t go through, so no pro was booked. Update your card and try again.');
         go('inbox');
       } else {
@@ -758,13 +797,13 @@
       ({ enroute: proEnRoute, arrive: proArrive, start: proStart, complete: proComplete })[el.dataset.step](j);
     },
     key: function (el) {
-      var j = job(S.focus), k = el.dataset.k;
-      S.err = null;
-      if (k === '⌫') S.pinEntry = S.pinEntry.slice(0, -1);
-      else if (S.pinEntry.length < 4) S.pinEntry += k;
-      if (S.pinEntry.length === 4) {
-        if (S.pinEntry === j.pin) { S.pinEntry = ''; proVerify(j); go('job'); }
-        else { S.pinEntry = ''; S.err = 'That’s not the code. Ask the homeowner to check their screen.'; }
+      var j = job(V.focus), k = el.dataset.k;
+      V.err = null;
+      if (k === '⌫') V.pinEntry = V.pinEntry.slice(0, -1);
+      else if (V.pinEntry.length < 4) V.pinEntry += k;
+      if (V.pinEntry.length === 4) {
+        if (V.pinEntry === j.pin) { V.pinEntry = ''; proVerify(j); go('job'); }
+        else { V.pinEntry = ''; V.err = 'That’s not the code. Ask the homeowner to check their screen.'; }
       }
     },
     'send-estimate': function (el) {
@@ -818,30 +857,37 @@
     var fn = ACTIONS[el.dataset.act];
     if (!fn) return;
     e.preventDefault();
-    if (fn(el) !== false) render();
+    if (fn(el) !== false) renderAll();
   });
 
   root.addEventListener('submit', function (e) {
     var f = e.target, kind = f.dataset.form;
     e.preventDefault();
     if (kind === 'signin') {
-      if (val('d-email').toLowerCase() === EMAIL && val('d-pass') === PASSWORD) { S.signedIn = true; S.role = null; go('home'); }
-      else S.err = 'Use the demo login: ' + EMAIL + ' and password.';
+      if (val('d-email').toLowerCase() === EMAIL && val('d-pass') === PASSWORD) { V.signedIn = true; V.role = null; go('home'); }
+      else V.err = 'Use the demo login: ' + EMAIL + ' and password.';
     } else if (kind === 'chat') {
       var t = val('d-msg');
       if (t) {
         var j = job(f.dataset.id);
-        j.msgs.push({ from: S.role === 'pro' ? 'pro' : 'booker', text: t });
-        notify(S.role === 'pro' ? j.booker : 'pro', 'New message', t);
+        j.msgs.push({ from: V.role === 'pro' ? 'pro' : 'booker', text: t });
+        notify(V.role === 'pro' ? j.booker : 'pro', 'New message', t);
       }
     } else if (kind === 'join') {
       if (val('d-code') === S.invite.code) {
-        S.tenantIn = true; S.err = null;
+        S.tenantIn = true; V.err = null;
         notify('pm', 'Your tenant joined', TENANT.name + ' joined unit 1A.');
-      } else S.err = 'That code doesn’t match. Check the text from your landlord.';
+      } else V.err = 'That code doesn’t match. Check the text from your landlord.';
     }
-    render();
+    renderAll();
   });
+
+    var app = { root: root, V: V, render: render, mode: MODE,
+      act: function (name, data) { var fn = ACTIONS[name]; if (fn) { fn({ dataset: data || {} }); renderAll(); } } };
+    apps.push(app);
+    render();
+    return app;
+  }
 
   // Clocks: the pause countdown, and the Express offer timer.
   setInterval(function () {
@@ -854,10 +900,29 @@
         changed = true;
       }
     });
-    if (changed) { render(); return; }
-    root.querySelectorAll('[data-ends]').forEach(function (el) { el.textContent = clock(Number(el.dataset.ends) - now()); });
-    root.querySelectorAll('[data-offer]').forEach(function (el) { el.textContent = clock(Number(el.dataset.offer) - now()); });
+    if (changed) { renderAll(); return; }
+    document.querySelectorAll('[data-ends]').forEach(function (el) { el.textContent = clock(Number(el.dataset.ends) - now()); });
+    document.querySelectorAll('[data-offer]').forEach(function (el) { el.textContent = clock(Number(el.dataset.offer) - now()); });
   }, 1000);
 
-  render();
+  function resetAll() {
+    S = fresh();
+    if (apps.some(function (a) { return a.mode === 'kiosk'; })) S.proOnShift = true;
+    apps.forEach(function (a) {
+      var f = freshUI(a.mode === 'kiosk' ? a.V.role : null);
+      if (a.mode !== 'kiosk') { f.signedIn = true; f.view = 'home'; }
+      Object.keys(f).forEach(function (k) { a.V[k] = f[k]; });
+    });
+    renderAll();
+  }
+
+  window.NohmDemo = {
+    apps: apps,
+    reset: resetAll,
+    world: function () { return S; },
+    app: function (role) { for (var i = 0; i < apps.length; i++) if (apps[i].V.role === role) return apps[i]; return null; }
+  };
+  document.querySelectorAll('[data-nohm-demo]').forEach(function (el) {
+    mount(el, { mode: el.getAttribute('data-nohm-demo'), role: el.getAttribute('data-role'), guide: el.hasAttribute('data-guide') });
+  });
 })();

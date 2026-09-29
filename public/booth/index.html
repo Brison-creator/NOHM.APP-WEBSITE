@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>NOHM Booth</title>
+  <meta name="description" content="The NOHM trade show demo: the homeowner and the pro, side by side." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="NOHM" />
+  <link rel="manifest" href="/booth/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/booth/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/how-it-works/demo.css" />
+  <link rel="stylesheet" href="/booth/booth.css" />
+</head>
+<body>
+  <header class="k-top">
+    <div>
+      <div class="k-mark">NOHM</div>
+      <p class="k-tag">It&rsquo;s always something.</p>
+    </div>
+    <div class="k-qr">
+      <img src="/booth/qr-try.svg" alt="QR code for nohm.app/try" width="96" height="96" />
+      <p><b>Try it on your phone</b><span>nohm.app/try</span></p>
+    </div>
+  </header>
+  <main class="k-stage">
+    <section class="k-side">
+      <h2>The homeowner</h2>
+      <div class="phone"><div class="d-app" data-nohm-demo="kiosk" data-role="homeowner"></div></div>
+    </section>
+    <section class="k-side">
+      <h2>The pro</h2>
+      <div class="phone"><div class="d-app" data-nohm-demo="kiosk" data-role="pro"></div></div>
+    </section>
+  </main>
+  <div class="k-attract" id="attract" hidden>
+    <span>Tap anywhere to try it yourself</span>
+  </div>
+  <script src="/pricing.js"></script>
+  <script src="/how-it-works/demo.js"></script>
+  <script src="/booth/booth.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/booth/sw.js').catch(function () {});
+  </script>
+</body>
+</html>

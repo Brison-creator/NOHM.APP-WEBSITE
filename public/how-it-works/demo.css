@@ -13,6 +13,7 @@ body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color
 .intro .lede { margin: 12px auto 0; max-width: 560px; font-size: 17px; line-height: 1.5; color: #393c41; }
 .intro .login { margin: 14px 0 0; font-size: 14px; color: #86868b; }
 .intro .login b { color: #171a20; font-weight: var(--weight-ui); }
+.intro .login a { color: #356ca3; font-weight: var(--weight-ui); text-decoration: none; }
 
 .demo-wrap { padding: 0 12px 24px; }
 .phone {
@@ -111,6 +112,7 @@ body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color
   background: #356ca3; color: #fff; font: var(--weight-ui) 15px/1.2 var(--font-text); text-align: center;
 }
 .d-btn:hover { background: #2b5885; }
+a.d-btn { text-decoration: none; }
 .d-btn:disabled { background: #e6e7e9; color: #86868b; cursor: default; }
 .d-btn.sec { background: #fff; color: #171a20; border: 1px solid #d9dadd; }
 .d-btn.sec:hover { background: #f4f4f4; }

@@ -1,0 +1,61 @@
+/* The booth screen: the homeowner and the pro side by side, sized to fill a
+   landscape iPad or a TV. The phones scale with the screen's height. */
+html, body { margin: 0; height: 100%; overflow: hidden; background: #f4f4f4; }
+body {
+  font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #171a20;
+  -webkit-user-select: none; user-select: none; touch-action: manipulation; overscroll-behavior: none;
+  display: flex; flex-direction: column;
+}
+.k-top {
+  flex: none; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: max(16px, env(safe-area-inset-top)) 32px 12px;
+}
+.k-mark {
+  font-family: var(--font-display); font-weight: var(--weight-hero); font-size: clamp(28px, 3.4vh, 44px);
+  letter-spacing: -0.04em; line-height: 1;
+}
+.k-tag { margin: 6px 0 0; color: #356ca3; font-weight: var(--weight-ui); font-size: clamp(14px, 1.7vh, 20px); }
+.k-qr { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 10px 16px 10px 10px; }
+.k-qr img { width: clamp(72px, 10vh, 120px); height: auto; aspect-ratio: 1; display: block; }
+.k-qr p { margin: 0; }
+.k-qr b { display: block; font-size: clamp(15px, 1.8vh, 20px); font-weight: var(--weight-ui-strong); }
+.k-qr span { display: block; color: #5c5e62; font-size: clamp(13px, 1.5vh, 17px); }
+
+.k-stage {
+  flex: 1; min-height: 0; display: flex; justify-content: center; align-items: stretch;
+  gap: clamp(20px, 4vw, 72px); padding: 0 24px max(20px, env(safe-area-inset-bottom));
+}
+.k-side { display: flex; flex-direction: column; align-items: center; min-height: 0; }
+.k-side h2 {
+  margin: 0 0 10px; font-family: var(--font-display); font-weight: var(--weight-heading);
+  font-size: clamp(16px, 2vh, 24px); letter-spacing: -0.02em;
+}
+.k-side .phone {
+  flex: 1; min-height: 0; height: auto; max-height: 880px; width: auto; aspect-ratio: 400 / 820;
+  border: 10px solid #171a20; border-radius: 48px; box-sizing: border-box; background: #fff;
+}
+/* Each phone keeps its own "what's happening" line on the booth. */
+.k-side .d-hint { display: flex; }
+
+/* The tap highlight while the demo plays itself. */
+.d-tap { animation: d-tap 0.65s ease-out; box-shadow: 0 0 0 4px rgba(53, 108, 163, 0.45); }
+@keyframes d-tap { 0% { transform: scale(1); } 40% { transform: scale(0.97); } 100% { transform: scale(1); } }
+
+.k-attract {
+  position: fixed; left: 50%; top: max(24px, env(safe-area-inset-top)); transform: translateX(-50%);
+  z-index: 5; pointer-events: none;
+}
+.k-attract span {
+  display: block; padding: 14px 26px; border-radius: 999px; background: #171a20; color: #fff;
+  font-weight: var(--weight-ui); font-size: clamp(16px, 2vh, 22px); white-space: nowrap;
+  animation: k-breathe 2.4s ease-in-out infinite;
+}
+@keyframes k-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+
+/* A phone-sized screen isn't a booth, but don't break: stack the two. */
+@media (max-width: 700px) {
+  html, body { overflow: auto; height: auto; }
+  .k-stage { flex-direction: column; align-items: center; }
+  .k-side .phone { width: min(400px, 92vw); height: 760px; flex: none; }
+  .k-qr { display: none; }
+}
