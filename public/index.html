@@ -192,10 +192,10 @@
     }
     .reel-row::-webkit-scrollbar { display: none; }
     .reel-item { flex: 0 0 72vw; scroll-snap-align: center; margin: 0; }
-    .reel-item .media { position: relative; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #dcdde0; transform: scale(0.88); transition: transform .35s ease; }
+    .reel-item .media { position: relative; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #dcdde0; transform: scale(0.88); transition: transform .6s ease; }
     .reel-item.on .media { transform: scale(1); }
     .reel-item img, .reel-item video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .reel-item figcaption { margin-top: 18px; text-align: center; font-size: 16px; font-weight: var(--weight-body-strong); color: #171a20; opacity: 0; transition: opacity .3s; }
+    .reel-item figcaption { margin-top: 18px; text-align: center; font-size: 16px; font-weight: var(--weight-body-strong); color: #171a20; opacity: 0; transition: opacity .5s; }
     .reel-item.on figcaption { opacity: 1; }
     @media (min-width: 900px) {
       .reel { margin: 24px 32px 0; }
@@ -816,6 +816,32 @@
         };
         reel.addEventListener('scroll', pick, { passive: true });
         addEventListener('resize', pick); pick();
+
+        // Auto-advance one card every 3s with an eased glide, looping back to
+        // the first. Runs only while the reel is on screen, holds while it is
+        // touched or hovered, and stays still for reduced motion.
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches && items.length > 1) {
+          var at = 0, held = false, seen = false, gliding = false;
+          var glide = function (i) {
+            var from = reel.scrollLeft;
+            var to = items[i].offsetLeft + items[i].offsetWidth / 2 - reel.clientWidth / 2;
+            var t0 = performance.now(), dur = 700;
+            gliding = true; reel.style.scrollSnapType = 'none';
+            (function step(now) {
+              var k = Math.min(1, (now - t0) / dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+              reel.scrollLeft = from + (to - from) * e;
+              if (k < 1) requestAnimationFrame(step); else { reel.style.scrollSnapType = ''; gliding = false; }
+            })(t0);
+          };
+          setInterval(function () {
+            if (held || !seen || gliding || document.hidden) return;
+            at = (items.findIndex(function (it) { return it.classList.contains('on'); }) + 1) % items.length;
+            glide(at);
+          }, 3000);
+          new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }, { threshold: 0.4 }).observe(reel);
+          ['pointerenter', 'touchstart'].forEach(function (ev) { reel.addEventListener(ev, function () { held = true; }, { passive: true }); });
+          ['pointerleave', 'touchend'].forEach(function (ev) { reel.addEventListener(ev, function () { held = false; }, { passive: true }); });
+        }
       }
 
       function solid() { bar.classList.toggle('solid', scrollY > hero.offsetHeight - bar.offsetHeight); }
