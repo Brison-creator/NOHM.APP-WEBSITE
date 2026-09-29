@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Get Quotes | NOHM</title>
-  <meta name="description" content="Bigger job? Get quotes from three local companies. No pressure, all in the NOHM app." />
+  <title>Three Quotes | NOHM</title>
+  <meta name="description" content="Replacing your HVAC, water heater, electrical panel or generator? Show the job once and get up to three written quotes from verified local pros. The price you see is your total." />
   <meta name="theme-color" content="#26272b" />
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
@@ -21,7 +21,7 @@
 
     /* Opening: the pro at the door, the promise over it. */
     .top { position: relative; height: min(78svh, 720px); min-height: 480px; background: #16171a; }
-    .top img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% 30%; }
+    .top img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 45% 30%; }
     .top::after {
       content: ""; position: absolute; inset: 0;
       background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
@@ -100,8 +100,19 @@
     .nps ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
     .nps li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: var(--weight-body-strong); border-bottom: 1px solid rgba(0,0,0,.07); }
     .nps li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
-    .qtrades { max-width: 760px; margin: 0 auto; padding: 16px 24px 8px; }
-    .qtrades p { margin: 0; font-size: 16px; color: #5c5e62; }
+    .qtrades { max-width: 760px; margin: 0 auto; padding: 32px 24px 8px; }
+    .qtrades h2 { margin: 0 0 10px; font-size: clamp(22px, 2.2vw, 28px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); }
+    .qtrades p { margin: 0; font-size: 17px; line-height: 1.6; color: #171a20; font-weight: var(--weight-body-strong); }
+    .qtrades p.more { margin-top: 10px; font-size: 15px; color: #5c5e62; font-weight: normal; }
+    .qtrades a { color: #171a20; font-weight: var(--weight-ui); }
+    .price { padding-top: 40px; }
+    .price .example { background: #f4f4f4; border-radius: 12px; padding: 6px 20px; }
+    .price .row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; font-size: 16px; color: #393c41; border-bottom: 1px solid rgba(0,0,0,.07); }
+    .price .row:last-child { border-bottom: 0; }
+    .price .row b { color: #171a20; font-weight: var(--weight-ui); white-space: nowrap; }
+    .price .row.total { font-weight: var(--weight-ui); color: #171a20; }
+    .price .row.total b { font-size: 20px; }
+    .price .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.55; color: #5c5e62; }
     .qfaq { max-width: 760px; margin: 0 auto; padding: 40px 24px 8px; }
     .qfaq details { border-bottom: 1px solid rgba(0,0,0,0.09); }
     .qfaq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; position: relative; font-weight: var(--weight-body-strong); letter-spacing: var(--tracking-body); }
@@ -111,7 +122,7 @@
     .qfaq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
 
     @media (min-width: 900px) {
-      .top img { object-position: 50% 30%; }
+      .top img { object-position: 50% 25%; }
       .top .copy { bottom: 64px; }
       .facts { grid-template-columns: 1fr 1fr; }
     }
@@ -122,56 +133,75 @@
   <main>
     <section class="top">
       <picture>
-        <source type="image/webp" srcset="/img/flooring-960.webp 960w, /img/flooring-1672.webp 1672w" sizes="100vw" />
-        <img src="/img/flooring-1672.jpg" srcset="/img/flooring-960.jpg 960w, /img/flooring-1672.jpg 1672w" sizes="100vw"
-             width="1672" height="941" fetchpriority="high" style="object-position:55% 20%"
-             alt="A NOHM flooring pro installing a hardwood floor while the homeowner looks on, smiling" />
+        <source type="image/webp" srcset="/img/quotes-960.webp 960w, /img/quotes-1536.webp 1536w" sizes="100vw" />
+        <img src="/img/quotes-1536.jpg" srcset="/img/quotes-960.jpg 960w, /img/quotes-1536.jpg 1536w" sizes="100vw"
+             width="1536" height="1024" fetchpriority="high"
+             alt="A local HVAC pro with a NOHM patch walking a homeowner through his outdoor AC unit, tablet in hand" />
       </picture>
       <div class="copy">
-        <h1>Bigger job?<br />Get quotes.</h1>
-        <p>Three local companies. All calls and messages in the app. Backed by the No-Pressure Standard.</p>
+        <h1>Replacing something big?<br />Get Three Quotes.</h1>
+        <p>Show the job once. Up to three verified local pros quote the same work, side by side. No sales visits, no pressure.</p>
       </div>
     </section>
 
     <section class="steps">
       <h2>How it works.</h2>
       <ol>
-        <li><b>Tell us about the job</b><span>Describe it in the app and add photos.</span></li>
-        <li><b>Three local companies quote</b><span>Your request goes to three local pros held to the NOHM Standard.</span></li>
-        <li><b>Compare in the app</b><span>Call or message companies right in the app and see every quote side by side.</span></li>
-        <li><b>Pick one, or don&rsquo;t</b><span>Choose the quote you like, or walk away. It&rsquo;s your call.</span></li>
+        <li><b>Show the job once</b><span>The app walks you through a few photos and a 15-second video of what you&rsquo;re replacing, including the label. No one has to come out just to give you a price.</span></li>
+        <li><b>Up to three local pros quote</b><span>Verified pros who serve your area take turns in a fair rotation. Each one quotes the same job from the same photos, with the brand, model and warranty spelled out.</span></li>
+        <li><b>Compare full prices side by side</b><span>Every quote shows the complete price you&rsquo;ll pay. They appear in the order they arrive, never ranked by price, and you can message pros in the app.</span></li>
+        <li><b>Choose once the quotes are in</b><span>When every quote is in or the quote window closes, pick the one you want and tell us why. Or don&rsquo;t pick any.</span></li>
+        <li><b>Secure your pro</b><span>Pay the 5% project deposit in the app. It&rsquo;s part of your total, not extra. Only then does your pro get your name, address and phone number.</span></li>
+        <li><b>Checked on site, saved for good</b><span>Your pro confirms everything in person before work starts. When the job is done, the new equipment, model, serial number, photos and warranty go into your Home Record, with reminders before warranties run out.</span></li>
       </ol>
+    </section>
+
+    <section class="nps price">
+      <h2>The price you see is your total.</h2>
+      <p class="sub3">NOHM&rsquo;s 5% is already inside every quote. Nothing is added at checkout.</p>
+      <div class="example">
+        <div class="row total"><span>Project price (your total)</span><b>$10,000</b></div>
+        <div class="row"><span>5% project deposit, paid in the app (included)</span><b>$500</b></div>
+        <div class="row"><span>Balance, paid to your pro under their terms</span><b>$9,500</b></div>
+      </div>
+      <p class="fine">Some pros also offer financing through a lending partner. You apply on the partner&rsquo;s own secure page, and the quote never shows a monthly payment in place of the full price.</p>
     </section>
 
     <section class="nps">
       <h2>The No-Pressure Standard</h2>
-      <p class="sub3">Every company that quotes on NOHM agrees to it.</p>
+      <p class="sub3">Every pro who quotes on NOHM agrees to it.</p>
       <ul>
-        <li>No sales calls</li>
-        <li>No pushy follow-ups</li>
-        <li>No upsells you didn&rsquo;t ask for</li>
-        <li>Clear, written quotes</li>
-        <li>Calls and messages in the app</li>
-        <li>You can always say no</li>
+        <li>No sales visits to get a price</li>
+        <li>No sales calls or pushy follow-ups</li>
+        <li>Written quotes with brand and model</li>
+        <li>Your address stays private until you choose</li>
+        <li>Messages stay in the app</li>
+        <li>Price changes only with photos and your OK</li>
       </ul>
     </section>
 
     <section class="qtrades">
-      <p>Roofing &middot; Painting &middot; Flooring &middot; Fencing &middot; Gutters &middot; Remodeling &middot; and more</p>
+      <h2>Available now</h2>
+      <p>HVAC systems &middot; Packaged HVAC units &middot; Water heaters &middot; Tankless water heaters &middot; Electrical panels &middot; Standby generators</p>
+      <p class="more">More project types are on the way. For repairs, <a href="/services">book a local pro</a>.</p>
     </section>
 
     <section class="qfaq">
       <h2>Questions.</h2>
-      <details><summary>Does it cost anything to get quotes?</summary><p>No. Getting quotes through NOHM is free. You only pay the company you choose, for the work you approve.</p></details>
-      <details><summary>Will companies call me?</summary><p>Only through the app. All calls and messages happen inside NOHM, so your phone number stays private and there are no sales calls.</p></details>
-      <details><summary>Do I have to pick one?</summary><p>No. If none of the quotes feel right, you don&rsquo;t have to choose.</p></details>
+      <details><summary>Does it cost anything to get quotes?</summary><p>No. Asking for quotes is free, and you don&rsquo;t have to choose one. If you do, the 5% project deposit is already part of the quoted price. It is not added on top.</p></details>
+      <details><summary>Where does the 5% go?</summary><p>You pay it in the app to secure the pro you chose. It counts toward your total, and NOHM keeps it as its fee for running Three Quotes. You pay the rest to your pro under their payment terms.</p></details>
+      <details><summary>Can I get the deposit back?</summary><p>Yes, if your pro doesn&rsquo;t show up, abandons the job, can&rsquo;t supply the quoted equipment or won&rsquo;t honor the accepted scope. If you cancel or change your mind after your pro is secured, the deposit is nonrefundable. If NOHM makes a mistake, NOHM refunds you.</p></details>
+      <details><summary>How fast do quotes come in?</summary><p>Pros are offered your job in turn and have a short window to accept. Everyone who accepts quotes within the same deadline, shown in the app. You can choose as soon as every quote is in.</p></details>
+      <details><summary>Will pros call me?</summary><p>No. Pros message you inside NOHM, and your phone number and address stay private until you pay the deposit to the pro you chose.</p></details>
+      <details><summary>What if the price changes on site?</summary><p>Your pro checks everything in person first. If something is different, like a unit that needs a bigger size, they must show photos and a reason, and the price only changes if you approve it.</p></details>
+      <details><summary>Do the pros who aren&rsquo;t chosen see my answer?</summary><p>They only see the main reason you picked, like &ldquo;Best overall price&rdquo;. Never your name, the winning pro, the winning price or anything you typed.</p></details>
     </section>
 
     <section class="end">
       <h2>It&rsquo;s always something. NOHM it.</h2>
       <div class="pair">
-        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Quotes</a>
-        <a class="btn plain" href="/">Back to Services</a>
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Three Quotes</a>
+        <a class="btn plain" href="/services">All Services</a>
       </div>
     </section>
   </main>
