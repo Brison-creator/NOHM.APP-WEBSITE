@@ -446,7 +446,7 @@
             </div>
           </div>
         </article>
-        <article class="slide mission" aria-roledescription="slide" aria-label="4 of 4">
+        <article class="slide mission" data-hold="5000" aria-roledescription="slide" aria-label="4 of 4">
           <!-- Temporary background until a photo or video is made for this slide. -->
           <div class="mission-bg" aria-hidden="true"></div>
           <div class="copy mid">
@@ -793,12 +793,22 @@
       });
 
       // Advance on its own like Tesla's, until someone touches it.
-      function stop() { clearInterval(auto); auto = null; }
+      function stop() { clearTimeout(auto); auto = null; }
       var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
       var touched = false;
-      function startAuto() {
+      function startAuto(from) {
         if (still || touched || auto) return;
-        auto = setInterval(function () { show((current + 1) % dots.length, true); }, 7000);
+        next(from == null ? current : from);
+      }
+      // 7s a slide, plus any extra a slide asks for with data-hold (ms).
+      function next(i) {
+        var hold = 7000 + (parseInt(slides.children[i].getAttribute('data-hold'), 10) || 0);
+        auto = setTimeout(function () {
+          if (touched || !auto) return;
+          var n = (i + 1) % dots.length;
+          show(n, true);
+          next(n);
+        }, hold);
       }
       ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (t) {
         slides.addEventListener(t, function () { touched = true; stop(); }, { passive: true });
@@ -820,7 +830,7 @@
           setTimeout(function () { reveal(1); }, 2000);
           setTimeout(function () { reveal(2); }, 4000);
           setTimeout(function () { reveal(3); }, 6000);
-          setTimeout(function () { if (!touched) { show(1, true); startAuto(); } }, 8000);
+          setTimeout(function () { if (!touched) { show(1, true); startAuto(1); } }, 8000);
         }
         leak.addEventListener('playing', schedule);
         var p = leak.play();
