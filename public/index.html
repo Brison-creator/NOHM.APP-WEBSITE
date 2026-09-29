@@ -337,6 +337,9 @@
       .slide .pro { object-position: 50% 0%; }
       .slide .copy.low { top: calc(52px + 5svh); bottom: auto; }
       .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.34) 40%, rgba(0,0,0,0) 62%), linear-gradient(to top, rgba(0,0,0,.3), rgba(0,0,0,0) 14%); }
+      /* The door photo has his face where the words would go, so they sit low. */
+      .slide .copy.base { top: auto; bottom: 64px; }
+      .slide:has(.copy.base)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
       .cards { padding: 24px 0 0; }
       /* Wider screens fit two cards and a peek of the third. */
       .card-row { padding: 0 32px; scroll-padding: 0 32px; gap: 16px; }
@@ -397,17 +400,17 @@
         </article>
         <article class="slide" aria-roledescription="slide" aria-label="3 of 3">
           <picture class="wide-only">
-            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="100vw" />
-            <img class="pro" src="/img/pro-1536.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="100vw"
-                 width="1536" height="1024"
-                 alt="A Speedy Plumbing pro with a NOHM patch on his sleeve, smiling at a homeowner at her front door" />
+            <source type="image/webp" srcset="/img/door-960.webp 960w, /img/door-1536.webp 1536w" sizes="100vw" />
+            <img class="pro" src="/img/door-1536.jpg" srcset="/img/door-960.jpg 960w, /img/door-1536.jpg 1536w" sizes="100vw"
+                 width="1536" height="864"
+                 alt="A Clide HVAC pro with a NOHM patch on his backpack, smiling as he walks up to a homeowner at her front door" />
           </picture>
           <video class="pro narrow-only once" muted playsinline preload="none" poster="/video/door-poster.jpg"
                  aria-label="A Jet HVAC pro with a NOHM patch walks up to the front door, waves and shakes the homeowner&rsquo;s hand">
             <source src="/video/door-720.mp4" type="video/mp4" />
             <source src="/video/door-720.webm" type="video/webm" />
           </video>
-          <div class="copy low">
+          <div class="copy low base">
             <h2>Need a home repair?</h2>
             <p class="lede">Find and book a local pro.</p>
             <div class="pair">
@@ -463,9 +466,9 @@
       <div class="f-row">
         <article class="f-item">
           <picture>
-            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
-            <img src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
-                 width="1536" height="1024" loading="lazy" style="object-position:38% 30%" alt="A Speedy Plumbing pro with a NOHM patch on his sleeve at a homeowner&rsquo;s front door" />
+            <source type="image/webp" srcset="/img/door-960.webp 960w, /img/door-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/door-960.jpg" srcset="/img/door-960.jpg 960w, /img/door-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="864" loading="lazy" style="object-position:60% 30%" alt="A Clide HVAC pro with a NOHM patch on his backpack walking up to a homeowner&rsquo;s front door" />
           </picture>
           <h3>Owner-Operated</h3>
           <p>Local businesses. Their name is on the truck.</p>
