@@ -1,0 +1,135 @@
+diff --git a/public/how-it-works/demo.js b/public/how-it-works/demo.js
+index 11df332..2bd8ade 100644
+--- a/public/how-it-works/demo.js
++++ b/public/how-it-works/demo.js
+@@ -101,7 +101,12 @@
+     try { var d = JSON.parse(localStorage.getItem(key)); if (d && d.world && d.ui) return d; } catch (e) { /* none */ }
+     return null;
+   }
+-  function renderAll() { apps.forEach(function (a) { a.render(); }); save(); }
++  var listeners = []; // told after every change (the training lessons check their steps)
++  function renderAll() {
++    apps.forEach(function (a) { a.render(); });
++    save();
++    listeners.forEach(function (cb) { try { cb(S); } catch (e) { /* a listener's problem */ } });
++  }
+ 
+   function esc(t) {
+     return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+@@ -238,15 +243,17 @@
+     opts = opts || {};
+     var MODE = opts.mode || 'web';
+     var KIOSK = MODE === 'kiosk';
++    var TRAIN = MODE === 'train'; // new-pro training: always the pro; the lesson plays the homeowner
++    var FIXED = KIOSK || TRAIN;
+     var firstUI = null;
+     if (!S) {
+-      storeKey = KIOSK ? null : 'nohm-' + MODE + '-v1';
++      storeKey = FIXED ? null : 'nohm-' + MODE + '-v1';
+       var saved = storeKey && load(storeKey);
+       S = saved ? saved.world : fresh();
+       if (KIOSK) S.proOnShift = true;
+       firstUI = saved && saved.ui;
+     }
+-    var V = KIOSK ? freshUI(opts.role) : (firstUI || freshUI(null));
++    var V = FIXED ? freshUI(opts.role) : (firstUI || freshUI(null));
+ 
+   // ── Screens ───────────────────────────────────────────────────────
+   function progress(j) {
+@@ -485,7 +492,7 @@
+       '<button class="d-link" data-act="live">' + (S.proLive ? 'Ready Now: you’re live' : 'Ready Now: go live for four hours') + '</button></div>';
+     var offers = S.jobs.filter(function (j) { return j.status === 'OFFERED' && (S.proOnShift || j.tier === 'NOW'); });
+     h += '<h2 class="d-h2">Offers</h2>';
+-    if (!offers.length) h += '<p class="d-small">' + (S.proOnShift ? (KIOSK ? 'No offers right now. Book something on the homeowner\u2019s screen.' : 'No offers right now. Switch to the homeowner and book something.') : 'Go on shift to see offers.') + '</p>';
++    if (!offers.length) h += '<p class="d-small">' + (S.proOnShift ? (TRAIN ? 'No offers right now.' : KIOSK ? 'No offers right now. Book something on the homeowner\u2019s screen.' : 'No offers right now. Switch to the homeowner and book something.') : 'Go on shift to see offers.') + '</p>';
+     offers.forEach(function (j) {
+       h += '<div class="d-card blue"><div class="d-row"><h3>' + esc(trade(j.trade).name) + (j.tier !== 'STANDARD' ? ' · ' + (j.tier === 'NOW' ? 'NOHM Now' : 'Express') : '') + '</h3>' +
+         (j.tier === 'EXPRESS' ? '<span class="d-timer" data-offer="' + j.offerEnds + '" style="font-size:20px">' + clock(j.offerEnds - now()) + '</span>' : '') + '</div>' +
+@@ -533,7 +540,9 @@
+       h += '<button class="d-btn sec" data-act="chat" data-id="' + j.id + '">Message ' + (j.booker === 'pm' ? 'the property manager' : 'the homeowner') + (j.msgs.length ? ' (' + j.msgs.length + ')' : '') + '</button>';
+     }
+     var mv = nextMove(j);
+-    if (mv && mv.who !== 'pro' && KIOSK) {
++    if (mv && mv.who !== 'pro' && TRAIN) {
++      h += '<div class="d-card" style="margin-top:16px"><p class="d-small">Waiting on the homeowner.</p></div>';
++    } else if (mv && mv.who !== 'pro' && KIOSK) {
+       h += '<div class="d-card" style="margin-top:16px"><p class="d-small">It\u2019s the homeowner\u2019s move: tap it on their screen, on the left.</p>' +
+         '<button class="d-link" data-act="ff" data-id="' + j.id + '">Or fast-forward: ' + esc(mv.label.toLowerCase()) + '</button></div>';
+     } else if (mv && mv.who !== 'pro') {
+@@ -556,7 +565,7 @@
+       '<div class="d-pin">' + dots + '</div><div class="d-keys">' +
+       ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map(function (k) {
+         return k === '' ? '<span></span>' : '<button class="d-key" data-act="key" data-k="' + k + '" aria-label="' + (k === '⌫' ? 'Delete' : k) + '">' + k + '</button>';
+-      }).join('') + '</div><p class="d-small" style="text-align:center;margin-top:12px">Demo: the code is ' + j.pin + '.</p></div>';
++      }).join('') + '</div>' + (TRAIN ? '' : '<p class="d-small" style="text-align:center;margin-top:12px">Demo: the code is ' + j.pin + '.</p>') + '</div>';
+   }
+ 
+   function findingsView(j) {
+@@ -717,7 +726,7 @@
+     var top = '<div class="d-top"><span class="d-tag">Demo</span><span class="d-who">' +
+       (V.role ? '<b>' + ROLES[V.role].label + '</b>' : V.signedIn ? 'Signed in' : 'Sample data only') + '</span>' +
+       (V.role ? '<button class="d-mini" data-act="go" data-view="inbox">Inbox' + (unread(V.role) ? ' (' + unread(V.role) + ')' : '') + '</button>' +
+-        (KIOSK ? '' : '<button class="d-mini" data-act="switch">Switch</button>') : '') + '</div>';
++        (FIXED ? '' : '<button class="d-mini" data-act="switch">Switch</button>') : '') + '</div>';
+     var g = guide();
+     root.innerHTML = top + '<div class="d-screen">' + body + '</div>' +
+       '<div class="d-hint"><span><b>' + esc(g[0]) + '</b> ' + esc(g[1]) + '</span></div>';
+@@ -905,12 +914,13 @@
+     document.querySelectorAll('[data-offer]').forEach(function (el) { el.textContent = clock(Number(el.dataset.offer) - now()); });
+   }, 1000);
+ 
++  function fixedRole(a) { return a.mode === 'kiosk' || a.mode === 'train'; }
+   function resetAll() {
+     S = fresh();
+     if (apps.some(function (a) { return a.mode === 'kiosk'; })) S.proOnShift = true;
+     apps.forEach(function (a) {
+-      var f = freshUI(a.mode === 'kiosk' ? a.V.role : null);
+-      if (a.mode !== 'kiosk') { f.signedIn = true; f.view = 'home'; }
++      var f = freshUI(fixedRole(a) ? a.V.role : null);
++      if (!fixedRole(a)) { f.signedIn = true; f.view = 'home'; }
+       Object.keys(f).forEach(function (k) { a.V[k] = f[k]; });
+     });
+     renderAll();
+@@ -920,7 +930,41 @@
+     apps: apps,
+     reset: resetAll,
+     world: function () { return S; },
+-    app: function (role) { for (var i = 0; i < apps.length; i++) if (apps[i].V.role === role) return apps[i]; return null; }
++    app: function (role) { for (var i = 0; i < apps.length; i++) if (apps[i].V.role === role) return apps[i]; return null; },
++    onChange: function (cb) { listeners.push(cb); },
++    // The other side of a job, for training: the lesson plays the homeowner.
++    sim: {
++      job: function (id) { return job(id); },
++      set: function (k, v) { S[k] = v; renderAll(); },
++      // A homeowner books; the offer goes to the pro.
++      book: function (o) {
++        o = o || {};
++        var j = newJob({ trade: o.trade || 'plumbing', tier: o.tier || 'STANDARD', window: o.window });
++        j.status = 'OFFERED';
++        j.pro = 0;
++        S.pro = 0;
++        if (j.tier === 'EXPRESS') j.offerEnds = now() + EXPRESS_SECONDS * 1000;
++        notify('pro', j.tier === 'NOW' ? 'NOHM Now: leave now' : j.tier === 'EXPRESS' ? 'Express offer' : 'New job offer',
++          'A ' + trade(j.trade).name.toLowerCase() + ' job' + (j.tier === 'STANDARD' ? ' for tomorrow, ' + j.window : ' today') + '.');
++        renderAll();
++        return j.id;
++      },
++      // Whoever's move it is makes it (sets a scene up quickly).
++      move: function (id) { var j = job(id), mv = j && nextMove(j); if (mv) mv.go(); renderAll(); return !!mv; },
++      moveTo: function (id, status) {
++        var j = job(id);
++        for (var i = 0; i < 20 && j.status !== status; i++) { var mv = nextMove(j); if (!mv) break; mv.go(); }
++        renderAll();
++      },
++      fixCard: function (id) {
++        var j = job(id);
++        S.card = 'ok';
++        if (j && j.pause) {
++          if (j.pause.kind === 'ESTIMATE') { j.pause = null; bookerApprove(j); } else resume(j);
++        }
++        renderAll();
++      }
++    }
+   };
+   document.querySelectorAll('[data-nohm-demo]').forEach(function (el) {
+     mount(el, { mode: el.getAttribute('data-nohm-demo'), role: el.getAttribute('data-role'), guide: el.hasAttribute('data-guide') });

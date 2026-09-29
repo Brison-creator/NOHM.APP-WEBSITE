@@ -1,0 +1,111 @@
+/* /train: new-pro training. The lesson list, then each lesson: the steps
+   beside the pro's phone on wide screens, above it on phones. */
+html, body { margin: 0; background: #fff; }
+body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #171a20; }
+*, *::before, *::after { box-sizing: border-box; }
+
+body.is-home .t-lesson { display: none; }
+body:not(.is-home) .t-home { display: none; }
+
+/* ── Lesson list ─────────────────────────────────────────────────── */
+.t-home { max-width: 760px; margin: 0 auto; padding: 40px 24px 64px; }
+.t-home h1 {
+  margin: 0; font-size: clamp(34px, 4.4vw, 56px); line-height: 1.05;
+  font-family: var(--font-display); font-weight: var(--weight-hero);
+  letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
+}
+.t-lede { margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: #393c41; }
+.t-progress { margin: 22px 0 8px; height: 6px; border-radius: 3px; background: #e6e7e9; overflow: hidden; }
+.t-progress i { display: block; height: 100%; background: #356ca3; border-radius: 3px; transition: width 0.3s ease; }
+.t-count { margin: 0 0 20px; font-size: 14px; color: #5c5e62; font-weight: var(--weight-ui); }
+.t-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.t-item {
+  display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border: 0; border-radius: 12px;
+  background: #f4f4f4; cursor: pointer; text-align: left; font: inherit; color: inherit;
+}
+.t-item:hover { background: #e6e7e9; }
+.t-num {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  background: #fff; border: 1.5px solid #d9dadd; font-weight: var(--weight-ui-strong); font-size: 14px;
+}
+.t-item.done .t-num { background: #356ca3; border-color: #356ca3; color: #fff; }
+.t-item b { display: block; font-size: 16px; font-weight: var(--weight-ui-strong); }
+.t-item span.t-sub { display: block; font-size: 14px; color: #5c5e62; margin-top: 2px; }
+.t-item .t-go { margin-left: auto; font-size: 14px; color: #356ca3; font-weight: var(--weight-ui); white-space: nowrap; }
+.t-main {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin: 0 0 22px;
+  border: 0; border-radius: 4px; background: #356ca3; color: #fff; cursor: pointer;
+  font: var(--weight-ui) 16px/1 var(--font-text);
+}
+.t-main:hover { background: #2b5885; }
+.t-note { margin: 22px 0 0; font-size: 13px; color: #86868b; line-height: 1.5; }
+.t-ready { background: #171a20; color: #fff; border-radius: 12px; padding: 22px; margin: 0 0 22px; }
+.t-ready h2 { margin: 0 0 6px; font-family: var(--font-display); font-weight: var(--weight-heading); font-size: 24px; letter-spacing: -0.02em; }
+.t-ready p { margin: 0; color: #d9dadd; line-height: 1.5; }
+
+/* ── A lesson ────────────────────────────────────────────────────── */
+.t-lesson { display: flex; flex-direction: column; height: calc(100svh - 52px); }
+.t-panel { flex: none; padding: 14px 16px 12px; border-bottom: 1px solid #e6e7e9; max-height: 46svh; overflow-y: auto; }
+.t-back {
+  border: 0; background: none; padding: 0; cursor: pointer; color: #171a20;
+  font: var(--weight-ui) 14px/1 var(--font-text);
+}
+.t-eyebrow { margin: 12px 0 4px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #86868b; font-weight: var(--weight-ui); }
+.t-panel h1 {
+  margin: 0 0 8px; font-family: var(--font-display); font-weight: var(--weight-heading);
+  font-size: 22px; line-height: 1.15; letter-spacing: -0.03em;
+}
+.t-why { margin: 0 0 12px; }
+.t-why summary { cursor: pointer; font-size: 14px; font-weight: var(--weight-ui); color: #356ca3; }
+.t-why p { margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #393c41; }
+.t-steps { list-style: none; margin: 0; padding: 0; }
+.t-steps li { position: relative; padding: 8px 0 8px 30px; font-size: 15px; line-height: 1.45; color: #86868b; }
+.t-steps li::before {
+  content: ""; position: absolute; left: 0; top: 9px; width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid #d9dadd; background: #fff;
+}
+.t-steps li.done { color: #5c5e62; }
+.t-steps li.done::before { background: #356ca3; border-color: #356ca3; }
+.t-steps li.done::after {
+  content: ""; position: absolute; left: 5px; top: 14px; width: 8px; height: 4px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg);
+}
+.t-steps li.now { color: #171a20; font-weight: var(--weight-ui-strong); }
+.t-steps li.now::before { border: 2px solid #356ca3; }
+/* On a phone, only the step to do now; the list is there on wide screens. */
+.t-steps li:not(.now) { display: none; }
+.t-complete { margin: 4px 0 0; }
+.t-complete p { margin: 0 0 4px; font-weight: var(--weight-ui-strong); }
+.t-complete .t-main { margin: 8px 0 0; }
+
+.t-phone-wrap { flex: 1; min-height: 0; padding: 10px 12px 12px; }
+.t-phone-wrap .phone { height: 100%; min-height: 0; max-height: none; }
+.t-lesson .d-hint { display: none; }
+
+/* The quiz lesson has no phone. */
+body.is-quiz .t-phone-wrap { display: none; }
+body.is-quiz .t-panel { max-height: none; border-bottom: 0; flex: 1; }
+.t-q { margin: 16px 0 0; padding: 16px; background: #f4f4f4; border-radius: 12px; }
+.t-q p.t-ask { margin: 0 0 10px; font-weight: var(--weight-ui-strong); font-size: 16px; line-height: 1.4; }
+.t-opt {
+  display: block; width: 100%; margin: 0 0 8px; padding: 12px 14px; border: 1px solid #d9dadd; border-radius: 8px;
+  background: #fff; cursor: pointer; text-align: left; font: inherit; font-size: 15px; color: #171a20;
+}
+.t-opt:hover { border-color: #171a20; }
+.t-opt.right { border: 2px solid #356ca3; }
+.t-opt.wrong { border-color: #d9dadd; color: #86868b; text-decoration: line-through; }
+.t-explain { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: #393c41; }
+
+@media (min-width: 900px) {
+  .t-lesson {
+    height: auto; display: grid; grid-template-columns: minmax(0, 440px) 400px;
+    justify-content: center; align-items: start; gap: 56px; padding: 40px 24px 56px;
+  }
+  .t-panel { max-height: none; border: 0; padding: 0; position: sticky; top: 92px; }
+  .t-panel h1 { font-size: 30px; }
+  .t-why summary { display: none; }
+  .t-steps li:not(.now) { display: block; }
+  .t-phone-wrap { padding: 0; }
+  .t-phone-wrap .phone { height: 820px; }
+  body.is-quiz .t-lesson { grid-template-columns: minmax(0, 640px); }
+}
