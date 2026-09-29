@@ -73,6 +73,30 @@
         linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.34) 40%, rgba(0, 0, 0, 0) 62%),
         linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0) 14%);
     }
+    /* Slide 4, the mission: a temporary background of drifting NOHM-blue
+       light over a faint grid, words centred. */
+    .mission { background: #0d0e10; }
+    .mission-bg { position: absolute; inset: 0; overflow: hidden; }
+    .mission-bg::before {
+      content: ""; position: absolute; inset: -20%;
+      background:
+        radial-gradient(40% 45% at 25% 30%, rgba(53, 108, 163, .55), transparent 70%),
+        radial-gradient(35% 40% at 78% 70%, rgba(53, 108, 163, .38), transparent 70%),
+        radial-gradient(30% 30% at 60% 20%, rgba(255, 255, 255, .06), transparent 70%);
+      animation: mission-drift 18s ease-in-out infinite alternate;
+    }
+    .mission-bg::after {
+      content: ""; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 75%);
+              mask-image: radial-gradient(ellipse at center, #000 20%, transparent 75%);
+    }
+    @keyframes mission-drift { to { transform: translate(6%, -4%) rotate(8deg) scale(1.08); } }
+    @media (prefers-reduced-motion: reduce) { .mission-bg::before { animation: none; } }
+    .slide.mission::after { background: linear-gradient(to top, rgba(0, 0, 0, .3), rgba(0, 0, 0, 0) 14%); }
     .slide .copy {
       position: absolute; z-index: 1; left: 0; right: 0; top: calc(52px + 10svh);
       padding: 0 24px;
@@ -357,6 +381,9 @@
       .dock { display: none; }
       body { padding-bottom: 0; }
     }
+    .slide .copy.mid { top: 50%; transform: translateY(-50%); max-width: 860px; margin: 0 auto; }
+    .slide .copy.mid h2 { font-size: clamp(26px, 3.4vw, 44px); }
+    .slide .copy.mid .lede { max-width: 640px; margin: 16px auto 26px; color: rgba(255, 255, 255, .82); line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -364,7 +391,7 @@
   <main>
     <section class="hero" aria-roledescription="carousel" aria-label="NOHM">
       <div class="slides" id="slides">
-        <article class="slide" aria-roledescription="slide" aria-label="1 of 3">
+        <article class="slide" aria-roledescription="slide" aria-label="1 of 4">
           <video class="washer" id="leak" muted playsinline preload="auto" poster="/video/leak-poster.jpg"
                  aria-label="Water rolls out from under a washer while the homeowner crouches beside it, calmly booking help on his phone">
             <source media="(max-width: 899px)" src="/video/leak-720.mp4" type="video/mp4" />
@@ -381,7 +408,7 @@
             </div>
           </div>
         </article>
-        <article class="slide" aria-roledescription="slide" aria-label="2 of 3">
+        <article class="slide" aria-roledescription="slide" aria-label="2 of 4">
           <video class="fixed once" muted playsinline preload="metadata" poster="/video/handled-poster.jpg"
                  aria-label="The homeowner, washer fixed, shaking hands with a pro from Larry&rsquo;s Appliance wearing a NOHM patch">
             <source media="(max-width: 899px)" src="/video/handled-720.mp4" type="video/mp4" />
@@ -398,7 +425,7 @@
             </div>
           </div>
         </article>
-        <article class="slide" aria-roledescription="slide" aria-label="3 of 3">
+        <article class="slide" aria-roledescription="slide" aria-label="3 of 4">
           <picture class="wide-only">
             <source type="image/webp" srcset="/img/door-960.webp 960w, /img/door-1536.webp 1536w" sizes="100vw" />
             <img class="pro" src="/img/door-1536.jpg" srcset="/img/door-960.jpg 960w, /img/door-1536.jpg 1536w" sizes="100vw"
@@ -419,11 +446,24 @@
             </div>
           </div>
         </article>
+        <article class="slide mission" aria-roledescription="slide" aria-label="4 of 4">
+          <!-- Temporary background until a photo or video is made for this slide. -->
+          <div class="mission-bg" aria-hidden="true"></div>
+          <div class="copy mid">
+            <h2>NOHM is reinventing how we manage our homes for the 21st century and beyond.</h2>
+            <p class="lede">Putting power back into the hands of homeowners and contractors while bypassing Google, paid ads, lead sellers, and every other middleman standing between you and the help you need.</p>
+            <div class="pair">
+              <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Download Now</a>
+              <a class="btn plain" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
       </div>
       <div class="dots" id="dots">
         <button type="button" aria-label="Show slide 1" aria-current="true"></button>
         <button type="button" aria-label="Show slide 2" aria-current="false"></button>
         <button type="button" aria-label="Show slide 3" aria-current="false"></button>
+        <button type="button" aria-label="Show slide 4" aria-current="false"></button>
       </div>
     </section>
 
