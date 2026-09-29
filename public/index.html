@@ -142,6 +142,8 @@
     /* NOHM is advanced: a square loop of the dispatch engine, from orbit to the door. */
     .advanced { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; display: grid; gap: 20px; }
     .advanced h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; }
+    .advanced .adv-copy { margin: 16px 0 0; max-width: 520px; font-size: clamp(17px, 1.4vw, 19px); line-height: 1.55; color: #393c41; }
+    .advanced .adv-close { margin: 12px 0 0; font-size: clamp(17px, 1.4vw, 19px); font-weight: var(--weight-ui); color: #171a20; }
     .advanced .live-link { display: inline-block; margin-top: 12px; font-size: 15px; font-weight: var(--weight-ui); color: #171a20; text-decoration: underline; text-underline-offset: 3px; }
     .advanced video { display: block; width: 100%; max-width: 560px; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; background: #05070B; }
     .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -526,6 +528,8 @@
     <section class="advanced" aria-labelledby="adv-title">
       <div>
         <h2 id="adv-title">NOHM is advanced.</h2>
+        <p class="adv-copy">Speed is the name of the game. You want it fixed as fast as possible, with as little headache as possible. That&rsquo;s where NOHM comes in: we make it happen.</p>
+        <p class="adv-close">Join the future of home.</p>
         <a class="live-link" href="/dispatch">See it live</a>
       </div>
       <video autoplay muted loop playsinline preload="metadata" poster="/video/advanced-poster.jpg"
