@@ -879,6 +879,10 @@
         document.querySelectorAll('.slide video:not(#leak), .vcard video, .advanced video, .svc-img video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
       }
 
+      // NOHM Now reel, in its own scope: its names (mark, dots, current,
+      // still…) must not replace the hero carousel's, which share this
+      // function. When they did, the hero's slides 2 and 3 never played.
+      (function () {
       // NOHM Now reel: the card nearest the middle is "on" (full size, caption shown).
       var reel = document.getElementById('reel-row');
       if (reel) {
@@ -950,6 +954,7 @@
           reel.addEventListener('touchend', function () { held = false; lastTouch = Date.now(); }, { passive: true });
         }
       }
+      })();
 
       function clear() { bar.classList.toggle('clear', scrollY <= hero.offsetHeight - bar.offsetHeight); }
       addEventListener('scroll', clear, { passive: true });
