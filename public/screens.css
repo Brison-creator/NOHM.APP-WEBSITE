@@ -24,14 +24,14 @@
   display: inline-block;
   min-width: 220px;
   padding: 15px 28px;
-  border-radius: 6px;
-  background: #e6e7e9;
-  color: #171a20;
+  border-radius: 4px;
+  background: #356CA3;
+  color: #fff;
   font-size: 17px;
   text-decoration: none; font-weight: var(--weight-ui);
 }
-.cta:hover { background: #d9dadd; }
-.stores { margin: 14px 0 0; font-size: 14px; color: #86868b; }
+.cta:hover { background: #2b5885; }
+.stores { margin: 14px 0 0; font-size: 14px; color: #6e6e73; }
 .stores a { color: #5c5e62; text-decoration: none; font-weight: var(--weight-ui); }
 .screen picture, .screen img { display: block; width: 100%; }
 .screen img { height: 62svh; object-fit: cover; }
@@ -51,4 +51,4 @@ footer {
   font-family: var(--font-text);
   font-size: 12px;
 }
-footer, footer a { color: #86868b; text-decoration: none; }
+footer, footer a { color: #6e6e73; text-decoration: none; }

@@ -1,17 +1,20 @@
-/* The top bar every page carries: slim, black, white NOHM on the left, tall
-   enough to hold nav buttons on the right. Pages link this file and open
-   <body> with <header class="bar"><a href="/">NOHM</a></header>. */
+/* The top bar every page carries: slim, white, the NOHM wordmark on the
+   left (set exactly like the app's sign-in screen and the admin panel),
+   tall enough to hold nav buttons on the right. Pages link this file and
+   open <body> with <header class="bar"><a href="/">NOHM</a></header>.
+   The homepage's bar is clear over its photo (.bar.clear) until you
+   scroll. */
 .bar {
   position: sticky; top: 0; z-index: 10;
   height: 52px; padding: 0 20px;
   display: flex; align-items: center;
-  background: linear-gradient(#26272b, #16171a);
-  border-bottom: 1px solid #3a3b40;
+  background: #fff;
+  border-bottom: 1px solid #e6e7e9;
 }
 .bar a {
   font-family: var(--font-display);
   font-weight: var(--weight-hero); font-size: 19px; line-height: 1; letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
-  color: #fff; text-decoration: none;
+  color: #171a20; text-decoration: none;
 }
 .bar { justify-content: space-between; }
 
@@ -20,14 +23,18 @@
    /menu.js, which every page loads. */
 .menu-btn {
   font: var(--weight-ui) 14px/1 var(--font-text);
-  color: #fff;
-  background: rgba(255, 255, 255, 0.16);
+  color: #171a20;
+  background: #f4f4f4;
   border: 0; border-radius: 4px;
   padding: 9px 14px;
   cursor: pointer;
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
-.menu-btn:hover { background: rgba(255, 255, 255, 0.26); }
+.menu-btn:hover { background: #e6e7e9; }
+/* Clear over a photo: white wordmark and a frosted Menu button. */
+.bar.clear a { color: #fff; }
+.bar.clear .menu-btn { color: #fff; background: rgba(255, 255, 255, 0.16); }
+.bar.clear .menu-btn:hover { background: rgba(255, 255, 255, 0.26); }
 .menu {
   position: fixed; inset: 0; z-index: 100;
   display: none; flex-direction: column;

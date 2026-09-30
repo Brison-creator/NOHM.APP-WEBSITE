@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>NOHM</title>
   <meta name="description" content="It's always something. NOHM it. Find and book a local pro for home repairs." />
-  <meta name="theme-color" content="#26272b" />
+  <meta name="theme-color" content="#ffffff" />
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/type.css" />
@@ -36,13 +36,11 @@
        past it. */
     .bar {
       position: fixed; left: 0; right: 0;
-      background: transparent;
-      border-bottom-color: transparent;
       transition: background-color 0.25s ease, border-color 0.25s ease;
     }
-    .bar.solid {
-      background: linear-gradient(#26272b, #16171a);
-      border-bottom-color: #3a3b40;
+    .bar.clear {
+      background: transparent;
+      border-bottom-color: transparent;
     }
 
     /* Same height as Tesla's phone hero: about 59% of the screen, so the next
@@ -131,7 +129,7 @@
     .lede.above { margin: 0 0 10px; }
     .lede.above + h1 { margin-bottom: 22px; }
 
-    /* Tesla's pair of buttons, side by side: the main one solid gray, the
+    /* Tesla's pair of buttons, side by side: the main one NOHM blue, the
        second one white. */
     .pair {
       display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
@@ -142,8 +140,8 @@
       height: 44px; padding: 0 12px; border-radius: 4px;
       font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
     }
-    .btn.main { background: #393c41; color: #fff; }
-    .btn.main:hover { background: #2b2d31; }
+    .btn.main { background: #356CA3; color: #fff; }
+    .btn.main:hover { background: #2b5885; }
     .btn.plain { background: #fff; color: #393c41; }
     .btn.plain:hover { background: #eeeeee; }
 
@@ -243,12 +241,12 @@
     .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; margin-bottom: 34px; }
     .p b { display: block; font-size: clamp(52px, 5.6vw, 72px); line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .p span { display: block; margin-top: 8px; font-size: 16px; line-height: 1.4; color: #393c41; }
-    .markets { margin: 18px 0 0; font-size: 13px; color: #86868b; }
+    .markets { margin: 18px 0 0; font-size: 13px; color: #6e6e73; }
     .pair.left { margin: 0; max-width: 540px; }
-    .btn.black { background: #171a20; color: #fff; }
-    .btn.black:hover { background: #000; }
-    .btn.soft { background: #f4f4f4; color: #171a20; }
-    .btn.soft:hover { background: #e9e9e9; }
+    .btn.black { background: #356CA3; color: #fff; }
+    .btn.black:hover { background: #2b5885; }
+    .btn.soft { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    .btn.soft:hover { background: #eeeeee; }
 
     /* Full-width video card right under the hero, Tesla style. */
     /* What NOHM is, in one card between the hero and the first video. */
@@ -347,11 +345,11 @@
     .dock a {
       display: flex; align-items: center; justify-content: center; gap: 10px;
       height: 48px; border-radius: 4px;
-      background: #f4f4f4; border: 1px solid #d0d1d2;
+      background: #fff; border: 1px solid #d0d1d2;
       color: #393c41; font-size: 16px; text-decoration: none; font-weight: var(--weight-ui);
     }
     .dock .chat { flex: 0 0 60px; }
-    .dock .get { flex: 1; }
+    .dock .get { flex: 1; background: #356CA3; border-color: #356CA3; color: #fff; }
     body { padding-bottom: 76px; }
 
     @media (min-width: 900px) {
@@ -387,7 +385,7 @@
   </style>
 </head>
 <body>
-  <header class="bar"><a href="/">NOHM</a></header>
+  <header class="bar clear"><a href="/">NOHM</a></header>
   <main>
     <section class="hero" aria-roledescription="carousel" aria-label="NOHM">
       <div class="slides" id="slides">
@@ -754,7 +752,7 @@
       <svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M4 1h16a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H11l-5 4.5V16H4a3 3 0 0 1-3-3V4a3 3 0 0 1 3-3z" fill="#393c41"/><circle cx="7.5" cy="8.5" r="1.4" fill="#fff"/><circle cx="12" cy="8.5" r="1.4" fill="#fff"/><circle cx="16.5" cy="8.5" r="1.4" fill="#fff"/></svg>
     </a>
     <a class="get" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">
-      <svg width="16" height="24" viewBox="0 0 16 24" aria-hidden="true"><rect x="1" y="1" width="14" height="22" rx="3" fill="none" stroke="#393c41" stroke-width="1.8"/><path d="M6 19.5h4" stroke="#393c41" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <svg width="16" height="24" viewBox="0 0 16 24" aria-hidden="true"><rect x="1" y="1" width="14" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 19.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       Download NOHM
     </a>
   </div>
@@ -894,9 +892,9 @@
         }
       }
 
-      function solid() { bar.classList.toggle('solid', scrollY > hero.offsetHeight - bar.offsetHeight); }
-      addEventListener('scroll', solid, { passive: true });
-      solid();
+      function clear() { bar.classList.toggle('clear', scrollY <= hero.offsetHeight - bar.offsetHeight); }
+      addEventListener('scroll', clear, { passive: true });
+      clear();
     })();
   </script>
   <script>

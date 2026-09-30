@@ -4,7 +4,7 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
 
 ## Rules for every page
 
-- **Layout copies tesla.com.** Homepage: full-screen photo carousel with the title and a pair of buttons (gray main, white second) over the photo, the bar clear over the photo until you scroll, gray cards below, and on phones a Download button pinned to the bottom.
+- **Layout copies tesla.com.** Homepage: full-screen photo carousel with the title and a pair of buttons (NOHM blue main, white second) over the photo, the bar clear over the photo until you scroll (then white), gray cards below, and on phones a Download button pinned to the bottom.
 - **Keep explanations short, Tesla style:** a photo, a short title, one line. Use the feature row (`/features.css` + `/features.js`) for that; lists become short spec lists.
 - Homepage trades: each trade gets a full-screen `<section class="panel">` near the bottom of the homepage (Lawn Care was removed for launch: recurring, quoted work doesn't fit Standard/Express/NOHM Now yet; photo kept at public/img/lawn-*). Paint out third-party logos (e.g. mower, truck brands) before publishing photos.
 - Services: the homepage shows 8 featured cards and a **Browse All Services** button to `/services`, which lists all 15 trades (Plumbing, HVAC, Electrical, Appliance, Locksmith, Pressure Washing, Handyman, Landscaping & Lawn Care, Gutter Service, Garage Door Service, Pest Control, Painting, Flooring, House Cleaning, Tree Service). The homeowners page tiles carry the same 15. Add or rename a trade in all three places.
@@ -28,20 +28,20 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
   ```html
   <header class="bar"><a href="/">NOHM</a></header>
   ```
-  Also set `<meta name="theme-color" content="#26272b" />` so the phone's status bar matches.
+  Also set `<meta name="theme-color" content="#ffffff" />` so the phone's status bar matches.
 - **Typography lives in `/type.css`**, which every page links first (after preloading the two font files). Use its tokens, never a literal font stack or weight:
   - `--font-display` **Sora**: hero and major headlines 800 (`--weight-hero`), section headings 700 (`--weight-heading`), tracking `--tracking-headline` (-0.04em) plus `--word-spacing-headline`; small titles use `--tracking-title`.
   - `--font-text` **Manrope**: body 400/500 (`--weight-body`, `--weight-body-strong`), navigation, buttons, forms and labels 600/700 (`--weight-ui`, `--weight-ui-strong`), normal tracking. Button labels use `--size-button`.
   - `h1`–`h4` pick up Sora by default; for anything else use `.t-hero`, `.t-heading`, `.t-title`, `.t-body`, `.t-lede`, `.t-ui`.
   - The fonts are self-hosted WOFF2 in `public/fonts/` (official google/fonts builds, cut to the weights above and Latin), with their SIL OFL licenses beside them. A new weight means rebuilding the file, not adding a CDN link.
-  - The bar's "NOHM" is Sora 800.
+  - The bar's "NOHM" is Sora 800, -0.04em, `#171a20` on the white bar (white only while the homepage bar is clear over its photo). It is the same wordmark as the app's sign-in screen and the admin panel; don't restyle it on one without the others.
 - **"NOHM it." is a protected brand treatment**: the homepage's `h1.mark`, in **Panchang** 600 with its own size and spacing. Don't change it, and don't use Panchang for anything else. Panchang loads from Fontshare on the homepage only
   (`https://api.fontshare.com/v2/css?f[]=panchang@600&display=swap`); never commit its files, since the ITF Free Font License forbids redistributing them and this repo is public.
 - Palette is white, black and NOHM blue, nothing else:
-  - background `#ffffff`; top bar near-black with a touch of gray (`#26272b` → `#16171a`, hairline `#3a3b40`); `theme-color` `#26272b`
-  - headlines and the wordmark `#171a20`; body text `#393c41`; small print `#86868b`
-  - buttons are gray: `#e6e7e9` with `#171a20` text (hover `#d9dadd`); store links `#5c5e62`
-  - NOHM blue `#356CA3` only for the tagline and links inside text
+  - background `#ffffff`; top bar white with a `#e6e7e9` hairline (the homepage's is clear over its photo until you scroll); `theme-color` `#ffffff`
+  - headlines and the wordmark `#171a20`; body text `#393c41`; small print `#6e6e73` (5.1:1 on white; `#86868b` only for disabled controls)
+  - action buttons are NOHM blue: `#356CA3` with white text (hover `#2b5885`), 4px corners, the same as the app and the admin panel. The second button in a pair is white with `#393c41` text and a `#d0d1d2` border. One blue button per group; store links `#5c5e62`
+  - otherwise NOHM blue `#356CA3` is for the tagline and links inside text
 - NOHM only steps in on no-shows/abandoned jobs, unsafe or inappropriate conduct, and unapproved charges; everything else is between homeowner and pro, but reports count toward a pro's standing (like rideshare). Don't promise refunds or guarantees beyond that. See /step-in.
 - Never say good work earns pros more jobs; meeting the NOHM Standard keeps them in good standing.
 - Copy about pros and the NOHM Standard comes from the NOHM Marketing Plan (section 5); don't invent policies.
