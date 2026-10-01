@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Renters | NOHM</title>
+  <meta name="description" content="Something broke? Tell your landlord in one tap. A local pro handles the rest. Free for renters." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/features.css" />
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body {
+      font-family: var(--font-text);
+      -webkit-font-smoothing: antialiased;
+      color: #171a20;
+    }
+
+    /* Opening: the pro at the door, the promise over it. */
+    .top { position: relative; height: min(78svh, 720px); min-height: 480px; background: #16171a; }
+    .top img, .top video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% 30%; }
+    .top::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
+    }
+    .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
+    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+
+    /* The long read: one column, generous space, Tesla's quiet type. */
+    .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
+    .part { padding: 48px 0 8px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+    .part:last-child { border-bottom: 0; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #6e6e73; font-weight: var(--weight-ui); }
+    .part h2 { margin: 0 0 14px; font-size: clamp(26px, 3vw, 36px); line-height: 1.15; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .part p { margin: 0 0 18px; font-size: 17px; line-height: 1.65; color: #393c41; }
+
+    /* The standard itself: a checked list in a gray card. */
+    .list { list-style: none; margin: 8px 0 28px; padding: 8px 22px; background: #f4f4f4; border-radius: 12px; }
+    .list li {
+      position: relative; padding: 14px 0 14px 34px;
+      font-size: 17px; line-height: 1.45; color: #171a20;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    }
+    .list li:last-child { border-bottom: 0; }
+    .list li::before {
+      content: ""; position: absolute; left: 4px; top: 19px;
+      width: 12px; height: 6px;
+      border-left: 2px solid #171a20; border-bottom: 2px solid #171a20;
+      transform: rotate(-45deg);
+    }
+
+    /* Two short promises side by side on wide screens. */
+    .facts { display: grid; gap: 12px; margin: 8px 0 28px; }
+    .fact { background: #f4f4f4; border-radius: 12px; padding: 20px 22px; }
+    .fact b { display: block; font-size: 17px; margin-bottom: 4px; font-weight: var(--weight-ui); }
+    .fact span { font-size: 15px; line-height: 1.5; color: #393c41; }
+
+    .end { text-align: center; padding: 56px 24px 48px; }
+    .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
+    }
+    .btn.main { background: #356CA3; color: #fff; }
+    .btn.main:hover { background: #2b5885; }
+    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    .btn.plain:hover { background: #eeeeee; }
+
+
+    /* The standard as a short spec list, like Tesla's specs. */
+    .spec { max-width: 1200px; margin: 8px auto 0; padding: 32px 24px 8px; }
+    .spec h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .spec ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+    .spec li { position: relative; padding: 14px 0 14px 26px; font-size: 16px; font-weight: var(--weight-body-strong); border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .spec li::before { content: ""; position: absolute; left: 2px; top: 19px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
+    .trio { max-width: 1200px; margin: 0 auto; padding: 24px 24px 8px; display: grid; gap: 12px; }
+    .trio .fact a { color: #171a20; font-weight: var(--weight-ui); }
+    @media (min-width: 900px) {
+      .spec ul { grid-template-columns: repeat(3, 1fr); }
+      .trio { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Trades as simple tiles. */
+    .trades { max-width: 1200px; margin: 0 auto; padding: 56px 24px 8px; }
+    .trades h2, .fees h2, .area h2, .faq h2 { margin: 0 0 18px; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .tiles div { background: #f4f4f4; border-radius: 12px; padding: 18px 16px; font-size: 16px; font-weight: var(--weight-ui); }
+    .all-link { display: inline-block; margin-top: 16px; font-size: 15px; font-weight: var(--weight-ui); color: #171a20; text-decoration: underline; text-underline-offset: 3px; }
+    .tiles div.more { background: #fff; border: 1px dashed #c9cacc; color: #5c5e62; font-weight: var(--weight-body-strong); }
+
+    /* Fees, like Tesla's big-number stats. */
+    .fees { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .launch { display: inline-block; margin: 0 0 16px; padding: 6px 12px; border-radius: 999px; background: #171a20; color: #fff; font-size: 13px; font-weight: var(--weight-ui); }
+    .fee-grid { display: grid; gap: 12px; }
+    .fee { background: #f4f4f4; border-radius: 12px; padding: 24px 22px; }
+    .fee h3 { margin: 0 0 4px; font-size: 22px; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-title); }
+    .fee .price { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 8px; }
+    .fee .price b { font-size: 52px; line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .fee .price s { font-size: 20px; color: #6e6e73; }
+    .fee p { margin: 0; font-size: 16px; line-height: 1.5; color: #393c41; }
+    .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #5c5e62; }
+
+
+
+    /* Different faces: the crew photo full width with a short line under it. */
+    .crew { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .crew img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 30%; border-radius: 12px; }
+    .crew h2 { margin: 22px 0 8px; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .crew p { margin: 0; font-size: 18px; line-height: 1.5; color: #5c5e62; }
+
+    /* NOHM Now: the same clock on both screens, homeowner and pro side by side. */
+    .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sides figure { margin: 0; }
+    .sides img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; }
+    .sides figure:first-child img { object-position: 20% 30%; }
+    .sides figure:last-child img { object-position: 70% 40%; }
+    .sides figcaption { margin-top: 8px; font-size: 14px; color: #171a20; font-weight: var(--weight-ui); }
+    /* NOHM Now: tall photo beside the promise on wide screens. */
+    .now { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; display: grid; gap: 24px; align-items: center; }
+    .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 40% 20%; border-radius: 12px; }
+    .now h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .now .words p:not(.eyebrow) { margin: 0 0 22px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .now .btn { display: inline-flex; min-width: 200px; }
+    .area { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .area p { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .area-btns { display: flex; flex-wrap: wrap; gap: 12px; }
+    .area .btn { display: inline-flex; min-width: 240px; }
+    .area .made { margin: 20px 0 0; font-size: 15px; font-weight: var(--weight-body-strong); color: #171a20; }
+
+    .faq { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .faq details { border-bottom: 1px solid rgba(0, 0, 0, 0.09); }
+    .faq summary { cursor: pointer; list-style: none; padding: 18px 32px 18px 0; font-size: 17px; position: relative; font-weight: var(--weight-body-strong); letter-spacing: var(--tracking-body); }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform 0.2s ease; }
+    .faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+    .faq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
+    .btn.black { background: #356CA3; color: #fff; }
+    .btn.soft { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+    @media (min-width: 900px) {
+      .tiles { grid-template-columns: repeat(4, 1fr); }
+      .fee-grid { grid-template-columns: repeat(3, 1fr); }
+      .now { grid-template-columns: 1fr 1fr; gap: 48px; }
+      .crew img { aspect-ratio: 1672 / 941; }
+      .now img { max-height: 640px; }
+    }
+
+    @media (min-width: 900px) {
+      .top img, .top video { object-position: 50% 30%; }
+      .top .copy { bottom: 64px; }
+      .facts { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main>
+    <section class="top">
+      <picture>
+            <source type="image/webp" srcset="/img/renter-960.webp 960w, /img/renter-1448.webp 1448w" sizes="100vw" />
+            <img src="/img/renter-960.jpg" srcset="/img/renter-960.jpg 960w, /img/renter-1448.jpg 1448w" sizes="100vw"
+                 width="1448" height="1086" fetchpriority="high" style="object-position:50% 30%" alt="A renter relaxing on his couch, sending a repair request to his landlord from his phone" />
+          </picture>
+      <div class="copy">
+        <h1>Something broke?</h1>
+        <p>Tell your landlord in one tap. A local pro handles the rest.</p>
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513" style="display:inline-flex;margin-top:22px;min-width:220px;border:0;">Get NOHM</a>
+      </div>
+    </section>
+
+    <section class="features" aria-label="How it works for renters">
+      <div class="head"><h2>How it works.</h2></div>
+      <div class="f-row">
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/q-show-960.webp 960w, /img/q-show-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/q-show-960.jpg" srcset="/img/q-show-960.jpg 960w, /img/q-show-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:58% 50%" alt="A renter photographing her furnace with her phone" />
+          </picture>
+          <h3>Snap It. Send It.</h3>
+          <p>Up to five photos and a quick note, straight to your landlord.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/prep-960.webp 960w, /img/prep-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/prep-960.jpg" srcset="/img/prep-960.jpg 960w, /img/prep-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:45% 40%" alt="A NOHM pro reviewing the job on his tablet before heading out" />
+          </picture>
+          <h3>Your Landlord Approves</h3>
+          <p>You get a notification the moment it&rsquo;s approved.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/fixed-960.webp 960w, /img/fixed-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/fixed-960.jpg" srcset="/img/fixed-960.jpg 960w, /img/fixed-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:45% 35%" alt="A resident shaking hands with the pro who fixed his washer" />
+          </picture>
+          <h3>A Local Pro Fixes It</h3>
+          <p>Track every step until it&rsquo;s done.</p>
+        </article>
+      </div>
+      <div class="f-dots"></div>
+    </section>
+
+    <section class="spec">
+      <h2>Your Rental, In Your Pocket</h2>
+      <ul>
+        <li>Repair requests with photos</li>
+        <li>Standard or urgent</li>
+        <li>Updates on every request</li>
+        <li>Track your pro</li>
+        <li>Rent and due date</li>
+        <li>Pay rent in the app</li>
+        <li>Freeze alerts</li>
+        <li>Ask NOHMie anything</li>
+        <li>Free for renters</li>
+      </ul>
+    </section>
+
+    <section class="now">
+      <picture>
+            <source type="image/webp" srcset="/img/move-in-488.webp" />
+            <img src="/img/move-in-488.jpg" width="488" height="409" loading="lazy" style="object-position:50% 40%" alt="A family moving into their rental, the daughter laughing as her dad pushes her across the floor in a moving box" />
+          </picture>
+      <div class="words">
+        <p class="eyebrow">Free for Renters</p>
+        <h2>You never pay<br />for the repair.</h2>
+        <p>Your landlord approves the work and pays for it. NOHM is free for you: no fees, no calls, no chasing anyone down. Just send it and get on with your day.</p>
+        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+      </div>
+    </section>
+
+    <section class="trio" aria-label="More for renters">
+      <div class="fact"><b>Joining is easy</b><span>Your landlord sends you a code by text. Enter it in the app and you&rsquo;re connected to your home.</span></div>
+      <div class="fact"><b>Apply on your phone</b><span>Looking for a place? Fill out and sign a rental application from the link your landlord sends.</span></div>
+      <div class="fact"><b>Ready for the weather</b><span>When a freeze is coming, NOHM tells you how to protect the pipes before anything bursts.</span></div>
+    </section>
+
+    <section class="faq">
+      <h2>Questions.</h2>
+      <details><summary>Does NOHM cost me anything?</summary><p>No. NOHM is free for renters. Your landlord pays for the repairs they approve.</p></details>
+      <details><summary>How do I join?</summary><p>Your landlord invites you. You&rsquo;ll get a text with a code. Download NOHM, enter the code and you&rsquo;re connected to your home.</p></details>
+      <details><summary>My landlord isn&rsquo;t on NOHM. Can I still use it?</summary><p>Tell them about it. Landlords add their properties and invite tenants in a few minutes.</p></details>
+      <details><summary>What can I send a request for?</summary><p>Plumbing, HVAC, electrical, appliances, roofing and general repairs. Add photos, a description and whether it&rsquo;s urgent.</p></details>
+      <details><summary>What happens after I send it?</summary><p>Your landlord gets it right away. When they approve, a local pro is sent and you can follow along. If they decline, you&rsquo;ll see why.</p></details>
+      <details><summary>Can I pay rent in NOHM?</summary><p>Yes. See your rent and due date on your home screen and pay it in the app.</p></details>
+      <details><summary>How much is a rental application?</summary><p>The application fee is $45, paid when you submit it.</p></details>
+      <details><summary>What if it&rsquo;s an emergency?</summary><p>Mark it urgent and your landlord can send a pro the same day. If there&rsquo;s fire, flooding, a gas smell or anyone is in danger, call 911 first.</p></details>
+    </section>
+
+    <section class="end">
+      <h2>It&rsquo;s always something. NOHM it.</h2>
+      <div class="pair">
+        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+        <a class="btn plain" href="/landlords">For Landlords</a>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM &copy; 2026</span>
+    <a href="/homeowners">Homeowners</a>
+    <a href="/landlords">Landlords</a>
+    <a href="/renters">Renters</a>
+    <a href="/local-pros">Local Pros</a>
+    <a href="/pros">For Pros</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+    <a href="tel:+18882306646">888-230-NOHM</a>
+  </footer>
+  <script src="/pricing.js"></script>
+  <script src="/download.js" defer></script>
+  <script src="/features.js" defer></script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
