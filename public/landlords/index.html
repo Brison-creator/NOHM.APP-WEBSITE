@@ -168,6 +168,17 @@
   .group li::before { content: ""; position: absolute; left: 2px; top: 18px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
   @media (min-width: 600px) { .group ul { grid-template-columns: 1fr 1fr; } }
   @media (min-width: 900px) { .group ul { grid-template-columns: repeat(3, 1fr); } }
+  .partner { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+  .p-card { background: #f4f4f4; border-radius: 12px; padding: 32px 24px; }
+  .p-logo { display: inline-block; margin-bottom: 18px; }
+  .p-logo img { display: block; height: 40px; width: auto; }
+  .p-card h2 { margin: 0 0 12px; font-size: clamp(26px, 3vw, 38px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+  .p-card p { margin: 0 0 18px; max-width: 640px; font-size: 17px; line-height: 1.55; color: #393c41; }
+  .p-card ul { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 10px; }
+  .p-card li { position: relative; padding-left: 26px; font-size: 17px; font-weight: var(--weight-body-strong); }
+  .p-card li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
+  .p-more { font-size: 15px; font-weight: var(--weight-ui); color: #171a20; text-decoration: underline; text-underline-offset: 3px; }
+  @media (min-width: 900px) { .p-card { padding: 44px 48px; } .p-card ul { grid-template-columns: repeat(3, max-content); column-gap: 40px; } }
 </style>
 </head>
 <body>
@@ -249,6 +260,20 @@
     </section>
 
 
+    <section class="partner" aria-labelledby="screen-title">
+      <div class="p-card">
+        <a class="p-logo" href="https://certn.co" target="_blank" rel="noopener"><img src="/img/partners/certn.svg" width="167" height="48" alt="Certn" /></a>
+        <h2 id="screen-title">Screening by Certn.<br />We handle the work.</h2>
+        <p>When an applicant applies, NOHM orders their checks through Certn automatically. No accounts to set up, no forms to chase. The report lands right on the application.</p>
+        <ul>
+          <li>Background checks</li>
+          <li>Identity verification</li>
+          <li>Income verification</li>
+        </ul>
+        <a class="p-more" href="https://certn.co" target="_blank" rel="noopener">Learn more about Certn</a>
+      </div>
+    </section>
+
     <section class="crew">
       <picture>
             <source type="image/webp" srcset="/img/crew-960.webp 960w, /img/crew-1672.webp 1672w" sizes="(min-width: 1200px) 1152px, 100vw" />
@@ -309,7 +334,7 @@
           <li>Next listing drafted after move-out</li>
           <li>Applications sent by text</li>
           <li>Applicant pays the $45 fee</li>
-          <li>Credit &amp; background checks</li>
+          <li>Background, identity &amp; income checks by Certn</li>
           <li>Approve with lease terms</li>
           <li>Deposit &amp; first month paid by bank</li>
           <li>Adverse-action notices sent for you</li>
@@ -399,6 +424,7 @@
       <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Tenants pay by bank transfer straight into your own account. The only fee is Stripe&rsquo;s 0.8%, capped at $5 per payment.</p></details>
       <details><summary>What does NOHM Manager actually do?</summary><p>It answers tenant messages from your house notes, books repairs, approves estimates up to the limit you set, relists the unit after move-out and sends you a weekly summary. Emergencies always come straight to you.</p></details>
       <details><summary>What is a NOHM Walkthrough?</summary><p>A move-in or move-out condition report done in person by a trained local specialist. Every room is rated and photographed, both sides sign it, and it&rsquo;s saved as a signed PDF. You can also do it yourself in the app for free.</p></details>
+      <details><summary>Who screens my applicants?</summary><p>Certn. When an applicant submits, NOHM orders their background check, identity verification and income verification through Certn for you, and the report is attached to the application. <a href="https://certn.co" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
       <details><summary>Can I use my own lease?</summary><p>Yes. Upload your lease as a PDF and you and your tenant e-sign it in the app. NOHM keeps a signing certificate with it.</p></details>
       <details><summary>How do deposits work at move-out?</summary><p>Set the move-out date and NOHM tracks the deposit deadline. Itemize any deductions next to the move-in report, send the statement and mark the refund paid. Reminders go out before the deadline.</p></details>
       <details><summary>Can I see profit for each unit?</summary><p>Yes. Money &amp; Taxes shows income, costs and profit per rental, sorted into IRS Schedule E categories, with a year-end report you can email to your accountant.</p></details>
