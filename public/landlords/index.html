@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Landlords | NOHM</title>
-  <meta name="description" content="Rentals, handled. Properties, units, tenant requests, rent and records in one app." />
+  <meta name="description" content="Rentals, handled. Properties, units, tenants, applications, repairs, live job tracking, rent and records in one app." />
   <meta name="theme-color" content="#ffffff" />
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
@@ -157,6 +157,18 @@
       .facts { grid-template-columns: 1fr 1fr; }
     }
   </style>
+
+<style>
+  .groups { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+  .groups > h2 { margin: 0 0 22px; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+  .group { margin: 0 0 22px; }
+  .group h3 { margin: 0 0 10px; font-size: 20px; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-title); }
+  .group ul { list-style: none; margin: 0; padding: 8px 20px; background: #f4f4f4; border-radius: 12px; display: grid; grid-template-columns: 1fr; column-gap: 20px; }
+  .group li { position: relative; padding: 13px 0 13px 26px; font-size: 16px; font-weight: var(--weight-body-strong); border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+  .group li::before { content: ""; position: absolute; left: 2px; top: 18px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
+  @media (min-width: 600px) { .group ul { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 900px) { .group ul { grid-template-columns: repeat(3, 1fr); } }
+</style>
 </head>
 <body>
   <header class="bar"><a href="/">NOHM</a></header>
@@ -217,23 +229,99 @@
       <p>Every repair, receipt and photo is saved to the unit&rsquo;s Home ID and stays with it through every tenant and every sale.</p>
     </section>
 
-    <section class="spec">
-      <h2>Everything in One Place</h2>
-      <ul>
-        <li>Single &amp; multi-family</li>
-        <li>A Home ID for every unit</li>
-        <li>Tenant invites by text</li>
-        <li>Repair requests with photos</li>
-        <li>Approve or decline</li>
-        <li>Choose the pro</li>
-        <li>Auto-approve &amp; spending limits</li>
-        <li>Online rent collection</li>
-        <li>Rental applications</li>
-        <li>Credit &amp; background checks</li>
-        <li>Freeze alerts to tenants</li>
-        <li>List your rental</li>
-      </ul>
+    <section class="groups">
+      <h2>Everything a landlord needs.</h2>
+      <div class="group">
+        <h3>Properties &amp; Units</h3>
+        <ul>
+          <li>Single &amp; multi-family</li>
+          <li>Apartments, condos, duplex to fourplex</li>
+          <li>Suites, offices, lots &amp; mobile homes</li>
+          <li>A Home ID for every unit</li>
+          <li>Nicknames for every property</li>
+          <li>Search by address, Home ID or nickname</li>
+          <li>Multi-unit buildings detected for you</li>
+          <li>Bulk unit setup</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>Tenants &amp; Leases</h3>
+        <ul>
+          <li>Invite tenants by text code</li>
+          <li>Rent, due day &amp; lease dates</li>
+          <li>Who&rsquo;s in every unit at a glance</li>
+          <li>Cancel pending invites</li>
+          <li>Alert the moment a tenant joins</li>
+          <li>Online rent collection</li>
+          <li>Freeze alerts sent to tenants</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>Applications &amp; Screening</h3>
+        <ul>
+          <li>Send an application by text</li>
+          <li>Applicant pays the $45 fee</li>
+          <li>Credit &amp; background checks</li>
+          <li>Live status on every application</li>
+          <li>Income, employer &amp; previous landlord</li>
+          <li>Application &amp; screening report PDFs</li>
+          <li>Approved applicant to tenant in one tap</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>Maintenance</h3>
+        <ul>
+          <li>Tenant requests with photos</li>
+          <li>Inbox: needs review, in progress, done</li>
+          <li>Urgent requests flagged</li>
+          <li>Approve or decline with a reason</li>
+          <li>Ask NOHMie if it&rsquo;s urgent</li>
+          <li>Auto-approve &amp; spending limits</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>Booking &amp; Jobs</h3>
+        <ul>
+          <li>Standard, Express &amp; NOHM Now</li>
+          <li>Pick a time window</li>
+          <li>Photos &amp; notes for the pro</li>
+          <li>Choose your pro or auto-assign</li>
+          <li>Live map of your pro</li>
+          <li>Approve estimates before work</li>
+          <li>Chat with your pro</li>
+          <li>Reschedule or cancel, cost shown first</li>
+          <li>No-show protection</li>
+          <li>Rate every pro</li>
+          <li>Receipts for every job</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>Records &amp; Money</h3>
+        <ul>
+          <li>Repair records for every unit</li>
+          <li>Search by vendor, model or serial</li>
+          <li>Scan documents into the record</li>
+          <li>NOHM Verified records</li>
+          <li>Card on file</li>
+          <li>Spending by month, pending &amp; all-time</li>
+          <li>Full transaction history</li>
+          <li>Invoices as PDF</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>NOHMie &amp; More</h3>
+        <ul>
+          <li>NOHMie, your AI property manager</li>
+          <li>NOHMie on every screen</li>
+          <li>Alerts that open the right screen</li>
+          <li>NOHM Credits wallet</li>
+          <li>Invite your pros, earn 10 credits a job</li>
+          <li>List your rental in one tap</li>
+          <li>Landlord, homeowner &amp; pro on one account</li>
+        </ul>
+      </div>
     </section>
+
 
     <section class="now">
       <picture>
@@ -245,6 +333,20 @@
         <p class="eyebrow">Tenant Requests</p>
         <h2>No more late-night calls.</h2>
         <p>Tenants send repairs straight from the app with up to five photos and a priority. You see it, approve it or decline it with a reason, and choose the pro. Set limits once and small jobs can go on their own. Urgent requests go out as Express.</p>
+        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+      </div>
+    </section>
+
+    <section class="now">
+      <picture>
+            <source type="image/webp" srcset="/img/pro-now-720.webp 720w, /img/pro-now-1122.webp 1122w" sizes="(min-width: 900px) 50vw, 100vw" />
+            <img src="/img/pro-now-720.jpg" srcset="/img/pro-now-720.jpg 720w, /img/pro-now-1122.jpg 1122w" sizes="(min-width: 900px) 50vw, 100vw"
+                 width="1122" height="1402" loading="lazy" style="object-position:70% 40%" alt="A NOHM pro in his truck on the way to a job" />
+          </picture>
+      <div class="words">
+        <p class="eyebrow">Every Job, Live</p>
+        <h2>Watch your pro<br />on the map.</h2>
+        <p>Book Standard, Express or NOHM Now for any unit, or let a tenant request do it for you. Pick your pro or let NOHM match one, approve the estimate before work starts, chat in the app and follow them to the door. When it&rsquo;s done, rate the pro and the receipt is saved to the unit.</p>
         <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
       </div>
     </section>
@@ -292,10 +394,13 @@
       <details><summary>Can I manage more than one property?</summary><p>Yes. Add as many single-family homes and multi-family buildings as you own or manage. Duplexes, fourplexes, condos and larger buildings are split into units, and every unit gets its own Home ID.</p></details>
       <details><summary>How do my tenants join?</summary><p>Enter their phone number, rent and lease dates. NOHM texts them a code. They download the app, enter the code and they&rsquo;re connected to their unit.</p></details>
       <details><summary>Can tenants book a pro on their own?</summary><p>No. Tenants send a request and you decide. You can approve it, decline it with a reason, or set limits so smaller jobs go without waiting on you.</p></details>
+      <details><summary>Can I book a pro myself, without a tenant request?</summary><p>Yes. Tap Request a Service, pick the property and choose Standard, Express or NOHM Now. You can choose your pro or let NOHM match one, then follow the job live.</p></details>
+      <details><summary>Do I approve the price first?</summary><p>Always. The pro sends an estimate and nothing starts until you approve it. Extras need your OK too.</p></details>
       <details><summary>Who pays for the repair?</summary><p>You do, as the owner. Jobs you approve are charged to your card on file. Tenants never pay NOHM for repairs.</p></details>
       <details><summary>Can I collect rent in NOHM?</summary><p>Yes. Set the rent and due day for each tenant and collect it online in the app.</p></details>
       <details><summary>How do rental applications work?</summary><p>Send the applicant a link. They complete the application on their phone, sign it and pay the $45 application fee. You get the full application and a screening report.</p></details>
       <details><summary>What stays with the unit when a tenant moves out?</summary><p>Everything. The repair history is tied to the unit&rsquo;s Home ID, not the tenant, so the next tenant and the next owner get the full record.</p></details>
+      <details><summary>I also own my own home. Do I need two accounts?</summary><p>No. Add a homeowner role, or even a pro role, to the same account and switch between them.</p></details>
       <details><summary>What if something goes wrong with a job?</summary><p>Most things, like the quality of the work, are between you and your pro. NOHM steps in on no-shows, unsafe conduct and charges you didn&rsquo;t approve. <a href="/step-in" style="color:#171a20;font-weight: var(--weight-ui);">Learn more</a></p></details>
     </section>
 
