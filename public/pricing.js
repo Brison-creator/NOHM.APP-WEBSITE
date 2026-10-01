@@ -5,7 +5,9 @@ var NOHM_PRICING = {
   launch: true,            // 50% off until 1,000 activated homeowners
   launchTarget: 1000,
   express: { launch: 20, regular: 40 },
-  now: { launch: 30, regular: 60 }
+  now: { launch: 30, regular: 60 },
+  // Rentals (set in the NOHM admin; keep these in step with it).
+  rentals: { plan: 7, manager: 29, walkthrough: 79, application: 45 }
 };
 
 (function (p) {
@@ -17,6 +19,9 @@ var NOHM_PRICING = {
     var fee = p[el.getAttribute('data-fee-regular')];
     el.textContent = '$' + fee.regular;
     el.hidden = !p.launch;
+  });
+  document.querySelectorAll('[data-rental]').forEach(function (el) {
+    el.textContent = '$' + p.rentals[el.getAttribute('data-rental')];
   });
   document.querySelectorAll('[data-launch-only]').forEach(function (el) { el.hidden = !p.launch; });
   document.querySelectorAll('[data-launch-target]').forEach(function (el) {
