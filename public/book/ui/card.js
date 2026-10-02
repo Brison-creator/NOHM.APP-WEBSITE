@@ -34,8 +34,9 @@ export async function mountCardForm({ host, publishableKey, api, name }) {
   const card = elements.create('card', {
     hidePostalCode: false,
     style: {
+      // A literal stack: this style lives inside Stripe's iframe, where the site's tokens don't exist.
       base: { fontFamily: 'Manrope, Arial, sans-serif', fontSize: '16px', color: '#171a20', '::placeholder': { color: '#86868b' } },
-      invalid: { color: '#b3261e' },
+      invalid: { color: '#171a20', iconColor: '#171a20' },
     },
   });
   card.mount(host);

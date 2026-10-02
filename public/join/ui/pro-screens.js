@@ -5,6 +5,8 @@
 import { h, append, field, button, clear } from '../../nohm/dom.js';
 import { RADII, DOC_TYPES, docTypesFor, profileProblems, profileBody, profileFormFrom, submitBlockers, docsMissing, statusCopy, attestationProblem } from '../lib/pro-flow.js';
 
+const LOCAL_STUB = /^(localhost|127\.0\.0\.1)$/;
+
 function head(title, sub) {
   return h('header.b-head', [h('h1.b-h1', title), sub ? h('p.b-sub', sub) : null]);
 }
@@ -49,13 +51,13 @@ export function profileScreen(a) {
     serviceRadius: radius,
     yearsExperience: field({ label: 'Years in the trade', name: 'yearsExperience', value: String(f0.yearsExperience), inputmode: 'numeric', maxlength: 2 }),
     licenseNumber: field({ label: 'License number (if your trade needs one)', name: 'licenseNumber', value: f0.licenseNumber, maxlength: 50 }),
-    serviceCallFeeRange: field({ label: 'Service call fee', name: 'serviceCallFeeRange', value: f0.serviceCallFeeRange, placeholder: '$89', maxlength: 20, hint: 'Shown to homeowners before they pick you.' }),
+    serviceCallFeeRange: field({ label: 'Service call fee', name: 'serviceCallFeeRange', value: f0.serviceCallFeeRange, placeholder: '$89', maxlength: 20, hint: 'What you charge to come out, before any work.' }),
     hourlyRateRange: field({ label: 'Hourly rate', name: 'hourlyRateRange', value: f0.hourlyRateRange, placeholder: '$95', maxlength: 20 }),
     bio: field({ label: 'About you (optional)', name: 'bio', type: 'textarea', value: f0.bio, maxlength: 500, placeholder: 'What you do best, how long you’ve done it, what homeowners can expect.' }),
   };
   f.bio.input.rows = 3;
   const err = h('p.b-err', { role: 'alert' });
-  const btn = button('Save and continue', { key: 'next' });
+  const btn = button('Save and continue', { key: 'next', submit: true });
   const submit = async (e) => {
     e && e.preventDefault();
     const values = Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v.value]));
@@ -69,13 +71,10 @@ export function profileScreen(a) {
       a.go('documents');
     } catch (ex) { err.textContent = ex.message; } finally { btn.busy(false); }
   };
-  btn.addEventListener('click', submit);
   return h('section.b-screen', [
     stepsBar('profile'),
     head('Your profile', 'What homeowners see when you take their job.'),
-    h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.businessName.el, f.primaryTradeId.el, f.secondaryTradeId.el, h('div.b-two', [f.baseZip.el, f.yearsExperience.el]), f.serviceRadius.el, f.licenseNumber.el, h('div.b-two', [f.serviceCallFeeRange.el, f.hourlyRateRange.el]), f.bio.el]),
-    err,
-    h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, btn]),
+    h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.businessName.el, f.primaryTradeId.el, f.secondaryTradeId.el, h('div.b-two', [f.baseZip.el, f.yearsExperience.el]), f.serviceRadius.el, f.licenseNumber.el, h('div.b-two', [f.serviceCallFeeRange.el, f.hourlyRateRange.el]), f.bio.el, err, h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, btn])]),
   ]);
 }
 
@@ -147,17 +146,22 @@ export function payoutsScreen(a) {
     return false;
   }
   btn.addEventListener('click', async () => {
+    // Open the tab inside the tap (iOS Safari blocks a window.open that
+    // comes after an await), then send it to Stripe once we have the link.
+    const tab = window.open('', '_blank');
     btn.busy(true, 'Opening Stripe…');
     try {
       const s = await a.api.stripeConnect.status().catch(() => ({ hasAccount: false }));
       const link = s.hasAccount ? await a.api.stripeConnect.refresh() : await a.api.stripeConnect.create();
-      window.open(link.url, '_blank', 'noopener');
+      const url = new URL(link.url);
+      if (!/\.stripe\.com$/.test(url.hostname) && !LOCAL_STUB.test(url.hostname)) throw new Error('That link didn’t come from Stripe.');
+      if (tab) { tab.opener = null; tab.location = url.href; } else window.open(url.href, '_blank', 'noopener');
       status.textContent = 'Stripe opened in a new tab. Finish there; this page updates on its own.';
       clearInterval(polling);
       polling = setInterval(check, 5000);
       btn.busy(false);
       btn.textContent = 'Reopen Stripe';
-    } catch (ex) { err.textContent = ex.message; btn.busy(false); }
+    } catch (ex) { if (tab) tab.close(); err.textContent = ex.message; btn.busy(false); }
   });
   if (dash.checklist && dash.checklist.stripeConnect) status.textContent = 'Payouts are set up.';
   else check();
@@ -167,7 +171,7 @@ export function payoutsScreen(a) {
   return h('section.b-screen', [
     stepsBar('payouts'),
     head('Get paid', 'NOHM pays you through Stripe: the homeowner pays NOHM, Stripe deposits to your bank. Takes about five minutes and your ID.'),
-    h('div.b-card', [h('b', 'What Stripe asks for'), h('p', 'Legal name, date of birth, last four of your SSN, a bank account, and a photo ID. This is Stripe’s identity check; NOHM doesn’t see the numbers.')]),
+    h('div.b-card', [h('b', 'Stripe handles the identity check'), h('p', 'Stripe asks for what it needs to pay you: your details and a bank account. NOHM never sees the numbers.')]),
     status,
     err,
     h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, dash.checklist && dash.checklist.stripeConnect ? button('Continue', { onClick: () => a.go('agreement'), key: 'next' }) : btn]),
@@ -204,7 +208,7 @@ export function agreementScreen(a) {
       h('p', 'NOHM steps in on no-shows, unsafe conduct and unapproved charges.'),
     ]),
     h('p.b-small', ['The full terms: ', h('a', { href: '/terms' }, 'Terms of Service'), ' · ', h('a', { href: '/step-in' }, 'When NOHM steps in'), '.']),
-    already ? h('p.b-line', `Signed by ${dash.profile && dash.profile.attestedName ? dash.profile.attestedName : 'you'}.`) : name.el,
+    already ? h('p.b-line', `Signed${dash.profile && dash.profile.attestedAt ? ` on ${new Date(dash.profile.attestedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}.`) : name.el,
     err,
     h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, already ? button('Continue', { onClick: () => a.go('review'), key: 'next' }) : btn]),
   ]);
@@ -259,9 +263,9 @@ export function statusScreen(a) {
     head(copy.title, copy.line),
     h('div.b-card', [h('b', p.businessName || ''), h('p', `${dash.contractorId || ''}${dash.trades && dash.trades.length ? ' · ' + dash.trades.map((t) => t.label).join(', ') : ''}`), p.baseZip ? h('p.b-small', `${p.baseZip} · ${p.serviceRadius} miles`) : null]),
     rejected.length ? h('div.b-card.alert', [h('b', 'Needs a new upload'), ...rejected.map((d) => h('p', `${DOC_TYPES[d.docType] ? DOC_TYPES[d.docType].label : d.docType}${d.rejectionNotes ? `: ${d.rejectionNotes}` : ''}`))]) : null,
-    canUpload && (missingDocs.length || rejected.length) ? button('Upload documents', { onClick: () => a.go('documents'), key: 'docs' }) : null,
+    canUpload && (missingDocs.length || rejected.length) ? button('Upload documents', { kind: 'sec', onClick: () => a.go('documents'), key: 'docs' }) : null,
     dash.applicationStatus === 'ACTION_REQUIRED' ? button('Finish the steps', { kind: 'sec', onClick: () => a.go('profile') }) : null,
     h('div.b-card.blue', [h('b', 'Jobs come through the app.'), h('p', 'Go on shift, take offers, write estimates, get paid. Install it now so you’re ready the day you’re approved.'), h('a.b-btn', { href: a.storeUrl() }, 'Get the NOHM app')]),
-    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email : ''), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]),
+    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email : ''), ' · ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]),
   ]);
 }

@@ -1,0 +1,35 @@
+# Amplify response headers (served with public/ as-is; no build step).
+# /book and /join take passwords and show a card form, so they refuse
+# to be framed. The fonts are fetched by Stripe's card iframe too, so
+# they allow that origin.
+customHeaders:
+  - pattern: '**/*'
+    headers:
+      - key: X-Content-Type-Options
+        value: nosniff
+      - key: Referrer-Policy
+        value: strict-origin-when-cross-origin
+  - pattern: '/book/*'
+    headers:
+      - key: X-Frame-Options
+        value: DENY
+      - key: Content-Security-Policy
+        value: "frame-ancestors 'none'"
+  - pattern: '/join/*'
+    headers:
+      - key: X-Frame-Options
+        value: DENY
+      - key: Content-Security-Policy
+        value: "frame-ancestors 'none'"
+  - pattern: '/join/renter/*'
+    headers:
+      - key: X-Frame-Options
+        value: DENY
+      - key: Content-Security-Policy
+        value: "frame-ancestors 'none'"
+  - pattern: '/fonts/**/*'
+    headers:
+      - key: Access-Control-Allow-Origin
+        value: https://js.stripe.com
+      - key: Cache-Control
+        value: public, max-age=31536000, immutable

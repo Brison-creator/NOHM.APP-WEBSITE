@@ -8,7 +8,7 @@
 
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
-import { createApi } from '../nohm/api.js';
+import { createApi, apiBaseFor } from '../nohm/api.js';
 import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction } from './lib/flow.js';
 import { randomId } from '../nohm/format.js';
 import { h, clear } from '../nohm/dom.js';
@@ -20,11 +20,7 @@ const progress = document.getElementById('book-progress');
 const toastEl = document.getElementById('book-toast');
 
 const session = createSession(window.localStorage, { deviceName: navigator.userAgent.slice(0, 80) });
-// On localhost only, ?api= points the page at a stub server
-// (tools/book/stub-server.mjs). Never honored on the real site: a link
-// that sent people's sign-ins somewhere else must not be possible.
-const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-const apiBase = (LOCAL && new URLSearchParams(location.search).get('api')) || config.apiBase;
+const apiBase = apiBaseFor(location.hostname, location.search, config.apiBase);
 const http = createHttp({ baseUrl: apiBase, session });
 const api = createApi(http, session);
 
@@ -35,29 +31,45 @@ const a = {
   api,
   session,
   draft: emptyDraft(),
-  state: { trades: [], pricing: null, user: null, properties: null, property: null, hasCard: false, card: null, job: null },
+  state: { trades: [], pricing: null, user: null, properties: null, property: null, hasCard: false, card: null, job: null, wrongRole: false },
   step: 'service',
-  history: [],
+  leave: [],
+  /** A one-line notice for the next screen (a price change, a pro that was just taken). */
+  notice: null,
 
   ctx() {
     return { signedIn: Boolean(this.state.user), hasCard: this.state.hasCard };
   },
+  /**
+   * Change the draft. Any change to what the job *is* retires the
+   * idempotency key: the server replays by key before it looks at the
+   * body, so an edited resubmit with the old key would book the old job.
+   */
   setDraft(patch) {
+    const content = Object.keys(patch).some((k) => k !== 'idempotencyKey' && k !== 'photos' && patch[k] !== this.draft[k]);
     Object.assign(this.draft, patch);
+    if (content && patch.idempotencyKey === undefined) this.draft.idempotencyKey = null;
     session.saveDraft(persistableDraft(this.draft));
   },
   canGoBack() {
     return this.step !== 'done' && prevStep(this.step, this.draft, this.ctx()) !== null;
   },
+  /** Screens register timers to stop when the screen goes away. */
+  onLeave(fn) {
+    this.leave.push(fn);
+  },
   go(step) {
-    if (step !== this.step) this.history.push(this.step);
+    this.leave.splice(0).forEach((fn) => fn());
     this.step = step;
     render();
   },
   next() {
     const p = stepProblem(this.step, this.draft);
     if (p) return this.toast(p);
-    this.go(nextStep(this.step, this.draft, this.ctx()));
+    // After a detour (re-adding photos lost on reload), return to where the draft was.
+    const target = this.resumeTo;
+    this.resumeTo = null;
+    this.go(target || nextStep(this.step, this.draft, this.ctx()));
   },
   back() {
     const s = prevStep(this.step, this.draft, this.ctx());
@@ -67,14 +79,13 @@ const a = {
     this.draft = emptyDraft();
     session.clearDraft();
     this.state.job = null;
-    this.history = [];
     this.go('service');
   },
   toast(msg) {
     toastEl.textContent = msg;
     toastEl.hidden = false;
     clearTimeout(toastEl.t);
-    toastEl.t = setTimeout(() => (toastEl.hidden = true), 4000);
+    toastEl.t = setTimeout(() => (toastEl.hidden = true), 5000);
   },
   storeUrl() {
     return /android/i.test(navigator.userAgent) ? config.playStore : config.appStore;
@@ -94,8 +105,15 @@ const a = {
   account: {
     async signedIn(res) {
       session.setTokens(res);
-      await loadAccount();
-      a.go(nextStep('account', a.draft, a.ctx()));
+      clearPending();
+      try {
+        await loadAccount();
+      } catch (ex) {
+        // The code was accepted and the tokens are good; the profile
+        // load failed. Move on and let the next screen's call say so.
+        a.toast(ex.message || "Signed in, but your profile didn't load.");
+      }
+      a.go(a.state.wrongRole ? 'wrong-role' : nextStep('account', a.draft, a.ctx()));
     },
     async google(idToken) {
       const res = await api.auth.googleSignin(idToken);
@@ -111,18 +129,15 @@ const a = {
   async signOut() {
     try { await api.auth.logout(); } catch { /* the token may already be dead */ }
     session.clear();
-    this.state.user = null;
-    this.state.properties = null;
-    this.state.property = null;
-    this.state.hasCard = false;
-    this.state.card = null;
+    clearPending();
+    Object.assign(this.state, { user: null, properties: null, property: null, hasCard: false, card: null, wrongRole: false });
     this.setDraft({ propertyId: null });
     this.toast('Signed out.');
-    render();
+    this.go(this.step === 'wrong-role' || this.step === 'done' ? 'service' : this.step);
   },
 
   // ── Submit ─────────────────────────────────────────────────────
-  async submit(btn, errEl) {
+  async submit(btn, errEl, attempt = 0) {
     errEl.textContent = '';
     if (this.draft.tier === 'NOW') return this.go('now');
     if (!this.draft.idempotencyKey) this.setDraft({ idempotencyKey: randomId() });
@@ -132,7 +147,7 @@ const a = {
       const job = await api.jobs.create(body);
       await this.afterJob(job);
     } catch (ex) {
-      await this.handleBookingError(ex, errEl, () => this.submit(btn, errEl));
+      await this.handleBookingError(ex, errEl, attempt < 1 ? () => this.submit(btn, errEl, attempt + 1) : null);
     } finally {
       btn.busy(false);
     }
@@ -142,8 +157,10 @@ const a = {
     try {
       const job = await api.now.dispatch(nowDispatchBody(this.draft, availabilityId, this.state.pricing));
       await this.afterJob(job);
+      return true;
     } catch (ex) {
-      await this.handleBookingError(ex, errEl, null);
+      await this.handleBookingError(ex, errEl, null, 'dispatch');
+      return false;
     }
   },
   async afterJob(job) {
@@ -154,19 +171,21 @@ const a = {
     session.clearDraft();
     this.go('done');
   },
-  async handleBookingError(ex, errEl, retry) {
-    const action = bookingErrorAction(ex);
+  async handleBookingError(ex, errEl, retry, call = 'job') {
+    const action = bookingErrorAction(ex, call);
     switch (action.kind) {
       case 'sign_in':
         session.clear();
         this.state.user = null;
+        this.notice = 'Please sign in again to send your request.';
         return this.go('account');
       case 'card':
         this.state.hasCard = false;
         return this.go('card');
       case 'price_changed':
         try { this.state.pricing = await api.pricing(); } catch { /* keep the old map */ }
-        errEl.textContent = 'The fee just changed. Here’s the new price; tap again if it’s still a go.';
+        this.setDraft({ idempotencyKey: null });
+        this.notice = 'The fee just changed. Here’s the new price; send again if it’s still a go.';
         return render();
       case 'duplicate': {
         const j = action.existingJob || {};
@@ -174,9 +193,13 @@ const a = {
         return;
       }
       case 'retry_same_key':
-        return retry ? retry() : (errEl.textContent = ex.message);
+        if (retry) return retry();
+        // Twice is enough: a key the server won't take is retired.
+        this.setDraft({ idempotencyKey: null });
+        errEl.textContent = `${ex.message} Send again to try with a fresh request.`;
+        return;
       case 'pick_again':
-        errEl.textContent = action.message;
+        this.notice = action.message;
         return render();
       default:
         errEl.textContent = action.message;
@@ -184,9 +207,20 @@ const a = {
   },
 };
 
+function clearPending() {
+  a.state.accountMode = null;
+  a.state.pendingSignup = null;
+  a.state.pendingLogin = null;
+  a.state.pendingGoogle = null;
+}
+
 async function loadAccount() {
   const me = await api.auth.me();
-  a.state.user = me && me.user ? me.user : me;
+  const user = me && me.user ? me.user : me;
+  a.state.user = user;
+  const caps = Array.isArray(user.caps) && user.caps.length ? user.caps : [user.role];
+  a.state.wrongRole = !(caps.includes('HOMEOWNER') || caps.includes('PROPERTY_MANAGER'));
+  if (a.state.wrongRole) return;
   const [props, pm] = await Promise.all([api.properties.list().catch(() => ({ properties: [] })), api.stripe.paymentMethod().catch(() => ({ hasCard: false }))]);
   a.state.properties = (props && props.properties) || [];
   a.state.hasCard = Boolean(pm && pm.hasCard);
@@ -197,6 +231,16 @@ async function loadAccount() {
   }
 }
 
+function wrongRoleScreen() {
+  const u = a.state.user || {};
+  return h('section.b-screen', [
+    h('h1.b-h1', 'That’s a pro or renter account.'),
+    h('p.b-sub', `${u.email || 'This account'} isn’t set up as a homeowner. Add the homeowner role in the NOHM app, or sign out and sign up here with a different email.`),
+    h('div.b-foot', [h('button.b-btn', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]),
+    h('p.b-small', [h('a', { href: '/join' }, 'Pro sign-up'), ' · ', h('a', { href: '/join/renter' }, 'Renter sign-up')]),
+  ]);
+}
+
 function render() {
   clear(root);
   const fn = {
@@ -204,20 +248,39 @@ function render() {
     schedule: screens.scheduleScreen,
     account: (app) => screens.accountScreen(app, { role: 'HOMEOWNER', signupSub: 'Takes a minute. Your request is saved while you do.', signinSub: 'Your request is saved. Sign in to send it.' }),
     home: screens.homeScreen, card: screens.cardScreen,
-    review: screens.reviewScreen, now: screens.nowScreen, done: screens.doneScreen,
-  }[a.step];
+    review: screens.reviewScreen, now: screens.nowScreen, done: screens.doneScreen, 'wrong-role': wrongRoleScreen,
+  }[a.step] || screens.serviceScreen;
   root.append(fn(a));
+  if (a.notice) {
+    a.toast(a.notice);
+    a.notice = null;
+  }
   const n = PROGRESS[a.step] || 1;
   progress.style.setProperty('--p', `${(n / 7) * 100}%`);
   progress.setAttribute('aria-valuenow', String(n));
   root.dataset.step = a.step;
   window.scrollTo({ top: 0, behavior: 'instant' });
-  if (history.state?.step !== a.step) history.pushState({ step: a.step }, '', `#${a.step}`);
+  const heading = root.querySelector('.b-h1');
+  if (heading) {
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+  }
+  // One history entry per step so the browser's Back works; the done
+  // screen replaces its entry, since there is nothing to go back to.
+  if (a.step === 'done') history.replaceState({ step: 'done' }, '', '#done');
+  else if (!history.state || history.state.step !== a.step) history.pushState({ step: a.step }, '', `#${a.step}`);
 }
 
-window.addEventListener('popstate', () => {
-  const s = prevStep(a.step, a.draft, a.ctx());
-  if (s && a.step !== 'done') { a.step = s; render(); }
+// Browser Back/Forward: go where the entry says, if it's a step the
+// draft can still show; never back into a sent job.
+window.addEventListener('popstate', (e) => {
+  const target = e.state && e.state.step;
+  if (a.step === 'done' || !target || target === 'done' || target === a.step) return;
+  const known = [...STEPS, 'now', 'wrong-role'];
+  if (!known.includes(target)) return;
+  a.leave.splice(0).forEach((fn) => fn());
+  a.step = target;
+  render();
 });
 
 async function boot() {
@@ -232,7 +295,11 @@ async function boot() {
     return;
   }
   const saved = session.loadDraft();
-  if (saved) a.draft = restoreDraft(saved);
+  let lostPhotos = 0;
+  if (saved) {
+    a.draft = restoreDraft(saved);
+    lostPhotos = Number(saved.photoCount) || 0;
+  }
   const slug = new URLSearchParams(location.search).get('trade');
   const t = tradeForSlug(slug, a.state.trades);
   // A ?trade= link starts fresh on that trade, unless a saved draft is
@@ -241,6 +308,7 @@ async function boot() {
   if (fresh) {
     a.draft = emptyDraft();
     a.draft.trade = { id: t.id, name: t.name, label: t.label };
+    lostPhotos = 0;
   } else if (slug && !t) {
     a.toast(`${slug.replace(/-/g, ' ')} isn’t bookable online yet. Pick one of these.`);
   }
@@ -248,7 +316,16 @@ async function boot() {
     try { await loadAccount(); } catch { session.clear(); }
   }
   if (a.draft.trade && a.draft.trade.id && !a.state.trades.some((x) => x.id === a.draft.trade.id)) a.draft = emptyDraft();
-  a.step = a.draft.trade ? (fresh ? 'issue' : firstUnfinished()) : 'service';
+  // A day that has passed, or a window that closed, can't be booked.
+  if (a.draft.tier === 'STANDARD' && a.draft.day && stepProblem('schedule', a.draft)) a.setDraft({ day: null, window: null });
+  if (a.state.wrongRole) a.step = 'wrong-role';
+  else if (!a.draft.trade) a.step = 'service';
+  else if (fresh) a.step = 'issue';
+  else if (lostPhotos && !stepProblem('details', a.draft)) {
+    a.step = 'details';
+    a.resumeTo = firstUnfinished();
+    a.notice = `Your ${lostPhotos === 1 ? 'photo' : `${lostPhotos} photos`} didn’t survive the reload; add ${lostPhotos === 1 ? 'it' : 'them'} again.`;
+  } else a.step = firstUnfinished();
   history.replaceState({ step: a.step }, '', `#${a.step}`);
   render();
 }

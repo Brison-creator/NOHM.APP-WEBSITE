@@ -11,6 +11,7 @@ import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib
 import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/nohm/format.js';
 import { createSession } from '../../public/nohm/session.js';
 import { createHttp, ApiError } from '../../public/nohm/http.js';
+import { apiBaseFor } from '../../public/nohm/api.js';
 
 const TRADES = [
   { id: 't-plumb', name: 'PLUMBING', label: 'Plumbing', bookable: true, isActive: true },
@@ -22,13 +23,19 @@ const PRICING = {
   NOHM_NOW_FEE: { baseAmountCents: 6000, currentAmountCents: 3000, hasLiveDiscount: true },
 };
 
+function tomorrowIso() {
+  const t = new Date();
+  const d = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function readyDraft(tier = 'STANDARD') {
   const d = emptyDraft();
   d.trade = TRADES[0];
   d.issue = issuesForTrade('PLUMBING')[1];
   d.description = 'Kitchen sink drains slowly and gurgles.';
   d.tier = tier;
-  d.day = '2026-10-03';
+  d.day = tomorrowIso();
   d.window = 'MORNING';
   d.propertyId = 'p1';
   d.idempotencyKey = 'k1';
@@ -42,9 +49,12 @@ test('steps: Standard visits the schedule; Express and NOW skip it; account and 
   assert.equal(nextStep('speed', { tier: 'NOW' }, ctx0), 'account');
   assert.equal(nextStep('speed', { tier: 'NOW' }, { signedIn: true, hasCard: false }), 'home');
   assert.equal(nextStep('home', {}, { signedIn: true, hasCard: true }), 'review');
+  assert.equal(nextStep('speed', { tier: 'EXPRESS', propertyId: 'p1' }, { signedIn: true, hasCard: true }), 'review', 'a chosen home is not asked for again');
+  assert.equal(nextStep('speed', { tier: 'EXPRESS' }, { signedIn: true, hasCard: true }), 'home');
   assert.equal(nextStep('home', {}, { signedIn: true, hasCard: false }), 'card');
   assert.equal(prevStep('home', { tier: 'EXPRESS' }, { signedIn: true }), 'speed');
   assert.equal(prevStep('service', {}, ctx0), null);
+  assert.equal(prevStep('now', { tier: 'NOW' }, { signedIn: true, hasCard: true }), 'review');
   assert.deepEqual(STEPS.slice(0, 3), ['service', 'issue', 'details']);
 });
 
@@ -67,10 +77,18 @@ test('each step says what it still needs', () => {
   d.photos = [];
   d.tier = 'STANDARD';
   assert.equal(stepProblem('schedule', d), 'Pick a day.');
+  const now = new Date(2026, 9, 2, 9);
   d.day = '2026-10-03';
-  assert.equal(stepProblem('schedule', d), 'Pick an arrival window.');
+  assert.equal(stepProblem('schedule', d, now), 'Pick an arrival window.');
   d.window = 'MIDDAY';
-  assert.equal(stepProblem('schedule', d), null);
+  assert.equal(stepProblem('schedule', d, now), null);
+  d.day = '2026-10-01';
+  assert.match(stepProblem('schedule', d, now), /day has passed/);
+  d.day = '2026-10-02';
+  d.window = 'MORNING';
+  assert.match(stepProblem('schedule', d, new Date(2026, 9, 2, 10, 30)), /window has closed/);
+  d.day = '2026-10-03';
+  d.window = 'MIDDAY';
   d.tier = 'EXPRESS';
   assert.equal(stepProblem('schedule', d), null, 'Express has no schedule');
   assert.ok(stepProblem('home', d));
@@ -81,7 +99,7 @@ test('POST /jobs body: Standard carries the window, Express the shown fee, never
   assert.deepEqual(Object.keys(std).sort(), ['description', 'idempotencyKey', 'propertyId', 'scheduledDate', 'scheduledTimeWindow', 'title', 'tradeId']);
   assert.equal(std.title, 'Plumbing · Clogged drain');
   assert.equal(std.scheduledTimeWindow, 'MORNING');
-  assert.match(std.scheduledDate, /^2026-10-03T08:00:00[+-]\d{2}:\d{2}$/);
+  assert.match(std.scheduledDate, new RegExp(`^${tomorrowIso()}T08:00:00[+-]\\d{2}:\\d{2}$`));
   assert.equal(std.isExpress, undefined);
   assert.equal(std.shownFeeCents, undefined);
 
@@ -141,6 +159,7 @@ test('server errors route the way the app routes them', () => {
   assert.equal(bookingErrorAction(new ApiError(400, { code: 'DUPLICATE_TRADE_REQUEST', existingJob: { id: 'j' } })).kind, 'duplicate');
   assert.equal(bookingErrorAction(new ApiError(401, {})).kind, 'sign_in');
   assert.equal(bookingErrorAction(new ApiError(409, {})).kind, 'retry_same_key');
+  assert.deepEqual(bookingErrorAction(new ApiError(409, { message: 'This pro just got booked.' }), 'dispatch'), { kind: 'pick_again', message: 'This pro just got booked.' });
   assert.equal(bookingErrorAction(new ApiError(400, { code: 'PRO_JUST_BOOKED', message: 'Pick another' })).kind, 'pick_again');
   assert.deepEqual(bookingErrorAction(new ApiError(500, { message: 'boom' })), { kind: 'show', message: 'boom' });
   assert.equal(bookingErrorAction(null).kind, 'show');
@@ -152,9 +171,12 @@ test('format helpers', () => {
   assert.equal(toE164US('+15125550123'), '+15125550123');
   assert.equal(toE164US('555-0123'), null);
   assert.equal(toE164US('+44 20 7946 0958'), null);
+  assert.equal(toE164US('0125550123'), null, 'area codes start with 2-9');
+  assert.equal(toE164US('5120550123'), null, 'exchanges start with 2-9');
   assert.equal(prettyPhone('+15125550123'), '(512) 555-0123');
   assert.equal(money(2000), '$20');
   assert.equal(money(2050), '$20.50');
+  assert.equal(money(-500), '−$5');
   assert.equal(scheduledDateIso('2026-10-03', 'AFTERNOON', () => 300), '2026-10-03T14:00:00-05:00');
   assert.equal(scheduledDateIso('2026-10-03', 'MORNING', () => -330), '2026-10-03T08:00:00+05:30');
   assert.equal(scheduledDateIso('bad', 'MORNING'), null);
@@ -232,16 +254,36 @@ test('http: bearer on authed calls only, one refresh then retry on 401, ApiError
 test('http: a failed refresh signs the person out and the 401 surfaces', async () => {
   const session = createSession(memStore());
   session.setTokens({ accessToken: 'old', refreshToken: 'dead' });
+  const hits = [];
   const fetchImpl = async (url) => {
-    const ok = url.endsWith('/auth/refresh') ? false : false;
-    return { ok, status: 401, text: async () => '{"message":"Unauthorized"}', json: async () => ({}) };
+    hits.push(url.split('/api/v1')[1]);
+    return { ok: false, status: 401, text: async () => '{"message":"Unauthorized"}', json: async () => ({}) };
   };
   const http = createHttp({ baseUrl: 'https://api.test/api/v1', session, fetchImpl });
   await assert.rejects(http.get('/auth/me'), (e) => e.status === 401);
+  assert.deepEqual(hits, ['/auth/me', '/auth/refresh'], 'one refresh was attempted, then the 401 surfaced');
   assert.equal(session.signedIn, false);
 });
 
 test('http: a network failure is a readable error, not a crash', async () => {
   const http = createHttp({ baseUrl: 'https://api.test/api/v1', session: createSession(memStore()), fetchImpl: async () => { throw new TypeError('Failed to fetch'); } });
   await assert.rejects(http.get('/trades', { auth: false }), (e) => e.status === 0 && /Can't reach NOHM/.test(e.message));
+});
+
+test('?api= is honored on localhost only', () => {
+  assert.equal(apiBaseFor('localhost', '?api=http://localhost:8787/api/v1', 'https://api.nohm.app/api/v1'), 'http://localhost:8787/api/v1');
+  assert.equal(apiBaseFor('127.0.0.1', '?api=http://x', 'https://api.nohm.app/api/v1'), 'http://x');
+  assert.equal(apiBaseFor('nohm.app', '?api=https://evil.example/api/v1', 'https://api.nohm.app/api/v1'), 'https://api.nohm.app/api/v1');
+  assert.equal(apiBaseFor('www.nohm.app', '?api=https://evil.example', 'https://api.nohm.app/api/v1'), 'https://api.nohm.app/api/v1');
+  assert.equal(apiBaseFor('localhost.evil.example', '?api=https://evil.example', 'https://api.nohm.app/api/v1'), 'https://api.nohm.app/api/v1');
+});
+
+test('the device secret from a new-browser code is kept and sent on the next password sign-in', () => {
+  const store = memStore();
+  const s1 = createSession(store);
+  assert.equal(s1.deviceSecret, null);
+  s1.setDeviceSecret('sec-1');
+  assert.equal(createSession(store).deviceSecret, 'sec-1');
+  s1.setDeviceSecret(null);
+  assert.equal(s1.deviceSecret, 'sec-1', 'an empty secret never erases a real one');
 });

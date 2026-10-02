@@ -6,7 +6,7 @@ import { h, append, field, button, money, clear } from '../../nohm/dom.js';
 import { TIERS, LIMITS, feeFor, bookableTrades, stepProblem } from '../lib/flow.js';
 export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
-import { WINDOWS, bookableDays, windowOpenOn, prettyPhone } from '../../nohm/format.js';
+import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
 import { mountCardForm } from './card.js';
 
 const TRADE_ICON = {
@@ -88,6 +88,9 @@ export function serviceScreen(a) {
   }
   q.addEventListener('input', search);
   drawGrid();
+  if (!trades.length) {
+    return h('section.b-screen', [head('Online booking isn’t open yet.', 'The NOHM app has every service. Get it, and we’ll see you there.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM'), h('p.b-small', [h('a', { href: '/services' }, 'See every service')])]);
+  }
 
   const promo = a.state.pricing && feeFor('EXPRESS', a.state.pricing);
   return h('section.b-screen', [
@@ -96,7 +99,7 @@ export function serviceScreen(a) {
     matches,
     grid,
     h('p.b-line', [h('b', 'Standard is free.'), ' No NOHM fee, a pro in a day or two. ', promo && promo.discounted ? h('span', ['Express and NOHM Now are half off at launch.']) : null]),
-    a.state.user ? h('p.b-small', ['Signed in as ', h('b', a.state.user.email || prettyPhone(a.state.user.phone)), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]) : null,
+    a.state.user ? h('p.b-small', ['Signed in as ', h('b', a.state.user.email || prettyPhone(a.state.user.phone)), ' · ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]) : null,
     h('p.b-small', ["Don't see your trade? ", h('a', { href: '/services' }, 'See every service'), ' and ', h('a', { href: 'mailto:admin@nohm.app?subject=Service request' }, 'tell us what you need'), '.']),
   ]);
 }
@@ -165,14 +168,20 @@ export function speedScreen(a) {
         ? h('span.b-price', [fee.discounted ? h('s', money(fee.base)) : null, ' ', money(fee.current)])
         : h('span.b-price.b-muted', '…');
     const on = a.draft.tier === tier.key;
-    list.append(h('button.b-choice.b-tier', { type: 'button', class: on ? 'on' : '', dataset: { tier: tier.key }, onClick: () => { a.setDraft({ tier: tier.key, day: tier.key === 'STANDARD' ? a.draft.day : null, window: tier.key === 'STANDARD' ? a.draft.window : null }); a.next(); } }, [h('span', [h('b', tier.name), h('small', tier.line)]), price]));
+    list.append(h('button.b-choice.b-tier', { type: 'button', class: on ? 'on' : '', disabled: Boolean(tier.feeKey) && !fee, dataset: { tier: tier.key }, onClick: () => {
+      a.setDraft({ tier: tier.key, day: tier.key === 'STANDARD' ? a.draft.day : null, window: tier.key === 'STANDARD' ? a.draft.window : null });
+      // NOW needs a fuller note than Standard did; say so now, not at the end.
+      const p = stepProblem('details', a.draft);
+      if (p) { a.notice = p; return a.go('details'); }
+      a.next();
+    } }, [h('span', [h('b', tier.name), h('small', tier.line)]), price]));
   }
   const promo = feeFor('EXPRESS', pricing);
   return h('section.b-screen', [
     head('How soon?', 'The fee is NOHM’s. The pro’s own price comes as an estimate you approve before work starts.'),
     list,
     promo && promo.discounted ? h('p.b-small', promo.promoLabel ? `${promo.promoLabel}: half off until the launch target is reached.` : 'Launch prices, until 1,000 homeowners join.') : null,
-    h('p.b-small', 'Express and NOHM Now hold the fee on your card when a pro sets out; nothing is charged if nobody can come.'),
+    h('p.b-small', 'Express and NOHM Now hold the fee on your card when you book; it’s charged when your pro sets out and released if nobody can come.'),
     footer(a, null),
   ]);
 }
@@ -207,7 +216,7 @@ export function scheduleScreen(a) {
     if (p) return (err.textContent = p);
     a.next();
   };
-  return h('section.b-screen', [head('When should the pro come?', 'Pick a day and an arrival window. Free to cancel up to 24 hours before.'), dayRow, winList, h('p.b-small', 'Late afternoon adds a $20 premium, held when your pro accepts.'), err, footer(a, go)]);
+  return h('section.b-screen', [head('When should the pro come?', 'Pick a day and an arrival window.'), dayRow, winList, h('p.b-small', 'Late afternoon adds a premium, held when your pro accepts. The cancellation terms are on the next screen.'), err, footer(a, go)]);
 }
 
 // ── 7. Home ───────────────────────────────────────────────────────
@@ -305,8 +314,11 @@ export function cardScreen(a) {
   const err = h('p.b-err', { role: 'alert' });
   const btn = button('Save card', { disabled: true, key: 'savecard' });
   let form = null;
+  let gone = false;
+  a.onLeave(() => { gone = true; if (form) form.destroy(); });
   mountCardForm({ host, publishableKey: a.config.stripePublishableKey, api: a.api, name: a.state.user ? `${a.state.user.firstName || ''} ${a.state.user.lastName || ''}`.trim() : undefined })
     .then((f) => {
+      if (gone) return f.destroy();
       form = f;
       f.onChange(({ complete, error }) => { btn.disabled = !complete; err.textContent = error || ''; });
     })
@@ -323,7 +335,7 @@ export function cardScreen(a) {
   });
   const fee = feeFor(a.draft.tier, a.state.pricing);
   return h('section.b-screen', [
-    head('A card on file', a.draft.tier === 'STANDARD' ? 'Nothing is charged now. It’s how you approve the pro’s estimate later, with no cash at the door.' : `Nothing is charged now. The ${money(fee ? fee.current : 0)} fee is held when a pro sets out.`),
+    head('A card on file', a.draft.tier === 'STANDARD' ? 'Nothing is charged now. It’s how you approve the pro’s estimate later, with no cash at the door.' : `Nothing is charged now. The ${fee ? money(fee.current) : ''} fee is held when you book, charged when your pro sets out, and released if nobody can come.`),
     h('div.b-card.white', [host]),
     err,
     h('p.b-small', 'Handled by Stripe. NOHM never sees your card number.'),
@@ -340,7 +352,7 @@ export function reviewScreen(a) {
   const win = WINDOWS.find((w) => w.key === d.window);
   const day = bookableDays().find((x) => x.iso === d.day);
   const terms = h('p.b-small', '…');
-  a.api.jobs.cancellationTerms(d.tier === 'STANDARD' ? { scheduledDate: d.day, scheduledTimeWindow: d.window } : d.tier === 'EXPRESS' ? { isExpress: 'true' } : { priority: 'NOW' }).then((t) => (terms.textContent = (t && t.disclosure) || '')).catch(() => (terms.textContent = ''));
+  a.api.jobs.cancellationTerms(d.tier === 'STANDARD' ? { scheduledDate: scheduledDateIso(d.day, d.window), scheduledTimeWindow: d.window } : d.tier === 'EXPRESS' ? { isExpress: 'true' } : { priority: 'NOW' }).then((t) => (terms.textContent = (t && t.disclosure) || '')).catch(() => (terms.textContent = ''));
 
   const row = (label, value, step) => h('div.b-row', [h('span.b-muted', label), h('span', value), step ? h('button.b-edit', { type: 'button', onClick: () => a.go(step) }, 'Edit') : null]);
   const btn = button(d.tier === 'NOW' ? 'See who’s ready now' : d.tier === 'EXPRESS' ? 'Send to the closest pro' : 'Send my request', { key: 'confirm' });
@@ -360,7 +372,7 @@ export function reviewScreen(a) {
       h('div.b-row.b-total', [h('span', 'NOHM fee'), h('span', [fee && fee.discounted ? h('s', money(fee.base)) : null, ' ', fee ? (fee.current ? money(fee.current) : 'Free') : '…'])]),
       win && win.premiumCents ? h('div.b-row', [h('span.b-muted', 'Late afternoon premium'), h('span', `+${money(win.premiumCents)}`)]) : null,
     ]),
-    h('p.b-small', d.tier === 'STANDARD' ? 'No NOHM fee. Your pro’s estimate comes to you for approval before any work starts.' : 'The fee is held when a pro sets out and released if nobody can come.'),
+    h('p.b-small', d.tier === 'STANDARD' ? 'No NOHM fee. Your pro’s estimate comes to you for approval before any work starts.' : 'The fee is held when you book, charged when your pro sets out, and released if nobody can come.'),
     terms,
     err,
     h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, btn]),
@@ -398,16 +410,26 @@ export function nowScreen(a) {
         }
       }
       polls++;
-      if (polls < 40) setTimeout(load, 15000);
+      if (polls < 40 && !stopped) timer = setTimeout(load, 15000);
     } catch (ex) { err.textContent = ex.message; }
   }
   async function dispatch(p) {
+    if (stopped) return;
     stopped = true;
-    await a.dispatchNow(p.availabilityId, err);
-    stopped = false;
+    clearTimeout(timer);
+    list.querySelectorAll('button').forEach((b) => (b.disabled = true));
+    const ok = await a.dispatchNow(p.availabilityId, err);
+    if (!ok) {
+      // The pro was taken or the server said no: show who's live now.
+      stopped = false;
+      load();
+    }
   }
+  let timer = null;
+  a.onLeave(() => { stopped = true; clearTimeout(timer); });
+  const nowFee = feeFor('NOW', a.state.pricing);
   load();
-  append(wrap, [head('Who’s ready now', `${a.draft.trade.label} · ${money(feeFor('NOW', a.state.pricing).current)} NOHM Now fee`), note, list, err, footer(a, null)]);
+  append(wrap, [head('Who’s ready now', `${a.draft.trade.label}${nowFee ? ` · ${money(nowFee.current)} NOHM Now fee` : ''}`), note, list, err, footer(a, null)]);
   return wrap;
 }
 
@@ -421,6 +443,9 @@ export function doneScreen(a) {
   const pros = h('div.b-list');
   const err = h('p.b-err', { role: 'alert' });
   let tries = 0;
+  let left = false;
+  let pollTimer = null;
+  a.onLeave(() => { left = true; clearTimeout(pollTimer); });
 
   const what = d.tier === 'NOW'
     ? 'Your pro has the job and is getting ready to leave. Track them, chat, and get your door PIN in the app.'
@@ -439,7 +464,7 @@ export function doneScreen(a) {
       const r = await a.api.jobs.matchedContractors(job.id);
       const offers = (r && r.offers) || [];
       if (!offers.length) {
-        if (++tries < 10) { status.textContent = 'Finding pros near you…'; return setTimeout(loadOffers, 2000); }
+        if (++tries < 10 && !left) { status.textContent = 'Finding pros near you…'; pollTimer = setTimeout(loadOffers, 2000); return; }
         status.textContent = 'Still matching. We text you when a pro is ready; you can also pick one in the app.';
         return;
       }
@@ -473,7 +498,7 @@ export function doneScreen(a) {
     pros,
     err,
     h('div.b-card.blue', [h('b', 'Everything else lives in the app.'), h('p', 'Live tracking, chat with your pro, the door PIN, the estimate to approve, and this home’s record.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM')]),
-    h('p.b-small', ['We text ', a.state.user ? prettyPhone(a.state.user.phone) : 'you', ' at every step. ', h('a', { href: '/book', onClick: (e) => { e.preventDefault(); a.restart(); } }, 'Book something else')]),
+    h('p.b-small', ['We text ', a.state.user ? prettyPhone(a.state.user.phone) : 'you', ' at every step. ', h('button.b-inline', { type: 'button', onClick: () => a.restart() }, 'Book something else')]),
   );
   return wrap;
 }

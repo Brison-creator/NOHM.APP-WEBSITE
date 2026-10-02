@@ -3,6 +3,17 @@
 // nothing here decides anything, it only carries requests. Public
 // routes pass auth:false so a stale token can't 401 them.
 
+/**
+ * Which server the page talks to. `?api=` is honored on localhost only
+ * (for tools/book/stub-server.mjs); on nohm.app a link can never point
+ * the page, and people's sign-ins, at someone else's server.
+ */
+export function apiBaseFor(hostname, search, configured) {
+  const local = /^(localhost|127\.0\.0\.1)$/.test(hostname || '');
+  const override = local ? new URLSearchParams(search || '').get('api') : null;
+  return override || configured;
+}
+
 export function createApi(http, session) {
   const dev = () => session.deviceFields();
 
@@ -18,8 +29,12 @@ export function createApi(http, session) {
       emailSignupSendOtp: (body) => http.post('/auth/email-signup/send-otp', body, { auth: false }),
       /** Step 2: the code plus the same fields again creates the account and signs in. */
       emailSignupVerify: (body, code) => http.post('/auth/email-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
-      loginEmailPassword: (email, password) => http.post('/auth/login/email-password', { email, password, ...dev() }, { auth: false }),
-      loginVerifyDeviceOtp: (email, code) => http.post('/auth/login/verify-device-otp', { email, code, ...dev(), trustDevice: true }, { auth: false }),
+      loginEmailPassword: (email, password) => http.post('/auth/login/email-password', { email, password, ...dev(), ...(session.deviceSecret ? { deviceSecret: session.deviceSecret } : {}) }, { auth: false }),
+      loginVerifyDeviceOtp: async (email, code) => {
+        const res = await http.post('/auth/login/verify-device-otp', { email, code, ...dev(), trustDevice: true }, { auth: false });
+        session.setDeviceSecret(res && res.deviceSecret);
+        return res;
+      },
       loginSendOtp: (phone) => http.post('/auth/login/send-otp', { phone }, { auth: false }),
       loginVerifyOtp: (phone, code) => http.post('/auth/login/verify-otp', { phone, code, ...dev() }, { auth: false }),
       googleSignin: (idToken, role = 'HOMEOWNER') => http.post('/auth/google/signin', { idToken, role, ...dev() }, { auth: false }),

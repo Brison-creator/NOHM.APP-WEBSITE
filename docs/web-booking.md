@@ -20,7 +20,7 @@ Branch: `web-booking`. Not merged. The lead engineer audits and integrates.
 | 10 | **Send**: Standard/Express → `POST /jobs`, then photos. NOW → the live list, pick a pro → `POST /now/dispatch`, then photos. | `POST /jobs`, `POST /jobs/:id/photos`; `GET /now/live`, `POST /now/demand`, `POST /now/dispatch` |
 | 11 | **Done**: Standard shows the matched pros and lets the person pick one; Express and NOW say what happens next. Everything after that (tracking, chat, PIN, estimate approval) points to the app. | `GET /jobs/:id`, `GET /jobs/:id/matched-contractors`, `POST /jobs/:id/select-contractor` |
 
-The draft (everything but the photo files) lives in `sessionStorage`, so a sign-in or a reload keeps the person's place. Tokens live in `localStorage` with one device id per browser (`deviceType: 'web'`), so the server's trusted-device rule works the way it does for a phone.
+The draft (everything but the photo files), the tokens and one device id per browser (`deviceType: 'web'`) live in `localStorage`, so a sign-in or a reload keeps the person's place and the server's trusted-device rule works the way it does for a phone (the device secret from a new-browser code is kept and sent back on the next password sign-in). A deliberate trade-off: tokens in `localStorage` are readable by any script on the origin, and the page loads Stripe.js and (optionally) Google's sign-in script; both are first-party vendors already trusted by the app.
 
 ## Files
 
@@ -50,7 +50,7 @@ tools/book/
 docs/web-booking.md this file
 ```
 
-Also changed: `public/menu.js` (Book a Pro), `public/index.html` and `public/services/index.html` (the four bookable cards link to `/book?trade=<slug>`), `CLAUDE.md`.
+Also changed: `customHttp.yml` (Amplify headers: `X-Frame-Options: DENY` and `frame-ancestors 'none'` on `/book` and `/join`, `nosniff`, referrer policy, and CORS on `/fonts` for Stripe's card iframe), `public/menu.js` (Book a Pro), `public/index.html` and `public/services/index.html` (the four bookable cards link to `/book?trade=<slug>`), `CLAUDE.md`.
 
 ## Security boundaries
 

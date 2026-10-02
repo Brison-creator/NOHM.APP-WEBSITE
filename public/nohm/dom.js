@@ -60,16 +60,15 @@ export function field({ label, type = 'text', name, value = '', placeholder = ''
 }
 
 /** The blue button; `busy(true)` disables it and shows a spinner label. */
-export function button(label, { kind = 'main', onClick, disabled = false, key } = {}) {
-  const b = h(`button.b-btn${kind === 'main' ? '' : '.' + kind}`, { type: 'button', onClick, disabled, dataset: key ? { key } : undefined }, label);
+export function button(label, { kind = 'main', onClick, disabled = false, key, submit = false } = {}) {
+  const b = h(`button.b-btn${kind === 'main' ? '' : '.' + kind}`, { type: submit ? 'submit' : 'button', onClick, disabled, dataset: key ? { key } : undefined }, label);
+  let was = disabled;
   b.busy = (on, text) => {
-    b.disabled = on || disabled;
+    if (on) was = b.disabled;
+    b.disabled = on ? true : was;
     b.textContent = on ? text || 'One moment…' : label;
   };
   return b;
 }
 
-export function money(cents) {
-  const n = Math.round(Number(cents) || 0) / 100;
-  return Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`;
-}
+export { money } from './format.js';

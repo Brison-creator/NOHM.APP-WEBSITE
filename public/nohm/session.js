@@ -58,6 +58,15 @@ export function createSession(store, { appVersion = 'web-1.0', deviceName = 'Web
     deviceFields() {
       return { deviceId: device.deviceId, deviceName, deviceType: 'web', appVersion };
     },
+    /** The server trusts this browser once it has sent a code here; keep what it gave us. */
+    get deviceSecret() {
+      return device.deviceSecret || null;
+    },
+    setDeviceSecret(secret) {
+      if (!secret) return;
+      device = { ...device, deviceSecret: secret };
+      write(DEVICE, device);
+    },
     /** A named draft (one per flow: 'book', 'join'), kept across reloads. */
     saveDraft(d, name = 'book') {
       write(DRAFT + name, d);

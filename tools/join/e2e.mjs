@@ -82,7 +82,8 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.waitForSelector('[data-key=stripe]');
   await snap(page, 'pro-payouts');
   const [popup] = await Promise.all([ctx.waitForEvent('page'), page.click('[data-key=stripe]')]);
-  assert.match(popup.url(), /\/stripe\/return\//, 'the Stripe link opens in a new tab');
+  // The tab opens inside the tap (blank), then goes to the link once the server returns it.
+  await popup.waitForURL(/\/stripe\/return\//, { timeout: 10000 });
   await popup.close();
   await fetch(`${BASE}/__stripe-done`); // Stripe finished; the page polls status
   await page.waitForSelector('#f-attestedName', { timeout: 15000 });

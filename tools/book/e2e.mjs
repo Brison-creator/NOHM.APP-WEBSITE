@@ -43,7 +43,8 @@ async function fresh() {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const page = await ctx.newPage();
   page.on('pageerror', (e) => { throw new Error(`page error: ${e.message}`); });
-  page.on('console', (m) => { if (m.type() === 'error') console.log('console.error:', m.text()); });
+  // A browser-side error fails the run; the browser's own log line for an expected 4xx response does not.
+  page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) throw new Error(`console.error: ${m.text()}`); });
   return { ctx, page };
 }
 
@@ -180,8 +181,12 @@ async function addHome(page) {
   // No Stripe here (offline); the server says a card exists after a reload, the way it would after confirm-card.
   await fetch(`${BASE}/__reset?card=true`); // keeps the session; resets the world (home is re-added below)
   await page.reload();
-  await page.waitForSelector('[data-key=next], [data-key=confirm], #f-address');
-  // The draft came back from sessionStorage with the home gone (reset): the page asks for it again.
+  // The photo file can't survive a reload: the page says so and asks for it on the details step, then resumes.
+  await page.waitForSelector('#f-description');
+  await page.waitForFunction(() => /didn’t survive the reload/.test(document.getElementById('book-toast').textContent));
+  assert.equal(await page.inputValue('#f-description'), 'Upstairs unit runs but blows warm air.');
+  await page.click('[data-key=next]');
+  // The home is gone too (the stub was reset): the page asks for it again.
   await addHome(page);
   await page.waitForSelector('[data-key=confirm]');
   assert.match(await page.textContent('[data-key=confirm]'), /closest pro/);
@@ -229,6 +234,92 @@ async function addHome(page) {
   assert.deepEqual(d, { availabilityId: 'av-1', propertyId: 'p-1', tradeId: 't-plumb', issueSummary: 'Sewage coming up in the downstairs shower.', shownFeeCents: 3000 });
   assert.ok(!calls.some((c) => c.path === '/jobs' && c.method === 'POST'), 'NOW never goes through POST /jobs');
   console.log('✓ NOW: sign-in with password, live list, dispatch body');
+  await ctx.close();
+}
+
+// ── Run 4: the error paths on send: price change, 409s, browser Back ─
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(`${PAGE}&trade=electrical`);
+  await page.waitForSelector('.b-choice');
+  await page.click('.b-choice');
+  await describeAndSpeed(page, 'EXPRESS', 'Breaker for the kitchen trips every hour.');
+  await signUp(page);
+  await addHome(page);
+  await page.waitForSelector('[data-key=confirm]');
+
+  // The fee changes under the person: the server refuses, the page reloads the price and says so.
+  await fetch(`${BASE}/__express-price?cents=4000`);
+  await page.click('[data-key=confirm]');
+  await page.waitForFunction(() => document.querySelector('#book-toast') && !document.querySelector('#book-toast').hidden && /fee just changed/.test(document.querySelector('#book-toast').textContent));
+  await page.waitForFunction(() => /\$40/.test(document.querySelector('.b-total').textContent) && !/\$20/.test(document.querySelector('.b-total').textContent));
+  let calls = await log();
+  const firstKey = calls.filter((c) => c.path === '/jobs' && c.method === 'POST').pop().body.idempotencyKey;
+
+  // Two 409s in a row: one retry, then the key is retired and the person is told.
+  await fetch(`${BASE}/__conflicts?n=2`);
+  await page.click('[data-key=confirm]');
+  await page.waitForSelector('.b-err:not(:empty)');
+  assert.match(await page.textContent('.b-err'), /fresh request/);
+  calls = await log();
+  const posts = calls.filter((c) => c.path === '/jobs' && c.method === 'POST');
+  assert.equal(posts.length, 3, 'one price-changed attempt, then exactly two tries on the conflict');
+  assert.notEqual(posts[1].body.idempotencyKey, firstKey, 'a price change retires the key');
+  assert.equal(posts[1].body.idempotencyKey, posts[2].body.idempotencyKey, 'the one retry reuses the key');
+  assert.equal(posts[2].body.shownFeeCents, 4000);
+
+  // Browser Back goes to the previous step; Forward returns.
+  await page.goBack();
+  await page.waitForFunction(() => document.getElementById('book').dataset.step !== 'review');
+  assert.equal(await page.evaluate(() => document.getElementById('book').dataset.step), 'home');
+  await page.goForward();
+  await page.waitForSelector('[data-key=confirm]');
+
+  // Editing the note after a failed send retires the key, so the next send is a new request.
+  await page.click('.b-row .b-edit'); // Service → service step
+  await page.waitForSelector('[data-trade=ELECTRICAL]');
+  await page.click('[data-trade=ELECTRICAL]');
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'Breaker for the kitchen trips every hour, and the outlet is warm.');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=EXPRESS]');
+  await page.waitForSelector('[data-key=confirm]');
+  await page.click('[data-key=confirm]');
+  await page.waitForFunction(() => document.body.textContent.includes('90 seconds to accept'));
+  calls = await log();
+  const last = calls.filter((c) => c.path === '/jobs' && c.method === 'POST').pop().body;
+  assert.notEqual(last.idempotencyKey, posts[2].body.idempotencyKey, 'an edit means a new key');
+  assert.match(last.description, /outlet is warm/);
+  console.log('✓ Errors: PRICE_CHANGED reloads and retires the key, 409 retries once then stops, Back/Forward, edits get a new key');
+  await ctx.close();
+}
+
+// ── Run 5: NOW with a pro that gets taken; Back from the live list ──
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(PAGE);
+  await page.waitForSelector('[data-trade=PLUMBING]');
+  await page.click('[data-trade=PLUMBING]');
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'leak');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=NOW]');
+  // NOW needs a fuller note: back to details with the reason, not a dead end at the end.
+  await page.waitForSelector('#f-description');
+  await page.fill('#f-description', 'Water pouring from under the kitchen sink.');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=NOW]');
+  await signUp(page);
+  await addHome(page);
+  await page.waitForSelector('[data-key=confirm]');
+  await page.click('[data-key=confirm]');
+  await page.waitForSelector('[data-avail=av-1]');
+  assert.ok(await page.$('.b-foot .b-btn.sec'), 'the live list has a Back button');
+  await page.click('.b-foot .b-btn.sec');
+  await page.waitForSelector('[data-key=confirm]');
+  console.log('✓ NOW: a short note is sent back to details with the reason; the live list has a way back');
   await ctx.close();
 }
 

@@ -4,8 +4,9 @@
 /** "$20" or "$20.50" from cents. */
 export function money(cents) {
   const n = Math.round(Number(cents) || 0);
-  const dollars = n / 100;
-  return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`;
+  const abs = Math.abs(n) / 100;
+  const text = Number.isInteger(abs) ? `$${abs}` : `$${abs.toFixed(2)}`;
+  return n < 0 ? `−${text}` : text;
 }
 
 /**
@@ -14,10 +15,10 @@ export function money(cents) {
  * Returns null when it isn't a US number.
  */
 export function toE164US(input) {
-  const digits = String(input || '').replace(/\D/g, '');
-  if (digits.length === 10) return `+1${digits}`;
-  if (digits.length === 11 && digits[0] === '1') return `+${digits}`;
-  return null;
+  let digits = String(input || '').replace(/\D/g, '');
+  if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+  // NANP: area code and exchange start with 2–9.
+  return /^[2-9]\d{2}[2-9]\d{6}$/.test(digits) ? `+1${digits}` : null;
 }
 
 /** "(512) 555-0123" for display; anything else comes back as typed. */

@@ -28,17 +28,18 @@ export function accountScreen(a, opts = {}) {
   const err = h('p.b-err', { role: 'alert' });
 
   function tabs() {
-    return h('div.b-tabs', [
-      h('button.b-tab', { type: 'button', class: mode === 'signup' ? 'on' : '', onClick: () => { mode = 'signup'; draw(); } }, 'New to NOHM'),
-      h('button.b-tab', { type: 'button', class: mode === 'signin' ? 'on' : '', onClick: () => { mode = 'signin'; draw(); } }, 'Sign in'),
+    return h('div.b-tabs', { role: 'tablist' }, [
+      h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': mode === 'signup' ? 'true' : 'false', class: mode === 'signup' ? 'on' : '', onClick: () => { mode = 'signup'; draw(); } }, 'New to NOHM'),
+      h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': mode === 'signin' ? 'true' : 'false', class: mode === 'signin' ? 'on' : '', onClick: () => { mode = 'signin'; draw(); } }, 'Sign in'),
     ]);
   }
 
   function googleRow() {
     if (!a.config.googleClientId) return null;
     const host = h('div.b-google');
-    mountGoogleButton({ host, clientId: a.config.googleClientId, onToken: (idToken) => a.run(() => a.account.google(idToken), err) }).catch(() => (host.hidden = true));
-    return h('div', [host, h('p.b-or', 'or')]);
+    const row = h('div', [host, h('p.b-or', 'or')]);
+    mountGoogleButton({ host, clientId: a.config.googleClientId, onToken: (idToken) => a.run(() => a.account.google(idToken), err) }).catch(() => (row.hidden = true));
+    return row;
   }
 
   function signupForm() {
@@ -49,7 +50,7 @@ export function accountScreen(a, opts = {}) {
       phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: 'We text a code to this number. Your pro reaches you here.' }),
       password: field({ label: 'Password', name: 'password', type: 'password', autocomplete: 'new-password', hint: 'At least 8 characters.' }),
     };
-    const btn = button('Text me a code', { key: 'signup' });
+    const btn = button('Text me a code', { key: 'signup', submit: true });
     const submit = async (e) => {
       e && e.preventDefault();
       const values = Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v.value]));
@@ -71,20 +72,18 @@ export function accountScreen(a, opts = {}) {
         btn.busy(false);
       }
     };
-    btn.addEventListener('click', submit);
     return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, btn, h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. Message and data rates may apply; see ', h('a', { href: '/sms' }, 'SMS terms'), '.'])]);
   }
 
   function codeForm({ phone, onCode, onResend }) {
     const code = field({ label: `Code we texted ${prettyPhone(phone)}`, name: 'code', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 6 });
-    const btn = button('Verify', { key: 'verify' });
+    const btn = button('Verify', { key: 'verify', submit: true });
     const submit = async (e) => {
       e && e.preventDefault();
       if (!/^\d{4,6}$/.test(code.value.trim())) return code.setError('The code from the text.');
       btn.busy(true, 'Checking…');
       try { await onCode(code.value.trim()); } catch (ex) { code.setError(ex.message); } finally { btn.busy(false); }
     };
-    btn.addEventListener('click', submit);
     setTimeout(() => code.input.focus(), 0);
     return h('form.b-form', { onSubmit: submit, novalidate: true }, [code.el, btn, onResend ? h('button.b-link', { type: 'button', onClick: () => a.run(onResend, err, 'Sent another code.') }, 'Send a new code') : null, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Change my details')]);
   }
@@ -92,7 +91,7 @@ export function accountScreen(a, opts = {}) {
   function signinForm() {
     const email = field({ label: 'Email', name: 'email', type: 'email', autocomplete: 'email', inputmode: 'email' });
     const pw = field({ label: 'Password', name: 'password', type: 'password', autocomplete: 'current-password' });
-    const btn = button('Sign in', { key: 'signin' });
+    const btn = button('Sign in', { key: 'signin', submit: true });
     const submit = async (e) => {
       e && e.preventDefault();
       if (!email.value.trim()) return email.setError('Your email');
@@ -113,14 +112,13 @@ export function accountScreen(a, opts = {}) {
         btn.busy(false);
       }
     };
-    btn.addEventListener('click', submit);
     const phoneBtn = h('button.b-link', { type: 'button', onClick: () => { mode = 'signin-phone'; draw(); } }, 'Sign in with a text code instead');
     return h('form.b-form', { onSubmit: submit, novalidate: true }, [email.el, pw.el, btn, phoneBtn]);
   }
 
   function phoneSigninForm() {
     const phone = field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel' });
-    const btn = button('Text me a code', { key: 'phone' });
+    const btn = button('Text me a code', { key: 'phone', submit: true });
     const submit = async (e) => {
       e && e.preventDefault();
       const e164 = toE164US(phone.value);
@@ -133,7 +131,6 @@ export function accountScreen(a, opts = {}) {
         draw();
       } catch (ex) { err.textContent = ex.message; } finally { btn.busy(false); }
     };
-    btn.addEventListener('click', submit);
     return h('form.b-form', { onSubmit: submit, novalidate: true }, [phone.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signin'; draw(); } }, 'Use my password instead')]);
   }
 
