@@ -41,7 +41,7 @@ public/book/
   ui/card.js        Stripe.js, loaded only on the card step
   ui/google.js      Google Identity Services, loaded only if configured
 tools/book/
-  flow.test.mjs     node --test: rules, bodies, error routing, session, http (16 tests)
+  flow.test.mjs     node --test: rules, bodies, error routing, session, http (15 tests)
   stub-server.mjs   serves public/ + a stand-in API with the real response shapes; logs every request
   e2e.mjs           headless Chromium through all three tiers against the stub; asserts the bodies sent
 docs/web-booking.md this file
@@ -69,7 +69,7 @@ Also changed: `public/menu.js` (Book a Pro), `public/index.html` and `public/ser
 ## Tests
 
 ```
-node --test tools/book/*.test.mjs          # 16 unit tests, no browser
+node --test tools/book/*.test.mjs          # 15 unit tests, no browser
 node tools/book/stub-server.mjs 8787 &     # then:
 node tools/book/e2e.mjs                    # Standard, Express (card missing, reload), NOW; checks every body sent
 SHOTS=/tmp/shots node tools/book/e2e.mjs   # the same, with a screenshot per screen
