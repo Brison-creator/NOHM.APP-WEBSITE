@@ -32,6 +32,9 @@
     .svc-img video { object-position: 70% 40%; }
     .svc b { display: block; padding: 12px 14px 2px; font-size: 16px; font-weight: var(--weight-ui); }
     .svc span { display: block; padding: 0 14px 14px; font-size: 13px; line-height: 1.35; color: #5c5e62; }
+    /* Bookable trades are links into /book; the card's look doesn't change. */
+    .svc-link { display: flex; flex-direction: column; flex: 1; color: inherit; text-decoration: none; }
+    .svc-link:hover b { color: #356CA3; }
     .svc-more { display: inline-block; margin-top: 16px; font-size: 14px; color: #5c5e62; text-decoration: underline; text-underline-offset: 3px; }
     .svc-more:hover { color: #171a20; }
 
@@ -59,22 +62,22 @@
       <h1 id="all-title">All Services</h1>
       <p class="lede">Come. Fix. Done.</p>
       <ul class="svc-grid">
-        <li class="svc">
+        <li class="svc"><a class="svc-link" href="/book?trade=plumbing" aria-label="Book Plumbing">
           <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 9 7 12 3z"/></svg><img src="/img/services/plumbing.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/plumbing.jpg" aria-hidden="true" style="object-position: 50% 0%"><source src="/video/plumbing-720.mp4" type="video/mp4" /><source src="/video/plumbing-720.webm" type="video/webm" /></video></div>
           <b>Plumbing</b><span>Leaks, clogs, water heaters</span>
-        </li>
-        <li class="svc">
+        </a></li>
+        <li class="svc"><a class="svc-link" href="/book?trade=hvac" aria-label="Book HVAC">
           <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.2 7l15.6 10M4.2 17L19.8 7"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5"/></svg><img src="/img/services/hvac.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
           <b>HVAC</b><span>No heat, no AC</span>
-        </li>
-        <li class="svc">
+        </a></li>
+        <li class="svc"><a class="svc-link" href="/book?trade=electrical" aria-label="Book Electrical">
           <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13.5h6L10 22l8-11.5h-6L13 2z"/></svg><img src="/img/services/electrical.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
           <b>Electrical</b><span>Outages, outlets, breakers</span>
-        </li>
-        <li class="svc">
+        </a></li>
+        <li class="svc"><a class="svc-link" href="/book?trade=appliance" aria-label="Book Appliance">
           <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2"/><circle cx="12" cy="13.5" r="4.5"/><path d="M7.5 6h.01M10.5 6h.01"/></svg><img src="/img/services/appliance.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/appliance.jpg" aria-hidden="true" style="object-position: 50% 30%"><source src="/video/appliance-720.mp4" type="video/mp4" /><source src="/video/appliance-720.webm" type="video/webm" /></video></div>
           <b>Appliance</b><span>Washers, dryers, fridges</span>
-        </li>
+        </a></li>
         <li class="svc">
           <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><img src="/img/services/locksmith.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/locksmith.jpg" aria-hidden="true"><source src="/video/locksmith-720.mp4" type="video/mp4" /><source src="/video/locksmith-720.webm" type="video/webm" /></video></div>
           <b>Locksmith</b><span>Locked out, rekeys</span>
