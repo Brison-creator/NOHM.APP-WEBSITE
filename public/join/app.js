@@ -9,7 +9,7 @@
 
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
-import { createApi } from '../nohm/api.js';
+import { createApi, apiBaseFor } from '../nohm/api.js';
 import { h, clear } from '../nohm/dom.js';
 import { accountScreen } from '../nohm/account.js';
 import { proStepFor } from './lib/pro-flow.js';
@@ -23,8 +23,7 @@ const ROLE = MODE === 'pro' ? 'CONTRACTOR' : 'TENANT';
 const root = document.getElementById('join');
 const toastEl = document.getElementById('join-toast');
 
-const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-const apiBase = (LOCAL && new URLSearchParams(location.search).get('api')) || config.apiBase;
+const apiBase = apiBaseFor(location.hostname, location.search, config.apiBase);
 const session = createSession(window.localStorage, { deviceName: navigator.userAgent.slice(0, 80) });
 const http = createHttp({ baseUrl: apiBase, session });
 const api = createApi(http, session);
@@ -93,7 +92,15 @@ const a = {
   account: {
     async signedIn(res) {
       session.setTokens(res);
-      await loadAccount();
+      a.state.accountMode = null;
+      a.state.pendingSignup = null;
+      a.state.pendingLogin = null;
+      a.state.pendingGoogle = null;
+      try {
+        await loadAccount();
+      } catch (ex) {
+        a.toast(ex.message || "Signed in, but your details didn't load.");
+      }
       a.go(firstStep());
     },
     async google(idToken) {
@@ -139,8 +146,8 @@ function wrongRoleScreen() {
   const where = r === 'HOMEOWNER' || r === 'PROPERTY_MANAGER' ? 'a homeowner' : r === 'CONTRACTOR' ? 'a pro' : r === 'TENANT' ? 'a renter' : 'another kind of';
   return h('section.b-screen', [
     h('h1.b-h1', 'That’s a different kind of account.'),
-    h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email || a.state.user.phone || ''}). ${MODE === 'pro' ? 'Pro' : 'Renter'} sign-up needs its own account, or the app can add this role to yours.`),
-    h('div.b-foot', [h('button.b-btn', { type: 'button', onClick: () => a.signOut() }, 'Sign out and start over')]),
+    h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email || a.state.user.phone || ''}). Add the ${MODE === 'pro' ? 'pro' : 'renter'} role to it in the NOHM app, or sign out and sign up here with a different email.`),
+    h('div.b-foot', [h('button.b-btn', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]),
     MODE === 'pro' ? h('p.b-small', [h('a', { href: '/book' }, 'Book a pro instead')]) : null,
   ]);
 }

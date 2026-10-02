@@ -6,7 +6,7 @@ import { h, append, field, button, money, clear } from '../../nohm/dom.js';
 import { TIERS, LIMITS, feeFor, bookableTrades, stepProblem, lateAfternoonPremium, cancellationTermsQuery } from '../lib/flow.js';
 export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
-import { WINDOWS, bookableDays, windowOpenOn, prettyPhone } from '../../nohm/format.js';
+import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
 import { mountCardForm } from './card.js';
 
 const TRADE_ICON = {
@@ -98,6 +98,9 @@ export function serviceScreen(a) {
   }
   q.addEventListener('input', search);
   drawGrid();
+  if (!trades.length) {
+    return h('section.b-screen', [head('Online booking isn’t open yet.', 'The NOHM app has every service. Get it, and we’ll see you there.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM'), h('p.b-small', [h('a', { href: '/services' }, 'See every service')])]);
+  }
 
   const promo = a.state.pricing && feeFor('EXPRESS', a.state.pricing);
   return h('section.b-screen', [
@@ -106,7 +109,7 @@ export function serviceScreen(a) {
     matches,
     grid,
     h('p.b-line', [h('b', 'Standard has no NOHM fee.'), ' A pro in a day or two. ', promo && promo.discounted && promo.promoLabel ? h('span', promo.promoLabel) : null]),
-    a.state.user ? h('p.b-small', ['Signed in as ', h('b', a.state.user.email || prettyPhone(a.state.user.phone)), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]) : null,
+    a.state.user ? h('p.b-small', ['Signed in as ', h('b', a.state.user.email || prettyPhone(a.state.user.phone)), ' · ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]) : null,
     h('p.b-small', ["Don't see your trade? ", h('a', { href: '/services' }, 'See every service'), ' and ', h('a', { href: 'mailto:admin@nohm.app?subject=Service request' }, 'tell us what you need'), '.']),
   ]);
 }
@@ -175,7 +178,13 @@ export function speedScreen(a) {
         ? h('span.b-price', [fee.discounted ? h('s', money(fee.base)) : null, ' ', money(fee.current)])
         : h('span.b-price.b-muted', '…');
     const on = a.draft.tier === tier.key;
-    list.append(h('button.b-choice.b-tier', { type: 'button', class: on ? 'on' : '', dataset: { tier: tier.key }, onClick: () => { a.setDraft({ tier: tier.key, day: tier.key === 'STANDARD' ? a.draft.day : null, window: tier.key === 'STANDARD' ? a.draft.window : null }); a.next(); } }, [h('span', [h('b', tier.name), h('small', tier.line)]), price]));
+    list.append(h('button.b-choice.b-tier', { type: 'button', class: on ? 'on' : '', disabled: Boolean(tier.feeKey) && !fee, dataset: { tier: tier.key }, onClick: () => {
+      a.setDraft({ tier: tier.key, day: tier.key === 'STANDARD' ? a.draft.day : null, window: tier.key === 'STANDARD' ? a.draft.window : null });
+      // NOW needs a fuller note than Standard did; say so now, not at the end.
+      const p = stepProblem('details', a.draft);
+      if (p) { a.notice = p; return a.go('details'); }
+      a.next();
+    } }, [h('span', [h('b', tier.name), h('small', tier.line)]), price]));
   }
   const promo = feeFor('EXPRESS', pricing);
   return h('section.b-screen', [
@@ -336,8 +345,11 @@ export function cardScreen(a) {
   const err = h('p.b-err', { role: 'alert' });
   const btn = button('Save card', { disabled: true, key: 'savecard' });
   let form = null;
+  let gone = false;
+  a.onLeave(() => { gone = true; if (form) form.destroy(); });
   mountCardForm({ host, publishableKey: a.config.stripePublishableKey, api: a.api, name: a.state.user ? `${a.state.user.firstName || ''} ${a.state.user.lastName || ''}`.trim() : undefined })
     .then((f) => {
+      if (gone) return f.destroy();
       form = f;
       f.onChange(({ complete, error }) => { btn.disabled = !complete; err.textContent = error || ''; });
     })
@@ -407,14 +419,10 @@ export function nowScreen(a) {
   const list = h('div.b-list');
   const note = h('p.b-small');
   let polls = 0;
-  let paused = false;
-  // Each render of this screen is a new poll; an older one (a re-render,
-  // or a screen left behind) stops at its next tick.
-  const gen = (a.nowPoll = (a.nowPoll || 0) + 1);
-  const live = () => gen === a.nowPoll && a.step === 'now';
+  let stopped = false;
 
   async function load() {
-    if (!live() || paused) return;
+    if (stopped) return;
     try {
       const r = await a.api.now.live(a.draft.trade.id, a.draft.propertyId);
       clear(list);
@@ -433,17 +441,26 @@ export function nowScreen(a) {
         }
       }
       polls++;
-      if (polls < 40) setTimeout(load, 15000);
+      if (polls < 40 && !stopped) timer = setTimeout(load, 15000);
     } catch (ex) { err.textContent = ex.message; }
   }
   async function dispatch(p) {
-    paused = true;
-    await a.dispatchNow(p.availabilityId, err);
-    paused = false;
-    if (live()) setTimeout(load, 15000);
+    if (stopped) return;
+    stopped = true;
+    clearTimeout(timer);
+    list.querySelectorAll('button').forEach((b) => (b.disabled = true));
+    const ok = await a.dispatchNow(p.availabilityId, err);
+    if (!ok) {
+      // The pro was taken or the server said no: show who's live now.
+      stopped = false;
+      load();
+    }
   }
+  let timer = null;
+  a.onLeave(() => { stopped = true; clearTimeout(timer); });
+  const nowFee = feeFor('NOW', a.state.pricing);
   load();
-  append(wrap, [head('Who’s ready now', `${a.draft.trade.label} · ${money(feeFor('NOW', a.state.pricing).current)} ${TIERS.NOW.name} fee`), note, list, err, footer(a, null)]);
+  append(wrap, [head('Who’s ready now', `${a.draft.trade.label}${nowFee ? ` · ${money(nowFee.current)} ${TIERS.NOW.name} fee` : ''}`), note, list, err, footer(a, null)]);
   return wrap;
 }
 
@@ -457,6 +474,9 @@ export function doneScreen(a) {
   const pros = h('div.b-list');
   const err = h('p.b-err', { role: 'alert' });
   let tries = 0;
+  let left = false;
+  let pollTimer = null;
+  a.onLeave(() => { left = true; clearTimeout(pollTimer); });
 
   const what = d.tier === 'NOW'
     ? 'Your pro has the job and is getting ready to leave. Track them, chat, and get your door PIN in the app.'
@@ -475,7 +495,7 @@ export function doneScreen(a) {
       const r = await a.api.jobs.matchedContractors(job.id);
       const offers = (r && r.offers) || [];
       if (!offers.length) {
-        if (++tries < 10) { status.textContent = 'Finding pros near you…'; return setTimeout(loadOffers, 2000); }
+        if (++tries < 10 && !left) { status.textContent = 'Finding pros near you…'; pollTimer = setTimeout(loadOffers, 2000); return; }
         status.textContent = 'Still matching. Pick a pro in the app as soon as they show up.';
         return;
       }
@@ -509,17 +529,7 @@ export function doneScreen(a) {
     pros,
     err,
     h('div.b-card.blue', [h('b', 'Everything else lives in the app.'), h('p', 'Live tracking, chat with your pro, the door PIN, the estimate to approve, and this home’s record.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM')]),
-    h('p.b-small', [h('a', { href: '/book', onClick: (e) => { e.preventDefault(); a.restart(); } }, 'Book something else')]),
+    h('p.b-small', [h('button.b-inline', { type: 'button', onClick: () => a.restart() }, 'Book something else')]),
   );
   return wrap;
-}
-
-// ── An account that can't book here ──────────────────────────────
-
-export function cannotBookScreen(a) {
-  return h('section.b-screen', [
-    head('This account can’t book a repair', 'Booking is for homeowners and landlords. A pro or renter account books, or asks the landlord, in the app.'),
-    h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM'),
-    h('button.b-link', { type: 'button', onClick: () => a.signOut() }, 'Sign out and use another account'),
-  ]);
 }

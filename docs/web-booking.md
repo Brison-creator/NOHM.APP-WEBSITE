@@ -52,7 +52,7 @@ tools/book/
 docs/web-booking.md this file
 ```
 
-Also changed: `public/menu.js` (Book a Pro), `public/index.html` and `public/services/index.html` (the four bookable cards link to `/book?trade=<slug>`), `CLAUDE.md`.
+Also changed: `customHttp.yml` (Amplify headers: `X-Frame-Options: DENY` and `frame-ancestors 'none'` on `/book` and `/join`, `nosniff`, referrer policy, and CORS on `/fonts` for Stripe's card iframe), `public/menu.js` (Book a Pro), `public/index.html` and `public/services/index.html` (the four bookable cards link to `/book?trade=<slug>`), `CLAUDE.md`.
 
 ## Security boundaries
 

@@ -8,7 +8,7 @@
 // keeps the person from sending something the server would refuse.
 
 import { jobTitle } from './issues.js';
-import { scheduledDateIso, windowByKey } from '../../nohm/format.js';
+import { scheduledDateIso, windowByKey, bookableDays, windowOpenOn } from '../../nohm/format.js';
 
 /** The steps in order. "schedule" is Standard-only; "account" and "card" are skipped when already done. */
 export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'account', 'home', 'card', 'review', 'done'];
@@ -66,7 +66,7 @@ export function bookableTrades(trades) {
  * Whether a step is done enough to leave. Returns null when it is, or
  * the first thing to fix (a short message) when it isn't.
  */
-export function stepProblem(step, draft) {
+export function stepProblem(step, draft, now = new Date()) {
   switch (step) {
     case 'service':
       return draft.trade ? null : 'Pick a service.';
@@ -85,7 +85,9 @@ export function stepProblem(step, draft) {
     case 'schedule':
       if (draft.tier !== 'STANDARD') return null;
       if (!draft.day) return 'Pick a day.';
+      if (!bookableDays(now).some((d) => d.iso === draft.day)) return 'That day has passed. Pick another.';
       if (!windowByKey(draft.window)) return 'Pick an arrival window.';
+      if (!windowOpenOn(draft.day, draft.window, now)) return 'That window has closed. Pick another.';
       return null;
     case 'home':
       return draft.propertyId ? null : 'Add the home the pro is coming to.';
@@ -105,6 +107,7 @@ export function nextStep(step, draft, ctx) {
     const s = STEPS[j];
     if (s === 'schedule' && draft.tier !== 'STANDARD') continue;
     if (s === 'account' && ctx.signedIn) continue;
+    if (s === 'home' && draft.propertyId) continue; // already chosen; Review's Edit reopens it
     if (s === 'card' && ctx.hasCard) continue;
     return s;
   }
@@ -112,6 +115,7 @@ export function nextStep(step, draft, ctx) {
 }
 
 export function prevStep(step, draft, ctx) {
+  if (step === 'now') return 'review';
   const i = STEPS.indexOf(step);
   for (let j = i - 1; j >= 0; j--) {
     const s = STEPS[j];
@@ -217,11 +221,11 @@ export function nowDispatchBody(draft, availabilityId, pricing) {
 
 /**
  * What to do about a failed job/dispatch call. Each branch is one the
- * app handles the same way (request_service_screen.dart). A 409 is
- * retried once with the same key (a timed-out first try that went
- * through comes back as the job); a second 409 is shown, never looped.
+ * app handles the same way (request_service_screen.dart). A 409 on a job
+ * means "retry with the same key"; the app does that once, then retires
+ * the key (app.js handleBookingError).
  */
-export function bookingErrorAction(err, { retried = false } = {}) {
+export function bookingErrorAction(err, call = 'job') {
   const code = err && err.code;
   if (err && err.status === 401) return { kind: 'sign_in' };
   // A rental the booker manages is paid with the rental card, which is
@@ -230,7 +234,10 @@ export function bookingErrorAction(err, { retried = false } = {}) {
   if (code === 'PAYMENT_METHOD_REQUIRED') return { kind: 'card' };
   if (code === 'PRICE_CHANGED') return { kind: 'price_changed', amountCents: err.body && err.body.amountCents };
   if (code === 'DUPLICATE_TRADE_REQUEST') return { kind: 'duplicate', existingJob: err.body && err.body.existingJob };
+  // A NOW dispatch that loses the race (the pro was just taken) is a
+  // plain 409 from the server: pick someone else, with its message.
+  if (call === 'dispatch' && err && err.status === 409) return { kind: 'pick_again', message: err.message };
   if (code === 'PRO_UNAVAILABLE' || code === 'PRO_JUST_BOOKED') return { kind: 'pick_again', message: err.message };
-  if (err && err.status === 409 && !retried) return { kind: 'retry_same_key' };
+  if (err && err.status === 409) return { kind: 'retry_same_key' };
   return { kind: 'show', message: (err && err.message) || 'Something went wrong. Try again.' };
 }

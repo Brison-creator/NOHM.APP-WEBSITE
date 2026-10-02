@@ -8,7 +8,7 @@
 .b-doc { cursor: default; }
 .b-doc:hover { border-color: #e3e4e6; }
 .b-doc.on { border-color: #171a20; box-shadow: none; }
-.b-btn.b-mini { width: auto; min-height: 38px; padding: 0 14px; font-size: 14px; }
+.b-btn.b-mini { width: auto; min-height: 44px; padding: 0 14px; font-size: 14px; }
 .b-standard ul { margin: 8px 0 12px; padding-left: 20px; columns: 2; font-size: 15px; line-height: 1.7; color: #171a20; }
 .b-standard li { break-inside: avoid; }
 @media (max-width: 420px) { .b-standard ul { columns: 1; } }

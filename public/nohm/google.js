@@ -20,13 +20,17 @@ function loadGis() {
 }
 
 /** Render Google's button into `host`; `onToken(idToken)` fires on success. */
+let initialized = false;
+let tokenHandler = null; // the latest mount's handler; GIS initializes once
 export async function mountGoogleButton({ host, clientId, onToken }) {
   await loadGis();
-  window.google.accounts.id.initialize({
+  tokenHandler = onToken;
+  if (!initialized) window.google.accounts.id.initialize({
     client_id: clientId,
-    callback: (res) => res && res.credential && onToken(res.credential),
+    callback: (res) => res && res.credential && tokenHandler && tokenHandler(res.credential),
     ux_mode: 'popup',
     auto_select: false,
   });
+  initialized = true;
   window.google.accounts.id.renderButton(host, { theme: 'outline', size: 'large', width: host.clientWidth || 320, text: 'continue_with', shape: 'rectangular' });
 }
