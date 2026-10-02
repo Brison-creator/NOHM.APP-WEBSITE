@@ -321,13 +321,13 @@
   function bookerJob(j) {
     var pro = proOf(j), t = trade(j.trade), h = '';
     h += '<button class="d-back" data-act="go" data-view="home">← Back</button>';
-    h += '<h1 class="d-h1">' + esc(t.name) + (j.tier !== 'STANDARD' ? ' · ' + (j.tier === 'NOW' ? 'NOHM Now' : 'Express') : '') + '</h1>';
+    h += '<h1 class="d-h1">' + esc(t.name) + (j.tier !== 'STANDARD' ? ' · ' + (j.tier === 'NOW' ? 'NOHM NOW' : 'Express') : '') + '</h1>';
     h += '<p class="d-sub">#' + j.number + ' · ' + esc(j.place) + '</p>';
     h += pauseCard(j, j.booker);
     if (j.status !== 'RELEASED') h += progress(j);
     h += '<div class="d-card"><h3>' + esc(j.pause ? 'Paused until your card goes through.' : statusLine(j)) + '</h3>';
     if (j.status === 'OFFERED' && j.tier === 'EXPRESS') h += '<p><span class="d-timer" data-offer="' + j.offerEnds + '">' + clock(j.offerEnds - now()) + '</span></p>';
-    if (j.tier === 'NOW' && j.arriveBy && STEP_OF[j.status] < 3) h += '<p>Arriving by <b>' + timeOfDay(j.arriveBy) + '</b>. NOHM Now: within 60 minutes of accepting.</p>';
+    if (j.tier === 'NOW' && j.arriveBy && STEP_OF[j.status] < 3) h += '<p>Arriving by <b>' + timeOfDay(j.arriveBy) + '</b>. NOHM NOW: within 60 minutes of accepting.</p>';
     if (j.status !== 'MATCHING' && j.status !== 'OFFERED') h += '<p class="d-muted">' + esc(pro.name) + ' · ' + esc(pro.biz) + ' · ★ ' + pro.rating + '</p>';
     h += '</div>';
 
@@ -451,7 +451,7 @@
     h += '<h2 class="d-h2">How soon?</h2>';
     [['STANDARD', 'Standard', 'A pro in a day or two. No NOHM fee.'],
       ['EXPRESS', 'Express · ' + money(fee('express')), 'Same day. Goes straight to the closest pro.'],
-      ['NOW', 'NOHM Now · ' + money(fee('now')), 'A pro who’s ready right now, there within 60 minutes of accepting.']
+      ['NOW', 'NOHM NOW · ' + money(fee('now')), 'A pro who’s ready right now, there within 60 minutes of accepting.']
     ].forEach(function (o) {
       h += '<button class="d-choice ' + (d.tier === o[0] ? 'on' : '') + '" data-act="tier" data-v="' + o[0] + '"><b>' + o[1] + '</b><p class="d-muted" style="margin:2px 0 0">' + o[2] + '</p></button>';
     });
@@ -487,7 +487,7 @@
     h += '<h2 class="d-h2">Offers</h2>';
     if (!offers.length) h += '<p class="d-small">' + (S.proOnShift ? (KIOSK ? 'No offers right now. Book something on the homeowner\u2019s screen.' : 'No offers right now. Switch to the homeowner and book something.') : 'Go on shift to see offers.') + '</p>';
     offers.forEach(function (j) {
-      h += '<div class="d-card blue"><div class="d-row"><h3>' + esc(trade(j.trade).name) + (j.tier !== 'STANDARD' ? ' · ' + (j.tier === 'NOW' ? 'NOHM Now' : 'Express') : '') + '</h3>' +
+      h += '<div class="d-card blue"><div class="d-row"><h3>' + esc(trade(j.trade).name) + (j.tier !== 'STANDARD' ? ' · ' + (j.tier === 'NOW' ? 'NOHM NOW' : 'Express') : '') + '</h3>' +
         (j.tier === 'EXPRESS' ? '<span class="d-timer" data-offer="' + j.offerEnds + '" style="font-size:20px">' + clock(j.offerEnds - now()) + '</span>' : '') + '</div>' +
         '<p>' + esc(j.issue) + '</p><p class="d-small" style="margin-top:4px">' + esc(j.place) + (j.tier === 'STANDARD' ? ' · tomorrow, ' + j.window : ' · today') + '</p>' +
         '<button class="d-btn" data-act="accept" data-id="' + j.id + '">' + (j.tier === 'NOW' ? 'Accept and leave now' : 'Accept') + '</button>' +
@@ -657,11 +657,11 @@
     if (V.role === 'homeowner') {
       if (!j || V.view === 'home') return S.card === 'declined'
         ? ['Your card is set to decline.', 'Book an Express job, or approve an estimate, to see how NOHM pauses the job and gives you time to fix the card.']
-        : ['Book a repair.', 'Tap a service. Standard gets you a pro in a day or two with no NOHM fee; Express is same day; NOHM Now sends a pro who’s ready right now.'];
+        : ['Book a repair.', 'Tap a service. Standard gets you a pro in a day or two with no NOHM fee; Express is same day; NOHM NOW sends a pro who’s ready right now.'];
       return guideForJob(j);
     }
     if (V.role === 'pro') {
-      if (!j || V.view === 'home') return S.proOnShift ? ['You’re on shift.', (KIOSK ? 'Offers show up here when the homeowner, on the left, books a repair.' : 'Offers show up here when a homeowner books your trade. Switch to the homeowner and book one, then come back.')] : ['You’re an approved pro.', 'Go on shift to start getting offers. Ready Now puts you live for four hours for NOHM Now jobs.'];
+      if (!j || V.view === 'home') return S.proOnShift ? ['You’re on shift.', (KIOSK ? 'Offers show up here when the homeowner, on the left, books a repair.' : 'Offers show up here when a homeowner books your trade. Switch to the homeowner and book one, then come back.')] : ['You’re an approved pro.', 'Go on shift to start getting offers. Ready Now puts you live for four hours for NOHM NOW jobs.'];
       return guideForJob(j);
     }
     if (V.role === 'pm') return j && V.view === 'job' ? guideForJob(j) : S.tenantIn ? ['Your tenant is in.', 'When they send a repair request, approve it here and it goes to a pro. You approve the estimate and confirm the work.'] : ['Your building.', 'Invite a tenant to unit 1A. They get a code by text and join from the app.'];
@@ -778,7 +778,7 @@
     pick: function (el) {
       var j = job(el.dataset.id);
       j.pro = Number(el.dataset.n); S.pro = j.pro; j.status = 'OFFERED';
-      if (j.tier === 'NOW') { S.proLive = true; notify('pro', 'NOHM Now: leave now', 'A homeowner booked you. Accept and head out; you have 60 minutes.'); }
+      if (j.tier === 'NOW') { S.proLive = true; notify('pro', 'NOHM NOW: leave now', 'A homeowner booked you. Accept and head out; you have 60 minutes.'); }
       else { S.proOnShift = true; notify('pro', 'New job offer', 'A ' + trade(j.trade).name.toLowerCase() + ' job for tomorrow, ' + j.window + '.'); }
     },
     shift: function () { S.proOnShift = !S.proOnShift; },
