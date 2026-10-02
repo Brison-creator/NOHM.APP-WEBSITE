@@ -48,3 +48,12 @@ Roughly 9 screens and 20+ fields before a pro is assigned.
 2. **"Instant Service" toggle** on the schedule sheet: one tap switches on-demand ↔ scheduled. Ours is the Speed step; close enough, but a toggle on the review screen would be a nice shortcut.
 3. **Apple Pay / Link** in the card step. Stripe's Payment Element could replace the card element in `ui/card.js` once the server's SetupIntent allows those methods (`payment_method_types: ['card']` today).
 4. **A tracking screen on the web** after booking; ours sends people to the app.
+
+## After a real booking (Oct 2, 2026, full house cleaning, Bauxite AR)
+
+- **The confirmed price changed.** Cart showed $233.50 ($270 − $50 SHINE20 + $13.50 tip) under a red "Confirm Booking" button. Booking Details then read "You will be charged $298.60 for this booking", $65.10 more, with no line items. Whatever happened (the code dropped, the base price moved, a fee was added), the person confirmed one number and got another. NOHM's rule: the fee the person saw is sent back as `shownFeeCents`, and the server refuses the booking with `PRICE_CHANGED` if it no longer matches; `/book` then shows the new price and asks again.
+- **Two cancellation policies.** The website FAQ: free up to 3 hours before a scheduled job, $30 after. The app's Booking Details: free within 60 minutes of booking, then $30 if canceled within 24 hours of the start time. NOHM shows one disclosure, from the server (`GET /jobs/cancellation-terms`), on the review screen and in the app.
+- **A 30-minute arrival window** (Tue 10:00–10:30 AM) with the status still "ASSIGNING EXPERT" four days out, and "You will receive an SMS/email/notification once a service expert has been assigned." NOHM's Standard shows the matched pros right after booking and lets the person pick; a job without a taker is `NO_CONTRACTOR_AVAILABLE`, said plainly.
+- **Intake questions on the booking** (pets, square footage ≤2500, bedrooms, bathrooms) drive their fixed price. NOHM doesn't price up front, so `/book` asks only for the issue, a note and photos; the pro's estimate comes from the home.
+- **Referral sheet** (WhatsApp, Instagram, Facebook, X, LinkedIn, Gmail) and "Exclusive Offers for You" partner deals live under the Offers tab. Not for the site; NOHM Credits are the server's.
+- **Stripe payment sheet** offers Apple Pay, Link, Card, Bank. Still the one thing worth adding to `ui/card.js` when the server's SetupIntent allows more than `card`.
