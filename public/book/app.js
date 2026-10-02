@@ -19,7 +19,7 @@ const root = document.getElementById('book');
 const progress = document.getElementById('book-progress');
 const toastEl = document.getElementById('book-toast');
 
-const session = createSession(window.localStorage, { deviceName: navigator.userAgent.slice(0, 80) });
+const session = createSession(window.localStorage, { deviceName: navigator.userAgent.slice(0, 80), draftStore: window.sessionStorage });
 // On localhost only, ?api= points the page at a stub server
 // (tools/book/stub-server.mjs). Never honored on the real site: a link
 // that sent people's sign-ins somewhere else must not be possible.
@@ -110,19 +110,23 @@ const a = {
   },
   async signOut() {
     try { await api.auth.logout(); } catch { /* the token may already be dead */ }
+    // The request in progress goes with the account: the next person on
+    // this computer starts clean.
     session.clear();
     this.state.user = null;
     this.state.properties = null;
     this.state.property = null;
     this.state.hasCard = false;
     this.state.card = null;
-    this.setDraft({ propertyId: null });
+    this.state.cannotBook = false;
+    this.draft = emptyDraft();
+    this.history = [];
     this.toast('Signed out.');
-    render();
+    this.go('service');
   },
 
   // ── Submit ─────────────────────────────────────────────────────
-  async submit(btn, errEl) {
+  async submit(btn, errEl, { retried = false } = {}) {
     errEl.textContent = '';
     if (this.draft.tier === 'NOW') return this.go('now');
     if (!this.draft.idempotencyKey) this.setDraft({ idempotencyKey: randomId() });
@@ -132,7 +136,7 @@ const a = {
       const job = await api.jobs.create(body);
       await this.afterJob(job);
     } catch (ex) {
-      await this.handleBookingError(ex, errEl, () => this.submit(btn, errEl));
+      await this.handleBookingError(ex, errEl, () => this.submit(btn, errEl, { retried: true }), { retried });
     } finally {
       btn.busy(false);
     }
@@ -154,8 +158,8 @@ const a = {
     session.clearDraft();
     this.go('done');
   },
-  async handleBookingError(ex, errEl, retry) {
-    const action = bookingErrorAction(ex);
+  async handleBookingError(ex, errEl, retry, { retried = false } = {}) {
+    const action = bookingErrorAction(ex, { retried });
     switch (action.kind) {
       case 'sign_in':
         session.clear();
@@ -164,6 +168,9 @@ const a = {
       case 'card':
         this.state.hasCard = false;
         return this.go('card');
+      case 'rentals_card':
+        errEl.textContent = `${ex.message} Rental cards are set up in the NOHM app.`;
+        return;
       case 'price_changed':
         try { this.state.pricing = await api.pricing(); } catch { /* keep the old map */ }
         errEl.textContent = 'The fee just changed. Here’s the new price; tap again if it’s still a go.';
@@ -187,7 +194,16 @@ const a = {
 async function loadAccount() {
   const me = await api.auth.me();
   a.state.user = me && me.user ? me.user : me;
-  const [props, pm] = await Promise.all([api.properties.list().catch(() => ({ properties: [] })), api.stripe.paymentMethod().catch(() => ({ hasCard: false }))]);
+  // Whether this account can book is the server's answer (a 403 on the
+  // homes list), not a rule kept here.
+  a.state.cannotBook = false;
+  const [props, pm] = await Promise.all([
+    api.properties.list().catch((ex) => {
+      if (ex && ex.status === 403) a.state.cannotBook = true;
+      return { properties: [] };
+    }),
+    api.stripe.paymentMethod().catch(() => ({ hasCard: false })),
+  ]);
   a.state.properties = (props && props.properties) || [];
   a.state.hasCard = Boolean(pm && pm.hasCard);
   a.state.card = pm && pm.hasCard ? { last4: pm.last4, brand: pm.brand } : null;
@@ -206,7 +222,10 @@ function render() {
     home: screens.homeScreen, card: screens.cardScreen,
     review: screens.reviewScreen, now: screens.nowScreen, done: screens.doneScreen,
   }[a.step];
-  root.append(fn(a));
+  // A signed-in account the server won't let book (a pro or renter
+  // account) is told so before it fills in a request it can't send.
+  const blocked = a.state.cannotBook && !['service', 'issue', 'details', 'speed', 'schedule', 'account', 'done'].includes(a.step);
+  root.append(blocked ? screens.cannotBookScreen(a) : fn(a));
   const n = PROGRESS[a.step] || 1;
   progress.style.setProperty('--p', `${(n / 7) * 100}%`);
   progress.setAttribute('aria-valuenow', String(n));

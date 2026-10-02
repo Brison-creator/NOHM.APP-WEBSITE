@@ -18,7 +18,10 @@ export function createApi(http, session) {
       emailSignupSendOtp: (body) => http.post('/auth/email-signup/send-otp', body, { auth: false }),
       /** Step 2: the code plus the same fields again creates the account and signs in. */
       emailSignupVerify: (body, code) => http.post('/auth/email-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
-      loginEmailPassword: (email, password) => http.post('/auth/login/email-password', { email, password, ...dev() }, { auth: false }),
+      loginEmailPassword: (email, password) => {
+        const deviceSecret = session.deviceSecret(email);
+        return http.post('/auth/login/email-password', { email, password, ...dev(), ...(deviceSecret ? { deviceSecret } : {}) }, { auth: false });
+      },
       loginVerifyDeviceOtp: (email, code) => http.post('/auth/login/verify-device-otp', { email, code, ...dev(), trustDevice: true }, { auth: false }),
       loginSendOtp: (phone) => http.post('/auth/login/send-otp', { phone }, { auth: false }),
       loginVerifyOtp: (phone, code) => http.post('/auth/login/verify-otp', { phone, code, ...dev() }, { auth: false }),
@@ -38,7 +41,8 @@ export function createApi(http, session) {
       list: () => http.get('/properties'),
       checkType: (body) => http.post('/properties/check-type', body),
       shell: (body) => http.post('/properties/shell', body),
-      confirmSingle: (id) => http.post(`/properties/${encodeURIComponent(id)}/confirm`, { structureType: 'SINGLE' }),
+      /** structureType is the person's answer (SINGLE here; multi-unit homes are set up in the app). */
+      confirm: (id, structureType) => http.post(`/properties/${encodeURIComponent(id)}/confirm`, { structureType }),
     },
 
     // ── Card on file ────────────────────────────────────────────
@@ -76,7 +80,6 @@ export function createApi(http, session) {
       updateProfile: (body) => http.patch('/contractors/profile', body),
       checklist: () => http.get('/contractors/checklist'),
       attestation: (attestedName) => http.post('/contractors/attestation', { attestedName }),
-      videoComplete: () => http.post('/contractors/video-complete'),
       submitReview: () => http.post('/contractors/submit-review'),
       documents: () => http.get('/contractors/documents'),
       uploadDocument: (docType, file) => {

@@ -35,7 +35,7 @@ export const WINDOWS = [
   { key: 'MORNING', name: 'Morning', range: '8–11 AM', startHour: 8 },
   { key: 'MIDDAY', name: 'Midday', range: '11 AM–2 PM', startHour: 11 },
   { key: 'AFTERNOON', name: 'Afternoon', range: '2–5 PM', startHour: 14 },
-  { key: 'LATE_AFTERNOON', name: 'Late afternoon', range: '5–8 PM', startHour: 17, premiumCents: 2000 },
+  { key: 'LATE_AFTERNOON', name: 'Late afternoon', range: '5–8 PM', startHour: 17, premium: true },
 ];
 
 export function windowByKey(key) {
@@ -63,28 +63,28 @@ export function localDateIso(d) {
 }
 
 /**
- * The scheduledDate the server expects: the window's start on that
- * day as an ISO string with the browser's local offset
- * ("2026-10-03T08:00:00-05:00"), the same thing the app sends.
+ * The scheduledDate the server expects: local midnight of the chosen
+ * day, with the browser's offset at midnight ("2026-10-03T00:00:00-05:00"),
+ * exactly what the app sends (date_iso.dart). The server adds the
+ * window's start hour itself (time-window.util.ts windowOpensAt), so
+ * sending the window's start here would book every job hours late.
+ * Used for both POST /jobs and the cancellation terms shown before it.
  */
-export function scheduledDateIso(dayIso, windowKey, tzOffsetMinutesOf = (d) => d.getTimezoneOffset()) {
-  const w = windowByKey(windowKey);
-  if (!w || !/^\d{4}-\d{2}-\d{2}$/.test(dayIso || '')) return null;
+export function scheduledDateIso(dayIso, tzOffsetMinutesOf = (d) => d.getTimezoneOffset()) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayIso || '')) return null;
   const [y, m, d] = dayIso.split('-').map(Number);
-  const local = new Date(y, m - 1, d, w.startHour, 0, 0);
-  const off = -tzOffsetMinutesOf(local); // minutes east of UTC
+  const off = -tzOffsetMinutesOf(new Date(y, m - 1, d, 0, 0, 0)); // minutes east of UTC
   const sign = off < 0 ? '-' : '+';
   const p = (n) => String(Math.abs(n)).padStart(2, '0');
-  return `${y}-${p(m)}-${p(d)}T${p(w.startHour)}:00:00${sign}${p(Math.trunc(off / 60))}:${p(off % 60)}`;
+  return `${y}-${p(m)}-${p(d)}T00:00:00${sign}${p(Math.trunc(off / 60))}:${p(off % 60)}`;
 }
 
-/** A window that has already closed today can't be booked for today. */
+/** A window that has already ended today isn't offered for today. */
 export function windowOpenOn(dayIso, windowKey, now = new Date()) {
   const w = windowByKey(windowKey);
   if (!w) return false;
   if (dayIso !== localDateIso(now)) return true;
-  const closesHour = w.startHour + 3;
-  return now.getHours() < closesHour - 1; // leave an hour for a pro to get there
+  return now.getHours() < w.startHour + 3;
 }
 
 /** A random id for idempotency keys and the device id; UUID v4 shaped. */

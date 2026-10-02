@@ -82,14 +82,15 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.waitForSelector('[data-key=stripe]');
   await snap(page, 'pro-payouts');
   const [popup] = await Promise.all([ctx.waitForEvent('page'), page.click('[data-key=stripe]')]);
-  assert.match(popup.url(), /\/stripe\/return\//, 'the Stripe link opens in a new tab');
+  // The tab opens inside the click (so popup blockers allow it), then gets Stripe's address.
+  await popup.waitForURL(/\/stripe\/return\//);
   await popup.close();
   await fetch(`${BASE}/__stripe-done`); // Stripe finished; the page polls status
   await page.waitForSelector('#f-attestedName', { timeout: 15000 });
 
   await snap(page, 'pro-agreement');
   assert.ok((await page.textContent('.b-standard')).includes('Price before work'), 'the Standard list is the site’s');
-  await page.fill('#f-attestedName', 'Someone Else');
+  await page.fill('#f-attestedName', 'R'); // the server wants 2 to 100 characters
   await page.click('[data-key=agree]');
   await page.waitForSelector('#e-attestedName:not(:empty)');
   await page.fill('#f-attestedName', 'Ray Diaz');
@@ -121,7 +122,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   assert.deepEqual(seq.slice(0, 2), ['GET /stripe/connect/status', 'GET /stripe/connect/status']);
   assert.ok(seq.includes('POST /stripe/connect/create'));
   assert.ok(seq.indexOf('POST /contractors/attestation') < seq.indexOf('POST /contractors/submit-review'));
-  assert.ok(seq.indexOf('POST /contractors/video-complete') < seq.indexOf('POST /contractors/attestation'));
+  assert.ok(!seq.includes('POST /contractors/video-complete'), 'no video was shown, so none is marked watched');
   console.log('✓ Pro: sign-up → profile+trades → documents → Stripe (new tab, polled) → agreement → submit → under review, survives reload');
   await ctx.close();
 }

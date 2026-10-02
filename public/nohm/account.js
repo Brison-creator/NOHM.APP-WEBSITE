@@ -9,6 +9,20 @@ import { signupProblems, signupBody } from './signup.js';
 import { prettyPhone, toE164US } from './format.js';
 import { mountGoogleButton } from './google.js';
 
+/**
+ * Under every phone field where a number is given for texts: the same
+ * words as the app's sign-up (legal_links.dart SmsConsentNote) and
+ * nohm.app/sms, which carriers check before NOHM's number may text.
+ */
+export const SMS_CONSENT =
+  'By entering your number, you agree to get account texts from NOHM, like login codes and job updates. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help.';
+
+/** Signed in by email and password: keep the secret the server gave this browser, if any. */
+function keepDeviceSecret(a, email, res) {
+  if (res && res.deviceSecret) a.session.saveDeviceSecret(email, res.deviceSecret);
+  return res;
+}
+
 function head(title, sub) {
   return h('header.b-head', [h('h1.b-h1', title), sub ? h('p.b-sub', sub) : null]);
 }
@@ -46,7 +60,7 @@ export function accountScreen(a, opts = {}) {
       firstName: field({ label: 'First name', name: 'firstName', autocomplete: 'given-name' }),
       lastName: field({ label: 'Last name', name: 'lastName', autocomplete: 'family-name' }),
       email: field({ label: 'Email', name: 'email', type: 'email', autocomplete: 'email', inputmode: 'email' }),
-      phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: 'We text a code to this number. Your pro reaches you here.' }),
+      phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT }),
       password: field({ label: 'Password', name: 'password', type: 'password', autocomplete: 'new-password', hint: 'At least 8 characters.' }),
     };
     const btn = button('Text me a code', { key: 'signup' });
@@ -72,7 +86,7 @@ export function accountScreen(a, opts = {}) {
       }
     };
     btn.addEventListener('click', submit);
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, btn, h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. Message and data rates may apply; see ', h('a', { href: '/sms' }, 'SMS terms'), '.'])]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, btn, h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. How NOHM texts: ', h('a', { href: '/sms' }, 'nohm.app/sms'), '.'])]);
   }
 
   function codeForm({ phone, onCode, onResend }) {
@@ -99,7 +113,8 @@ export function accountScreen(a, opts = {}) {
       if (!pw.value) return pw.setError('Your password');
       btn.busy(true, 'Signing in…');
       try {
-        const res = await a.api.auth.loginEmailPassword(email.value.trim().toLowerCase(), pw.value);
+        const address = email.value.trim().toLowerCase();
+        const res = keepDeviceSecret(a, address, await a.api.auth.loginEmailPassword(address, pw.value));
         if (res.status === 'otp_required') {
           a.state.pendingLogin = { email: email.value.trim().toLowerCase(), maskedPhone: res.maskedPhone };
           mode = 'signin-code';
@@ -147,7 +162,7 @@ export function accountScreen(a, opts = {}) {
     if (mode === 'signup') body.push(googleRow(), signupForm());
     else if (mode === 'signup-code') body.push(codeForm({ phone: a.state.pendingSignup.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.emailSignupVerify(a.state.pendingSignup, code)), onResend: () => a.api.auth.emailSignupSendOtp(a.state.pendingSignup) }));
     else if (mode === 'google-phone') {
-      const phone = field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: 'One more step: we text a code so your pro can reach you.' });
+      const phone = field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT });
       const btn = button('Text me a code', { key: 'gphone' });
       btn.addEventListener('click', () => {
         const e164 = toE164US(phone.value);
@@ -157,7 +172,7 @@ export function accountScreen(a, opts = {}) {
       body.push(h('form.b-form', { onSubmit: (e) => e.preventDefault() }, [h('p.b-line', `Hi ${a.state.pendingGoogle.firstName || ''}, Google checked out.`), phone.el, btn]));
     } else if (mode === 'google-code') body.push(codeForm({ phone: a.state.pendingGoogle.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.googleSignupWithPhone(a.state.pendingGoogle.idToken, a.state.pendingGoogle.phone, code, role)), onResend: () => a.api.auth.socialSignupSendOtp(a.state.pendingGoogle.phone) }));
     else if (mode === 'signin') body.push(googleRow(), signinForm());
-    else if (mode === 'signin-code') body.push(h('p.b-line', `New browser. We texted a code to ${a.state.pendingLogin.maskedPhone || 'your phone'}.`), codeForm({ phone: a.state.pendingLogin.maskedPhone || '', onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyDeviceOtp(a.state.pendingLogin.email, code)) }));
+    else if (mode === 'signin-code') body.push(h('p.b-line', `New browser. We texted a code to ${a.state.pendingLogin.maskedPhone || 'your phone'}.`), codeForm({ phone: a.state.pendingLogin.maskedPhone || '', onCode: async (code) => a.account.signedIn(keepDeviceSecret(a, a.state.pendingLogin.email, await a.api.auth.loginVerifyDeviceOtp(a.state.pendingLogin.email, code))) }));
     else if (mode === 'signin-phone') body.push(phoneSigninForm());
     else if (mode === 'signin-phone-code') body.push(codeForm({ phone: a.state.pendingLogin.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyOtp(a.state.pendingLogin.phone, code)), onResend: () => a.api.auth.loginSendOtp(a.state.pendingLogin.phone) }));
     append(wrap, [head(title, sub), mode === 'signup' || mode === 'signin' ? tabs() : null, ...body, err, footer(a)]);

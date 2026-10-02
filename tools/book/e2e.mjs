@@ -57,7 +57,7 @@ async function describeAndSpeed(page, tier, text) {
   await page.click('[data-key=next]');
   await page.waitForSelector('[data-tier]');
   await snap(page, 'speed');
-  assert.equal(await page.textContent('[data-tier=STANDARD] .b-price'), 'Free');
+  assert.equal(await page.textContent('[data-tier=STANDARD] .b-price'), 'No NOHM fee');
   assert.match(await page.textContent('[data-tier=EXPRESS] .b-price'), /\$40\s*\$20/);
   await page.click(`[data-tier=${tier}]`);
 }
@@ -84,6 +84,10 @@ async function addHome(page) {
   await page.fill('#f-address', '11008 Chambers');
   await page.waitForSelector('.b-match');
   await page.click('.b-match');
+  // The person says what kind of home it is; the site doesn't assume.
+  await page.waitForSelector('[data-structure=SINGLE]');
+  await snap(page, 'home-type');
+  await page.click('[data-structure=SINGLE]');
   await page.waitForSelector('text=Your home is on NOHM.');
   await snap(page, 'home-added');
   assert.ok(await page.textContent('.b-sub').then((t) => t.includes('4K7-M2Q-9XC')));
@@ -124,8 +128,10 @@ async function addHome(page) {
   assert.match(review, /Plumbing · Clogged drain/);
   assert.match(review, /Tomorrow, midday 11 AM–2 PM/);
   assert.match(review, /visa •••• 4242/);
-  assert.match(review, /Free/);
+  assert.match(review, /NOHM fee\s*None/);
+  // The terms shown are the server's, asked for the same date the booking sends.
   await page.waitForFunction(() => document.body.textContent.includes('Free to cancel up to 24 hours'));
+  assert.ok(!(await page.textContent('body')).includes('We text'), 'no texting promises the server doesn\u2019t keep');
   await page.click('[data-key=confirm]');
   await page.waitForSelector('[data-contractor=c-1]');
   await snap(page, 'done-pick');
@@ -155,7 +161,7 @@ async function addHome(page) {
   assert.equal(job.propertyId, 'p-1');
   assert.equal(job.tradeId, 't-plumb');
   assert.equal(job.scheduledTimeWindow, 'MIDDAY');
-  assert.match(job.scheduledDate, /T11:00:00[+-]\d\d:\d\d$/);
+  assert.match(job.scheduledDate, /T00:00:00[+-]\d\d:\d\d$/, "local midnight; the server adds the window");
   const photos = calls.find((c) => c.path.endsWith('/photos'));
   assert.match(photos.body._contentType, /^multipart\/form-data/);
   assert.ok(calls.filter((c) => c.path.startsWith('/jobs')).every((c) => c.auth === 'Bearer acc-1'));
@@ -187,7 +193,7 @@ async function addHome(page) {
   assert.match(await page.textContent('[data-key=confirm]'), /closest pro/);
   assert.match(await page.textContent('.b-card'), /\$40\s*\$20/);
   await page.click('[data-key=confirm]');
-  await page.waitForFunction(() => document.body.textContent.includes('90 seconds to accept'));
+  await page.waitForFunction(() => document.body.textContent.includes('The closest pro gets it first'));
   await snap(page, 'done-express');
   const calls = await log();
   const job = calls.find((c) => c.path === '/jobs').body;

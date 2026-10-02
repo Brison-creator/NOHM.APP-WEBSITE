@@ -84,7 +84,11 @@ const a = {
   /** Reload the server's view of this person (dashboard or lease). */
   async refresh() {
     if (MODE === 'pro') this.state.dashboard = await api.contractors.dashboard();
-    else this.state.myProperty = await api.tenants.myProperty().catch(() => ({ hasProperty: false }));
+    else
+      this.state.myProperty = await api.tenants.myProperty().catch((ex) => {
+        if (ex && ex.status === 403) throw ex;
+        return { hasProperty: false };
+      });
   },
   account: {
     async signedIn(res) {
@@ -114,14 +118,15 @@ const a = {
 async function loadAccount() {
   const me = await api.auth.me();
   a.state.user = me && me.user ? me.user : me;
-  const caps = a.state.user.caps || [a.state.user.role];
-  const hasRole = caps.includes(ROLE) || a.state.user.role === ROLE;
-  if (!hasRole) {
-    a.state.wrongRole = true;
-    return;
-  }
+  // Whether this account can be onboarded here is the server's answer
+  // (a 403 on the dashboard or the lease), not a role rule kept here.
   a.state.wrongRole = false;
-  await a.refresh();
+  try {
+    await a.refresh();
+  } catch (ex) {
+    if (ex && ex.status === 403) a.state.wrongRole = true;
+    else throw ex;
+  }
 }
 
 function firstStep() {
@@ -134,7 +139,7 @@ function wrongRoleScreen() {
   const where = r === 'HOMEOWNER' || r === 'PROPERTY_MANAGER' ? 'a homeowner' : r === 'CONTRACTOR' ? 'a pro' : r === 'TENANT' ? 'a renter' : 'another kind of';
   return h('section.b-screen', [
     h('h1.b-h1', 'That’s a different kind of account.'),
-    h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email}). ${MODE === 'pro' ? 'Pro' : 'Renter'} sign-up needs its own account, or the app can add this role to yours.`),
+    h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email || a.state.user.phone || ''}). ${MODE === 'pro' ? 'Pro' : 'Renter'} sign-up needs its own account, or the app can add this role to yours.`),
     h('div.b-foot', [h('button.b-btn', { type: 'button', onClick: () => a.signOut() }, 'Sign out and start over')]),
     MODE === 'pro' ? h('p.b-small', [h('a', { href: '/book' }, 'Book a pro instead')]) : null,
   ]);

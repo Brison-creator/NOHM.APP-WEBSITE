@@ -41,7 +41,8 @@ function proChecklist(p) {
     headshot: Boolean(docs.HEADSHOT), driversLicense: Boolean(docs.DRIVERS_LICENSE), tradeLicense: primary && primary.licenseRequired ? Boolean(docs.TRADE_LICENSE) : null, insurance: Boolean(docs.INSURANCE_PROOF),
     videoCompleted: p.profile.videoCompleted, attestation: Boolean(p.profile.attestedAt) }, tradeLicenseRequired: Boolean(primary && primary.licenseRequired) };
 }
-const INVITE = { inviteCode: '482913', tenantName: 'Ava Ng', propertyAddress: '11008 Chambers Rd', propertyCity: 'Bauxite', propertyState: 'AR', landlordName: 'Kristi M.', rentAmount: 1250, leaseStartDate: '2026-11-01', leaseDueDay: 1, leaseEndDate: null };
+// propertyAddress is the home's formattedAddress, city and state included, as the server sends it.
+const INVITE = { inviteCode: '482913', tenantName: 'Ava Ng', propertyAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', propertyCity: 'Bauxite', propertyState: 'AR', landlordName: 'Kristi M.', rentAmount: 1250, leaseStartDate: '2026-11-01', leaseDueDay: 1, leaseEndDate: null };
 
 function json(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
@@ -63,9 +64,38 @@ function readBody(req) {
   });
 }
 
+// The real server's ValidationPipe (whitelist + forbidNonWhitelisted):
+// a field it doesn't know, or a required one missing, is a 400. Field
+// lists from the DTOs (backend/src/modules/**/dto).
+const DEVICE = ['deviceId', 'deviceName', 'deviceType', 'appVersion'];
+const BODIES = {
+  'POST /auth/login/email-password': { required: ['email', 'password', 'deviceId'], optional: [...DEVICE, 'deviceSecret'] },
+  'POST /auth/login/verify-device-otp': { required: ['email', 'code', 'deviceId'], optional: [...DEVICE, 'trustDevice'] },
+  'POST /auth/email-signup/send-otp': { required: ['firstName', 'lastName', 'email', 'phone', 'password', 'role'] },
+  'POST /auth/email-signup/verify-otp': { required: ['phone', 'code', 'firstName', 'lastName', 'email', 'password', 'role', ...DEVICE] },
+  'POST /properties/check-type': { required: ['googlePlaceId', 'formattedAddress', 'latitude', 'longitude'] },
+  'POST /properties/shell': { required: ['googlePlaceId', 'formattedAddress', 'latitude', 'longitude'] },
+  'POST /jobs': { required: ['propertyId', 'title', 'description', 'tradeId', 'idempotencyKey'], optional: ['urgency', 'scheduledDate', 'scheduledTimeWindow', 'photos', 'isExpress', 'shownFeeCents', 'useCreditsForExpressFee', 'diagnosticQuestion'] },
+  'POST /now/dispatch': { required: ['availabilityId', 'propertyId', 'tradeId', 'issueSummary'], optional: ['shownFeeCents', 'emergencyId'] },
+  'POST /contractors/attestation': { required: ['attestedName'] },
+};
+function bodyProblem(method, p, body) {
+  const rule = BODIES[`${method} ${p}`] || (method === 'POST' && /^\/properties\/[^/]+\/confirm$/.test(p) ? { required: ['structureType'] } : null);
+  if (!rule || !body || body._contentType) return null;
+  const allowed = new Set([...rule.required, ...(rule.optional || [])]);
+  for (const k of Object.keys(body)) if (!allowed.has(k)) return `property ${k} should not exist`;
+  for (const k of rule.required) if (body[k] === undefined || body[k] === '') return `${k} should not be empty`;
+  return null;
+}
+// scheduledDate is the homeowner's local midnight; the server adds the
+// window's start hour itself (time-window.util.ts).
+const LOCAL_MIDNIGHT = /^\d{4}-\d{2}-\d{2}T00:00:00[+-]\d{2}:\d{2}$/;
+
 function api(method, url, body, req) {
   const auth = req.headers.authorization || null;
   const p = url.pathname.replace('/api/v1', '');
+  const bad = bodyProblem(method, p, body);
+  if (bad) return [400, { message: [bad] }];
   const needAuth = () => (auth === 'Bearer acc-1' ? null : json);
   if (p === '/trades' && method === 'GET') return [200, TRADES];
   if (p === '/config/pricing' && method === 'GET') return [200, PRICING];
@@ -76,9 +106,18 @@ function api(method, url, body, req) {
   if (p === '/auth/refresh') return body.refreshToken === 'ref-1' ? [200, { accessToken: 'acc-1', refreshToken: 'ref-1' }] : [401, { message: 'bad refresh' }];
   if (p === '/auth/logout') return [200, { success: true }];
   if (auth !== 'Bearer acc-1') return [401, { message: 'Unauthorized' }];
+  // The server's role guards (RolesGuard on the account's caps).
+  const guard = [
+    [/^\/contractors\//, ['CONTRACTOR']],
+    [/^\/stripe\/connect\//, ['CONTRACTOR']],
+    [/^\/tenants\/(my-invites|my-property)$/, ['TENANT']],
+    [/^\/properties(\/|$)/, ['HOMEOWNER', 'PROPERTY_MANAGER']],
+    [/^\/jobs$/, ['HOMEOWNER', 'PROPERTY_MANAGER']],
+  ].find(([re]) => re.test(p));
+  if (guard && !guard[1].includes(world.role)) return [403, { message: 'Forbidden resource' }];
   if (p === '/auth/me') return [200, { user: { ...(world.user || USER), role: world.role, caps: [world.role], homeownerProfile: { properties: world.properties } } }];
   // ── Pros ──
-  if (p === '/contractors/dashboard') { const pr = world.pro; return [200, { contractorId: pr.contractorId, applicationStatus: pr.applicationStatus, dispatchEligible: pr.dispatchEligible, shiftStatus: pr.shiftStatus, ...proChecklist(pr), profile: pr.profile, user: { ...(world.user || USER), role: 'CONTRACTOR' }, trades: pr.trades, documents: pr.documents }]; }
+  if (p === '/contractors/dashboard') { const pr = world.pro; return [200, { contractorId: pr.contractorId, applicationStatus: pr.applicationStatus, dispatchEligible: pr.dispatchEligible, shiftStatus: pr.shiftStatus, ...proChecklist(pr), profile: (({ attestedName, ...rest }) => rest)(pr.profile), user: { ...(world.user || USER), role: 'CONTRACTOR' }, trades: pr.trades, documents: pr.documents }]; }
   if (p === '/contractors/profile' && method === 'PATCH') {
     const req = ['firstName', 'lastName', 'businessName', 'baseZip', 'serviceRadius'];
     for (const k of req) if (body[k] === undefined || body[k] === '') return [400, { message: [`${k} should not be empty`] }];
@@ -124,10 +163,12 @@ function api(method, url, body, req) {
   if (p === '/properties/check-type') return [201, { isMultiFamily: false, propertyType: 'SINGLE_FAMILY', existingProperty: false, message: 'ok' }];
   if (p === '/properties/shell') { const prop = { id: 'p-1', hin: null, structureStatus: 'PENDING_STRUCTURE', formattedAddress: body.formattedAddress, city: 'Bauxite', state: 'AR', zipCode: '72011' }; return [201, prop]; }
   if (p === '/properties/p-1/confirm') { const prop = { id: 'p-1', hin: '4K7-M2Q-9XC', structureStatus: 'CONFIRMED_SINGLE', formattedAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', city: 'Bauxite', state: 'AR', zipCode: '72011' }; world.properties = [prop]; return [201, prop]; }
+  if (p === '/jobs/cancellation-terms' && url.searchParams.has('scheduledDate') && !LOCAL_MIDNIGHT.test(url.searchParams.get('scheduledDate'))) return [400, { message: 'scheduledDate must be local midnight with its offset' }];
   if (p === '/jobs/cancellation-terms') return [200, { tier: 'SCHEDULED', version: 1, feeCents: 7500, disclosure: 'Free to cancel up to 24 hours before your arrival window. After that, a $75 service call fee applies. Always free if your pro misses the window.' }];
   if (p === '/jobs' && method === 'POST') {
     if (!world.hasCard) return [400, { code: 'PAYMENT_METHOD_REQUIRED', message: 'Add a card to book.', action: 'ADD_CARD' }];
     if (body.isExpress && body.shownFeeCents !== 2000) return [400, { code: 'PRICE_CHANGED', amountCents: 2000, message: 'Price changed' }];
+    if (!body.isExpress && !LOCAL_MIDNIGHT.test(body.scheduledDate || '')) return [400, { message: ['scheduledDate must be local midnight with its offset'] }];
     const existing = Object.values(world.jobs).find((j) => j.idempotencyKey === body.idempotencyKey);
     if (existing) return [201, existing];
     const id = `j-${++world.seq}`;
@@ -165,8 +206,14 @@ http.createServer(async (req, res) => {
   if (url.pathname === '/__stripe-done') { world.stripeDone = true; return json(res, 200, { ok: true }); }
   if (url.pathname.startsWith('/api/v1/')) {
     const body = await readBody(req);
-    log.push({ method: req.method, path: url.pathname.replace('/api/v1', '') + url.search, auth: req.headers.authorization || null, body });
+    const entry = { method: req.method, path: url.pathname.replace('/api/v1', '') + url.search, auth: req.headers.authorization || null, body };
+    log.push(entry);
     const [status, out] = api(req.method, url, body, req);
+    entry.status = status;
+    if (status === 400) {
+      entry.error = out;
+      console.log(`400 ${req.method} ${entry.path} ${JSON.stringify(out)}`);
+    }
     return json(res, status, out);
   }
   let file = path.join(ROOT, decodeURIComponent(url.pathname));

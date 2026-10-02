@@ -23,22 +23,23 @@ test('the dashboard decides the step: profile → payouts → agreement → revi
   assert.equal(proStepFor(dash({ publicProfile: true, tradesSelected: true }, 'ACTION_REQUIRED')), 'payouts', 'action required reopens the steps');
 });
 
-test('submit blockers are the four things the server checks, nothing else', () => {
+test('the to-do list is the server checklist items not done yet', () => {
   assert.deepEqual(submitBlockers({}).map((b) => b.step), ['profile', 'profile', 'payouts', 'agreement']);
   assert.deepEqual(submitBlockers({ publicProfile: true, tradesSelected: true, stripeConnect: true, attestation: true, headshot: false }), []);
 });
 
-test('documents: headshot and license always; trade license only when the trade needs one', () => {
-  assert.deepEqual(docTypesFor(PLUMB), ['HEADSHOT', 'DRIVERS_LICENSE', 'TRADE_LICENSE', 'INSURANCE_PROOF']);
-  assert.deepEqual(docTypesFor(HANDY), ['HEADSHOT', 'DRIVERS_LICENSE', 'INSURANCE_PROOF']);
-  assert.deepEqual(docsMissing({ headshot: true, driversLicense: false, tradeLicense: null, insurance: false }, PLUMB), ['DRIVERS_LICENSE', 'TRADE_LICENSE', 'INSURANCE_PROOF']);
-  assert.deepEqual(docsMissing({ headshot: true, driversLicense: true, insurance: true }, HANDY), []);
+test('documents: headshot and license always; trade license when the server says the trade needs one', () => {
+  assert.deepEqual(docTypesFor(true), ['HEADSHOT', 'DRIVERS_LICENSE', 'TRADE_LICENSE', 'INSURANCE_PROOF']);
+  assert.deepEqual(docTypesFor(false), ['HEADSHOT', 'DRIVERS_LICENSE', 'INSURANCE_PROOF']);
+  assert.deepEqual(docsMissing({ headshot: true, driversLicense: false, tradeLicense: null, insurance: false }, true), ['DRIVERS_LICENSE', 'TRADE_LICENSE', 'INSURANCE_PROOF']);
+  assert.deepEqual(docsMissing({ headshot: true, driversLicense: true, insurance: true }, false), []);
 });
 
 test('profile form: the server’s rules, named per field', () => {
   const p = profileProblems({});
   assert.deepEqual(Object.keys(p).sort(), ['baseZip', 'businessName', 'firstName', 'lastName', 'primaryTradeId', 'serviceRadius']);
-  assert.equal(profileProblems({ firstName: 'Ray', lastName: 'Diaz', businessName: 'n/a', baseZip: '72011', serviceRadius: 20, primaryTradeId: 't' }).businessName, 'Your real business name');
+  // Placeholder names ("n/a", "test") are the server's to refuse; the site only checks length.
+  assert.equal(profileProblems({ firstName: 'Ray', lastName: 'Diaz', businessName: 'n/a', baseZip: '72011', serviceRadius: 20, primaryTradeId: 't' }).businessName, undefined);
   assert.equal(profileProblems({ firstName: 'Ray', lastName: 'Diaz', businessName: 'Diaz Plumbing', baseZip: '7201', serviceRadius: 20, primaryTradeId: 't' }).baseZip, 'A 5-digit ZIP');
   assert.equal(profileProblems({ firstName: 'Ray', lastName: 'Diaz', businessName: 'Diaz Plumbing', baseZip: '72011', serviceRadius: 25, primaryTradeId: 't' }).serviceRadius, 'Pick 10, 20 or 30 miles');
   assert.ok(profileProblems({ firstName: 'Ray', lastName: 'Diaz', businessName: 'Diaz Plumbing', baseZip: '72011', serviceRadius: 20, primaryTradeId: 't', secondaryTradeId: 't' }).secondaryTradeId);
@@ -61,10 +62,11 @@ test('status copy and the signature', () => {
   assert.match(statusCopy({ applicationStatus: 'PENDING_DOC_REVIEW' }).title, /Under review/);
   assert.match(statusCopy({ applicationStatus: 'APPROVED', dispatchEligible: true }).title, /live/);
   assert.match(statusCopy({ applicationStatus: 'REJECTED' }).title, /Not this time/);
-  const u = { firstName: 'Ray', lastName: 'Diaz' };
-  assert.equal(attestationProblem('ray diaz', u), null);
-  assert.match(attestationProblem('R', u), /full name/);
-  assert.match(attestationProblem('Someone Else', u), /Sign as Ray Diaz/);
+  assert.doesNotMatch(statusCopy({ applicationStatus: 'PENDING_DOC_REVIEW' }).line, /text you|24 hours/);
+  // The server checks 2 to 100 characters; the site asks no more of a signature.
+  assert.equal(attestationProblem('ray diaz'), null);
+  assert.equal(attestationProblem('Ray D. Diaz Jr.'), null);
+  assert.match(attestationProblem('R'), /full name/);
 });
 
 test('renter codes and steps', () => {

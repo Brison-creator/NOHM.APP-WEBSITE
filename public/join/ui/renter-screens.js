@@ -36,7 +36,7 @@ export function inviteScreen(a) {
 
   a.api.tenants.myInvites().then((rows) => {
     for (const inv of rows || []) {
-      list.append(h('button.b-choice', { type: 'button', dataset: { invite: inv.inviteCode }, onClick: () => pick(inv.inviteCode) }, [h('span', [h('b', [inv.propertyAddress, inv.propertyCity ? `, ${inv.propertyCity}` : '']), h('small', [inv.landlordName ? `${inv.landlordName} · ` : '', inviteLine(inv)])]), h('span.b-chev', '›')]));
+      list.append(h('button.b-choice', { type: 'button', dataset: { invite: inv.inviteCode }, onClick: () => pick(inv.inviteCode) }, [h('span', [h('b', inv.propertyAddress || ''), h('small', [inv.landlordName ? `${inv.landlordName} · ` : '', inviteLine(inv)])]), h('span.b-chev', '›')]));
     }
     if (list.children.length) wrap.insertBefore(h('p.b-line', 'We found your invite. Tap it, or enter the code below.'), list);
   }).catch(() => undefined);
@@ -48,7 +48,7 @@ export function inviteScreen(a) {
     err,
     h('div.b-foot', [btn]),
     h('p.b-small', ['No code yet? Ask your landlord to add you in NOHM. ', h('a', { href: '/renters' }, 'What renters get'), '.']),
-    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email : ''), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]),
+    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email || prettyPhone(a.state.user.phone) : ''), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]),
   );
   return wrap;
 }
@@ -72,7 +72,7 @@ export function confirmScreen(a) {
   setTimeout(() => otp.input.focus(), 0);
   return h('section.b-screen', [
     head('One more code.', 'Your landlord’s invite is real; now we make sure it’s you.'),
-    h('div.b-card', [h('b', [inv.propertyAddress || '', inv.propertyCity ? `, ${inv.propertyCity}` : '', inv.propertyState ? ` ${inv.propertyState}` : '']), h('p', [inv.landlordName ? `Landlord: ${inv.landlordName}` : '', inv.rentAmount ? ` · ${inviteLine(inv)}` : ''])]),
+    h('div.b-card', [h('b', inv.propertyAddress || ''), h('p', [inv.landlordName ? `Landlord: ${inv.landlordName}` : '', inv.rentAmount ? ` · ${inviteLine(inv)}` : ''])]),
     h('form.b-form', { onSubmit: (e) => { e.preventDefault(); btn.click(); } }, [otp.el]),
     h('button.b-link', { type: 'button', onClick: () => a.run(() => a.api.tenants.sendOtp(inv.inviteCode), err, 'Sent another code.') }, 'Send a new code'),
     err,
@@ -86,8 +86,8 @@ export function doneScreen(a) {
   const landlord = a.state.myProperty && a.state.myProperty.landlord;
   return h('section.b-screen', [
     head('You’re in.', 'Your lease is on NOHM.'),
-    h('div.b-card', [h('b', [prop.address || '', prop.city ? `, ${prop.city}` : '', prop.state ? ` ${prop.state}` : '']), lease.rentAmount ? h('p', inviteLine({ rentAmount: lease.rentAmount, leaseDueDay: lease.dueDay, leaseStartDate: lease.startDate })) : null, landlord ? h('p.b-small', `Landlord: ${landlord.name}`) : null, prop.hin ? h('p.b-small', `HIN ${prop.hin}`) : null]),
+    h('div.b-card', [h('b', prop.address || ''), lease.rentAmount ? h('p', inviteLine({ rentAmount: lease.rentAmount, leaseDueDay: lease.dueDay, leaseStartDate: lease.startDate })) : null, landlord ? h('p.b-small', `Landlord: ${landlord.name}`) : null, prop.hin ? h('p.b-small', `HIN ${prop.hin}`) : null]),
     h('div.b-card.blue', [h('b', 'Rent, repairs and your lease live in the app.'), h('p', 'Pay rent by bank transfer straight to your landlord, turn on autopay, send a repair request with photos, and keep every notice and document in one place.'), h('a.b-btn', { href: a.storeUrl() }, 'Get the NOHM app')]),
-    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email : ''), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]),
+    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email || prettyPhone(a.state.user.phone) : ''), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]),
   ]);
 }

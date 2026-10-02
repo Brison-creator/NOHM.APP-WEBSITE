@@ -16,7 +16,7 @@ export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'accou
 export const TIERS = {
   STANDARD: { key: 'STANDARD', name: 'Standard', line: 'A pro in a day or two.', feeKey: null },
   EXPRESS: { key: 'EXPRESS', name: 'NOHM Express', line: 'Same day. Goes straight to the closest pro.', feeKey: 'EXPRESS_PRIORITY_FEE' },
-  NOW: { key: 'NOW', name: 'NOHM Now', line: 'A pro within 60 minutes of accepting.', feeKey: 'NOHM_NOW_FEE' },
+  NOW: { key: 'NOW', name: 'NOHM NOW', line: 'A pro within 60 minutes of accepting.', feeKey: 'NOHM_NOW_FEE' },
 };
 
 export const LIMITS = { title: 200, description: 2000, issueSummaryMin: 10, issueSummaryMax: 500, photos: 5, photoBytes: 10 * 1024 * 1024 };
@@ -35,7 +35,7 @@ export function emptyDraft() {
   };
 }
 
-/** What a draft looks like in sessionStorage: everything but the files. */
+/** What a draft looks like in storage (sessionStorage): everything but the files. */
 export function persistableDraft(draft) {
   const { photos, ...rest } = draft;
   return { ...rest, photoCount: photos ? photos.length : 0 };
@@ -142,10 +142,31 @@ export function feeFor(tierKey, pricing) {
     base,
     discounted: Boolean(row.hasLiveDiscount) && base > current,
     promoLabel: row.promoLabel || null,
+    promoDescription: row.promoDescription || null,
   };
 }
 
+/**
+ * The Late Afternoon premium in cents, from GET /config/pricing, or null
+ * when the server doesn't publish it (then no amount is shown, never a
+ * guessed one).
+ */
+export function lateAfternoonPremium(pricing) {
+  const row = pricing && pricing.LATE_AFTERNOON_FEE;
+  return row && Number.isFinite(Number(row.currentAmountCents)) ? Number(row.currentAmountCents) : null;
+}
+
 // ── Server bodies ─────────────────────────────────────────────────
+
+/**
+ * GET /jobs/cancellation-terms query for the draft: the same date the
+ * booking sends, so the terms shown are the ones it's booked under.
+ */
+export function cancellationTermsQuery(draft) {
+  if (draft.tier === 'EXPRESS') return { isExpress: 'true' };
+  if (draft.tier === 'NOW') return { priority: 'NOW' };
+  return { scheduledDate: scheduledDateIso(draft.day), scheduledTimeWindow: draft.window };
+}
 
 /** POST /jobs body for a Standard or Express draft. Throws on a draft that isn't ready. */
 export function jobBody(draft, pricing) {
@@ -168,7 +189,7 @@ export function jobBody(draft, pricing) {
     body.isExpress = true;
     body.shownFeeCents = fee.current;
   } else {
-    body.scheduledDate = scheduledDateIso(draft.day, draft.window);
+    body.scheduledDate = scheduledDateIso(draft.day);
     body.scheduledTimeWindow = draft.window;
   }
   return body;
@@ -196,15 +217,20 @@ export function nowDispatchBody(draft, availabilityId, pricing) {
 
 /**
  * What to do about a failed job/dispatch call. Each branch is one the
- * app handles the same way (request_service_screen.dart).
+ * app handles the same way (request_service_screen.dart). A 409 is
+ * retried once with the same key (a timed-out first try that went
+ * through comes back as the job); a second 409 is shown, never looped.
  */
-export function bookingErrorAction(err) {
+export function bookingErrorAction(err, { retried = false } = {}) {
   const code = err && err.code;
   if (err && err.status === 401) return { kind: 'sign_in' };
+  // A rental the booker manages is paid with the rental card, which is
+  // set up in the app; the web card step would save the wrong one.
+  if (code === 'PAYMENT_METHOD_REQUIRED' && err.body && err.body.forRentals) return { kind: 'rentals_card' };
   if (code === 'PAYMENT_METHOD_REQUIRED') return { kind: 'card' };
   if (code === 'PRICE_CHANGED') return { kind: 'price_changed', amountCents: err.body && err.body.amountCents };
   if (code === 'DUPLICATE_TRADE_REQUEST') return { kind: 'duplicate', existingJob: err.body && err.body.existingJob };
   if (code === 'PRO_UNAVAILABLE' || code === 'PRO_JUST_BOOKED') return { kind: 'pick_again', message: err.message };
-  if (err && err.status === 409) return { kind: 'retry_same_key' };
+  if (err && err.status === 409 && !retried) return { kind: 'retry_same_key' };
   return { kind: 'show', message: (err && err.message) || 'Something went wrong. Try again.' };
 }

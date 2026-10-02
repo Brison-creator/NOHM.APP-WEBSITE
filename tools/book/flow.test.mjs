@@ -5,7 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft } from '../../public/book/lib/flow.js';
+import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium } from '../../public/book/lib/flow.js';
 import { signupProblems, signupBody } from '../../public/nohm/signup.js';
 import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib/issues.js';
 import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/nohm/format.js';
@@ -81,7 +81,9 @@ test('POST /jobs body: Standard carries the window, Express the shown fee, never
   assert.deepEqual(Object.keys(std).sort(), ['description', 'idempotencyKey', 'propertyId', 'scheduledDate', 'scheduledTimeWindow', 'title', 'tradeId']);
   assert.equal(std.title, 'Plumbing · Clogged drain');
   assert.equal(std.scheduledTimeWindow, 'MORNING');
-  assert.match(std.scheduledDate, /^2026-10-03T08:00:00[+-]\d{2}:\d{2}$/);
+  // Local midnight: the server adds the window's start hour itself
+  // (time-window.util.ts windowOpensAt), as it does for the app.
+  assert.match(std.scheduledDate, /^2026-10-03T00:00:00[+-]\d{2}:\d{2}$/);
   assert.equal(std.isExpress, undefined);
   assert.equal(std.shownFeeCents, undefined);
 
@@ -155,15 +157,16 @@ test('format helpers', () => {
   assert.equal(prettyPhone('+15125550123'), '(512) 555-0123');
   assert.equal(money(2000), '$20');
   assert.equal(money(2050), '$20.50');
-  assert.equal(scheduledDateIso('2026-10-03', 'AFTERNOON', () => 300), '2026-10-03T14:00:00-05:00');
-  assert.equal(scheduledDateIso('2026-10-03', 'MORNING', () => -330), '2026-10-03T08:00:00+05:30');
-  assert.equal(scheduledDateIso('bad', 'MORNING'), null);
+  assert.equal(scheduledDateIso('2026-10-03', () => 300), '2026-10-03T00:00:00-05:00');
+  assert.equal(scheduledDateIso('2026-10-03', () => -330), '2026-10-03T00:00:00+05:30');
+  assert.equal(scheduledDateIso('bad'), null);
   const days = bookableDays(new Date(2026, 9, 2, 9));
   assert.equal(days.length, 7);
   assert.deepEqual(days[0], { iso: '2026-10-02', label: 'Today' });
   assert.equal(days[1].label, 'Tomorrow');
   assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 9)), true);
-  assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 10, 30)), false, 'closes an hour before the window ends');
+  assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 10, 30)), true, 'offered until the window ends');
+  assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 11)), false, 'not once it has ended');
   assert.equal(windowOpenOn('2026-10-03', 'MORNING', new Date(2026, 9, 2, 23)), true);
   assert.match(randomId(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 });
@@ -244,4 +247,28 @@ test('http: a failed refresh signs the person out and the 401 surfaces', async (
 test('http: a network failure is a readable error, not a crash', async () => {
   const http = createHttp({ baseUrl: 'https://api.test/api/v1', session: createSession(memStore()), fetchImpl: async () => { throw new TypeError('Failed to fetch'); } });
   await assert.rejects(http.get('/trades', { auth: false }), (e) => e.status === 0 && /Can't reach NOHM/.test(e.message));
+});
+
+test('the terms shown are asked for the same moment the booking sends', () => {
+  const d = readyDraft('STANDARD');
+  assert.deepEqual(cancellationTermsQuery(d), { scheduledDate: jobBody(d, PRICING).scheduledDate, scheduledTimeWindow: 'MORNING' });
+  assert.deepEqual(cancellationTermsQuery(readyDraft('EXPRESS')), { isExpress: 'true' });
+});
+
+test('a 409 is retried once with the same key, then shown', () => {
+  const e409 = { status: 409, message: 'This request was already used. Try again.' };
+  assert.equal(bookingErrorAction(e409).kind, 'retry_same_key');
+  assert.deepEqual(bookingErrorAction(e409, { retried: true }), { kind: 'show', message: e409.message });
+});
+
+test('a landlord asked for the rental card is sent to the app, not the personal card step', () => {
+  const err = { status: 400, code: 'PAYMENT_METHOD_REQUIRED', body: { code: 'PAYMENT_METHOD_REQUIRED', forRentals: true } };
+  assert.equal(bookingErrorAction(err).kind, 'rentals_card');
+  assert.equal(bookingErrorAction({ status: 400, code: 'PAYMENT_METHOD_REQUIRED', body: {} }).kind, 'card');
+});
+
+test('the Late Afternoon premium comes from the server, never a copy of it', () => {
+  assert.equal(lateAfternoonPremium({ LATE_AFTERNOON_FEE: { currentAmountCents: 2000 } }), 2000);
+  assert.equal(lateAfternoonPremium({}), null);
+  assert.equal(lateAfternoonPremium(null), null);
 });

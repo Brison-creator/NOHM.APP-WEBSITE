@@ -4,6 +4,7 @@
 
 import { h, append, field, button, clear } from '../../nohm/dom.js';
 import { RADII, DOC_TYPES, docTypesFor, profileProblems, profileBody, profileFormFrom, submitBlockers, docsMissing, statusCopy, attestationProblem } from '../lib/pro-flow.js';
+import { prettyPhone } from '../../nohm/format.js';
 
 function head(title, sub) {
   return h('header.b-head', [h('h1.b-h1', title), sub ? h('p.b-sub', sub) : null]);
@@ -83,13 +84,12 @@ export function profileScreen(a) {
 
 export function documentsScreen(a) {
   const dash = a.state.dashboard || {};
-  const primary = (dash.trades || [])[0] || null;
   const docs = (dash.documents || []).reduce((m, d) => ((m[d.docType] = d), m), {});
   const list = h('div.b-list');
   const err = h('p.b-err', { role: 'alert' });
   const locked = dash.applicationStatus === 'PENDING_DOC_REVIEW' || dash.applicationStatus === 'PENDING_BG_CHECK';
 
-  for (const type of docTypesFor(primary)) {
+  for (const type of docTypesFor(dash.tradeLicenseRequired)) {
     const meta = DOC_TYPES[type];
     const have = docs[type];
     const input = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/heic,image/heif,application/pdf', hidden: true, id: `f-doc-${type}` });
@@ -113,7 +113,7 @@ export function documentsScreen(a) {
     });
     list.append(row);
   }
-  const missing = docsMissing(dash.checklist, primary).filter((t) => DOC_TYPES[t].required);
+  const missing = docsMissing(dash.checklist, dash.tradeLicenseRequired).filter((t) => DOC_TYPES[t].required);
   return h('section.b-screen', [
     stepsBar('documents'),
     head('Your documents', 'A headshot and driver’s license are needed before you can take jobs. The rest can wait, but they speed up review.'),
@@ -148,16 +148,30 @@ export function payoutsScreen(a) {
   }
   btn.addEventListener('click', async () => {
     btn.busy(true, 'Opening Stripe…');
+    // Opened now, inside the click, so a popup blocker allows it; the
+    // address is set once the server returns it. If it was blocked
+    // anyway, the link is shown to tap instead.
+    const tab = window.open('', '_blank');
     try {
       const s = await a.api.stripeConnect.status().catch(() => ({ hasAccount: false }));
       const link = s.hasAccount ? await a.api.stripeConnect.refresh() : await a.api.stripeConnect.create();
-      window.open(link.url, '_blank', 'noopener');
-      status.textContent = 'Stripe opened in a new tab. Finish there; this page updates on its own.';
+      if (tab) {
+        tab.opener = null;
+        tab.location.href = link.url;
+        status.textContent = 'Stripe opened in a new tab. Finish there; this page updates on its own.';
+      } else {
+        clear(status);
+        append(status, ['Your browser blocked the new tab. ', h('a', { href: link.url, target: '_blank', rel: 'noopener' }, 'Open Stripe'), ' and finish there; this page updates on its own.']);
+      }
       clearInterval(polling);
       polling = setInterval(check, 5000);
       btn.busy(false);
       btn.textContent = 'Reopen Stripe';
-    } catch (ex) { err.textContent = ex.message; btn.busy(false); }
+    } catch (ex) {
+      if (tab) tab.close();
+      err.textContent = ex.message;
+      btn.busy(false);
+    }
   });
   if (dash.checklist && dash.checklist.stripeConnect) status.textContent = 'Payouts are set up.';
   else check();
@@ -184,11 +198,10 @@ export function agreementScreen(a) {
   const btn = button('I agree', { key: 'agree' });
   const already = dash.checklist && dash.checklist.attestation;
   btn.addEventListener('click', async () => {
-    const p = attestationProblem(name.value, user);
+    const p = attestationProblem(name.value);
     if (p) return name.setError(p);
     btn.busy(true, 'Signing…');
     try {
-      await a.api.contractors.videoComplete().catch(() => undefined);
       await a.api.contractors.attestation(name.value.trim());
       await a.refresh();
       a.go('review');
@@ -204,7 +217,7 @@ export function agreementScreen(a) {
       h('p', 'NOHM steps in on no-shows, unsafe conduct and unapproved charges.'),
     ]),
     h('p.b-small', ['The full terms: ', h('a', { href: '/terms' }, 'Terms of Service'), ' · ', h('a', { href: '/step-in' }, 'When NOHM steps in'), '.']),
-    already ? h('p.b-line', `Signed by ${dash.profile && dash.profile.attestedName ? dash.profile.attestedName : 'you'}.`) : name.el,
+    already ? h('p.b-line', 'Signed.') : name.el,
     err,
     h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, already ? button('Continue', { onClick: () => a.go('review'), key: 'next' }) : btn]),
   ]);
@@ -216,9 +229,9 @@ export function reviewScreen(a) {
   const dash = a.state.dashboard || {};
   const p = dash.profile || {};
   const blockers = submitBlockers(dash.checklist);
-  const missingDocs = docsMissing(dash.checklist, (dash.trades || [])[0]);
+  const missingDocs = docsMissing(dash.checklist, dash.tradeLicenseRequired);
   const err = h('p.b-err', { role: 'alert' });
-  const btn = button('Submit for review', { key: 'submit', disabled: blockers.length > 0 });
+  const btn = button('Submit for review', { key: 'submit' });
   btn.addEventListener('click', async () => {
     btn.busy(true, 'Submitting…');
     try {
@@ -230,7 +243,7 @@ export function reviewScreen(a) {
   const row = (label, value, step) => h('div.b-row', [h('span.b-muted', label), h('span', value), step ? h('button.b-edit', { type: 'button', onClick: () => a.go(step) }, 'Edit') : null]);
   return h('section.b-screen', [
     stepsBar('review'),
-    head('Ready for review?', 'NOHM looks it over, usually within 24 hours.'),
+    head('Ready for review?', 'NOHM looks it over and the result shows here and in the app.'),
     h('div.b-card', [
       row('Business', p.businessName || '', 'profile'),
       row('Trades', (dash.trades || []).map((t) => t.label).join(', '), 'profile'),
@@ -239,7 +252,7 @@ export function reviewScreen(a) {
       row('Agreement', dash.checklist && dash.checklist.attestation ? 'Signed' : 'Not yet', 'agreement'),
       row('Documents', missingDocs.length ? `${missingDocs.length} to upload` : 'All uploaded', 'documents'),
     ]),
-    blockers.length ? h('div.b-card.alert', [h('b', 'Before you can submit'), ...blockers.map((b) => h('p', [h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.go(b.step); } }, b.label)]))]) : null,
+    blockers.length ? h('div.b-card.alert', [h('b', 'Still to do'), ...blockers.map((b) => h('p', [h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.go(b.step); } }, b.label)]))]) : null,
     missingDocs.length ? h('p.b-small', 'You can submit without documents; the review will ask for the headshot and driver’s license before you take jobs.') : null,
     err,
     h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, btn]),
@@ -252,7 +265,7 @@ export function statusScreen(a) {
   const dash = a.state.dashboard || {};
   const copy = statusCopy(dash);
   const p = dash.profile || {};
-  const missingDocs = docsMissing(dash.checklist, (dash.trades || [])[0]);
+  const missingDocs = docsMissing(dash.checklist, dash.tradeLicenseRequired);
   const rejected = (dash.documents || []).filter((d) => d.reviewStatus === 'REJECTED');
   const canUpload = dash.applicationStatus !== 'PENDING_DOC_REVIEW' && dash.applicationStatus !== 'PENDING_BG_CHECK';
   return h('section.b-screen', [
@@ -262,6 +275,6 @@ export function statusScreen(a) {
     canUpload && (missingDocs.length || rejected.length) ? button('Upload documents', { onClick: () => a.go('documents'), key: 'docs' }) : null,
     dash.applicationStatus === 'ACTION_REQUIRED' ? button('Finish the steps', { kind: 'sec', onClick: () => a.go('profile') }) : null,
     h('div.b-card.blue', [h('b', 'Jobs come through the app.'), h('p', 'Go on shift, take offers, write estimates, get paid. Install it now so you’re ready the day you’re approved.'), h('a.b-btn', { href: a.storeUrl() }, 'Get the NOHM app')]),
-    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email : ''), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]),
+    h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email || prettyPhone(a.state.user.phone) : ''), ' · ', h('a', { href: '#', onClick: (e) => { e.preventDefault(); a.signOut(); } }, 'Sign out')]),
   ]);
 }

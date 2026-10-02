@@ -20,10 +20,13 @@ export const DOC_TYPES = {
   INSURANCE_PROOF: { label: 'Proof of insurance', line: 'Certificate of liability insurance.', required: false },
 };
 
-/** Document types to ask for, given the primary trade. */
-export function docTypesFor(primaryTrade) {
+/**
+ * Document types to ask for. Whether a trade license is needed is the
+ * server's answer (GET /contractors/dashboard tradeLicenseRequired).
+ */
+export function docTypesFor(tradeLicenseRequired) {
   const out = ['HEADSHOT', 'DRIVERS_LICENSE'];
-  if (primaryTrade && primaryTrade.licenseRequired) out.push('TRADE_LICENSE');
+  if (tradeLicenseRequired) out.push('TRADE_LICENSE');
   out.push('INSURANCE_PROOF');
   return out;
 }
@@ -40,7 +43,11 @@ export function proStepFor(dash) {
   return 'review';
 }
 
-/** What still blocks POST /contractors/submit-review: the four things the server checks. */
+/**
+ * The server's checklist items not done yet, each with the step that
+ * does it. Shown as a to-do list; whether the application can be
+ * submitted is the server's answer to POST /contractors/submit-review.
+ */
 export function submitBlockers(checklist) {
   const c = checklist || {};
   const out = [];
@@ -52,13 +59,11 @@ export function submitBlockers(checklist) {
 }
 
 /** Documents still missing for dispatch (headshot and license) or asked for (trade license, insurance). */
-export function docsMissing(checklist, primaryTrade) {
+export function docsMissing(checklist, tradeLicenseRequired) {
   const c = checklist || {};
   const have = { HEADSHOT: c.headshot, DRIVERS_LICENSE: c.driversLicense, TRADE_LICENSE: c.tradeLicense, INSURANCE_PROOF: c.insurance };
-  return docTypesFor(primaryTrade).filter((t) => !have[t]);
+  return docTypesFor(tradeLicenseRequired).filter((t) => !have[t]);
 }
-
-const PLACEHOLDERS = new Set(['test', 'asdf', 'na', 'n/a', 'none', 'xxx']);
 
 /** Problems with the profile form, keyed by field; {} when it's fine. */
 export function profileProblems(f) {
@@ -67,7 +72,6 @@ export function profileProblems(f) {
   if (!(f.lastName || '').trim()) e.lastName = 'Last name';
   const biz = (f.businessName || '').trim();
   if (biz.length < 2 || biz.length > 40) e.businessName = '2 to 40 characters';
-  else if (PLACEHOLDERS.has(biz.toLowerCase())) e.businessName = 'Your real business name';
   if (!/^\d{5}$/.test((f.baseZip || '').trim())) e.baseZip = 'A 5-digit ZIP';
   if (!RADII.includes(Number(f.serviceRadius))) e.serviceRadius = 'Pick 10, 20 or 30 miles';
   if (!f.primaryTradeId) e.primaryTradeId = 'Pick your main trade';
@@ -134,9 +138,9 @@ export function statusCopy(dash) {
   if (dash && dash.dispatchEligible) return { title: "You're live on NOHM.", line: 'Go on shift in the app to start getting jobs.' };
   switch (st) {
     case 'PENDING_DOC_REVIEW':
-      return { title: 'Under review.', line: 'NOHM is checking your profile and documents, usually within 24 hours. We text you when it’s done.' };
+      return { title: 'Under review.', line: 'NOHM is checking your profile and documents. The app and this page show the result.' };
     case 'PENDING_BG_CHECK':
-      return { title: 'Almost there.', line: 'Your identity check is in progress. We text you the moment it clears.' };
+      return { title: 'Almost there.', line: 'Your identity check is in progress. The app shows it the moment it clears.' };
     case 'ACTION_REQUIRED':
       return { title: 'One more thing.', line: 'The review needs something from you. The items below say what.' };
     case 'APPROVED':
@@ -148,12 +152,10 @@ export function statusCopy(dash) {
   }
 }
 
-/** Attestation name: the person types their own name to sign. */
-export function attestationProblem(name, user) {
+/** Attestation name: the person types their full name to sign (the server's 2 to 100 characters). */
+export function attestationProblem(name) {
   const n = (name || '').trim();
   if (n.length < 2) return 'Type your full name to sign.';
   if (n.length > 100) return 'Up to 100 characters.';
-  const expected = `${(user && user.firstName) || ''} ${(user && user.lastName) || ''}`.trim().toLowerCase();
-  if (expected && n.toLowerCase() !== expected) return `Sign as ${expected.replace(/\b\w/g, (c) => c.toUpperCase())}, the name on your account.`;
   return null;
 }
