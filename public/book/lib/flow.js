@@ -160,6 +160,15 @@ export function lateAfternoonPremium(pricing) {
   return row && Number.isFinite(Number(row.currentAmountCents)) ? Number(row.currentAmountCents) : null;
 }
 
+/**
+ * The tiers to offer: a paid tier only when the server publishes its
+ * price (a server without NOHM NOW has no NOHM_NOW_FEE), so nobody picks
+ * a tier that can only fail at the end. Before pricing loads, all show.
+ */
+export function offeredTiers(pricing) {
+  return Object.values(TIERS).filter((t) => !t.feeKey || !pricing || pricing[t.feeKey]);
+}
+
 // ── Server bodies ─────────────────────────────────────────────────
 
 /**

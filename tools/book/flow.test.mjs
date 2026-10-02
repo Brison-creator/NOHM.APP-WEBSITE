@@ -5,7 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium } from '../../public/book/lib/flow.js';
+import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers } from '../../public/book/lib/flow.js';
 import { signupProblems, signupBody } from '../../public/nohm/signup.js';
 import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib/issues.js';
 import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/nohm/format.js';
@@ -309,4 +309,12 @@ test('the device secret from a new-browser code is kept per email and sent on th
   assert.equal(s1.deviceSecret('ava@example.com'), null, 'another person on this browser has their own');
   s1.saveDeviceSecret('ray@example.com', null);
   assert.equal(s1.deviceSecret('ray@example.com'), 'sec-1', 'an empty secret never erases a real one');
+});
+
+test('a paid tier is offered only when the server publishes its price', () => {
+  // The live server's map on 2026-10-02: no NOHM_NOW_FEE.
+  const older = { EXPRESS_PRIORITY_FEE: { currentAmountCents: 2000, baseAmountCents: 4000 }, STANDARD_SERVICE_FEE: {}, CONTRACTOR_PLATFORM_FEE: {} };
+  assert.deepEqual(offeredTiers(older).map((t) => t.key), ['STANDARD', 'EXPRESS']);
+  assert.deepEqual(offeredTiers(PRICING).map((t) => t.key), ['STANDARD', 'EXPRESS', 'NOW']);
+  assert.deepEqual(offeredTiers(null).map((t) => t.key), ['STANDARD', 'EXPRESS', 'NOW']);
 });

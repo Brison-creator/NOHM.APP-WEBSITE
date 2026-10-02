@@ -3,7 +3,7 @@
 // what the server and lib/flow.js say; they decide nothing themselves.
 
 import { h, append, field, button, money, clear } from '../../nohm/dom.js';
-import { TIERS, LIMITS, feeFor, bookableTrades, stepProblem, lateAfternoonPremium, cancellationTermsQuery } from '../lib/flow.js';
+import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, stepProblem, lateAfternoonPremium, cancellationTermsQuery } from '../lib/flow.js';
 export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
@@ -170,7 +170,7 @@ export function detailsScreen(a) {
 export function speedScreen(a) {
   const list = h('div.b-list');
   const pricing = a.state.pricing;
-  for (const tier of Object.values(TIERS)) {
+  for (const tier of offeredTiers(pricing)) {
     const fee = feeFor(tier.key, pricing);
     const price = !tier.feeKey
       ? h('span.b-price', 'No NOHM fee')
