@@ -5,7 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers } from '../../public/book/lib/flow.js';
+import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, pickerTrades, SITE_TRADES, referralProblem, referralMailto, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers } from '../../public/book/lib/flow.js';
 import { signupProblems, signupBody } from '../../public/nohm/signup.js';
 import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib/issues.js';
 import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/nohm/format.js';
@@ -317,4 +317,29 @@ test('a paid tier is offered only when the server publishes its price', () => {
   assert.deepEqual(offeredTiers(older).map((t) => t.key), ['STANDARD', 'EXPRESS']);
   assert.deepEqual(offeredTiers(PRICING).map((t) => t.key), ['STANDARD', 'EXPRESS', 'NOW']);
   assert.deepEqual(offeredTiers(null).map((t) => t.key), ['STANDARD', 'EXPRESS', 'NOW']);
+});
+
+test('the service screen shows every site trade: bookable ones first, the rest by request', () => {
+  const tiles = pickerTrades(TRADES);
+  assert.deepEqual(tiles.slice(0, 2).map((t) => [t.name, t.bookable, t.id]), [['PLUMBING', true, 't-plumb'], ['HVAC', true, 't-hvac']]);
+  assert.ok(!tiles.some((t) => t.name === 'MAKE_READY'), 'a server trade that is not bookable stays hidden');
+  const rest = tiles.slice(2);
+  assert.equal(rest.length, SITE_TRADES.length - 2);
+  assert.ok(rest.every((t) => t.bookable === false && t.id === null && t.label && t.blurb));
+  assert.equal(SITE_TRADES.length, 15);
+  assert.equal(pickerTrades([]).length, 15);
+  assert.equal(pickerTrades(null).length, 15);
+});
+
+test('a contractor referral needs a name and a way to reach them, then becomes a mailto', () => {
+  assert.ok(referralProblem({ name: '', phone: '5015551234' }));
+  assert.ok(referralProblem({ name: 'Joe Diaz' }));
+  assert.ok(referralProblem({ name: 'Joe Diaz', email: 'not-an-email' }));
+  assert.ok(referralProblem({ name: 'Joe Diaz', phone: '12345' }));
+  assert.equal(referralProblem({ name: 'Joe Diaz', phone: '(501) 555-1234' }), null);
+  assert.equal(referralProblem({ name: 'Joe Diaz', email: 'joe@diazplumbing.com' }), null);
+  const url = referralMailto({ name: 'Joe Diaz', phone: '(501) 555-1234', email: '', referredBy: 'Ann Lee' });
+  assert.ok(url.startsWith('mailto:admin@nohm.app?subject='));
+  const body = decodeURIComponent(url.split('&body=')[1]);
+  assert.equal(body, 'Contractor: Joe Diaz\nPhone: (501) 555-1234\nEmail: —\nReferred by: Ann Lee');
 });

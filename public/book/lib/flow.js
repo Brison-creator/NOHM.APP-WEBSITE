@@ -60,6 +60,74 @@ export function bookableTrades(trades) {
   return (trades || []).filter((t) => t.isActive !== false && t.bookable !== false);
 }
 
+/**
+ * Every trade the site offers, in the order of /services (the same 15
+ * as the homepage and /homeowners; CLAUDE.md says change all of them
+ * together). `name` is the server's trade name for the ones it has.
+ */
+export const SITE_TRADES = [
+  { name: 'PLUMBING', label: 'Plumbing', blurb: 'Leaks, clogs, water heaters' },
+  { name: 'HVAC', label: 'HVAC', blurb: 'No heat, no AC' },
+  { name: 'ELECTRICAL', label: 'Electrical', blurb: 'Outages, outlets, breakers' },
+  { name: 'APPLIANCE', label: 'Appliance', blurb: 'Washers, dryers, fridges' },
+  { name: 'LOCKSMITH', label: 'Locksmith', blurb: 'Locked out, rekeys' },
+  { name: 'PRESSURE_WASHING', label: 'Pressure Washing', blurb: 'Driveways, siding, decks' },
+  { name: 'HANDYMAN', label: 'Handyman', blurb: 'Small fixes, drywall patches' },
+  { name: 'LANDSCAPING', label: 'Landscaping & Lawn Care', blurb: 'Mowing, beds, yard cleanups' },
+  { name: 'GUTTERS', label: 'Gutter Service', blurb: 'Cleaning, repairs, guards' },
+  { name: 'GARAGE_DOOR', label: 'Garage Door Service', blurb: 'Stuck doors, springs, openers' },
+  { name: 'PEST_CONTROL', label: 'Pest Control', blurb: 'Ants, roaches, rodents' },
+  { name: 'PAINTING', label: 'Painting', blurb: 'Interior, exterior, touch-ups' },
+  { name: 'FLOORING', label: 'Flooring', blurb: 'Installs, repairs, refinishing' },
+  { name: 'HOUSE_CLEANING', label: 'House Cleaning', blurb: 'Regular, deep, move-out' },
+  { name: 'TREE_SERVICE', label: 'Tree Service', blurb: 'Trimming, removal, storm cleanup' },
+];
+
+/**
+ * The tiles on the service screen: the server's bookable trades first,
+ * in its order (those book online), then every site trade the server
+ * doesn't offer yet, marked `bookable: false` (those go to "tell us
+ * what you need"). A server trade that isn't bookable stays hidden.
+ */
+export function pickerTrades(serverTrades) {
+  const online = bookableTrades(serverTrades).map((t) => ({ ...t, bookable: true }));
+  const have = new Set(online.map((t) => t.name));
+  const byRequest = SITE_TRADES.filter((t) => !have.has(t.name)).map((t) => ({ ...t, id: null, bookable: false }));
+  return [...online, ...byRequest];
+}
+
+// ── Contractor referral ───────────────────────────────────────────
+// "Know a great contractor?" on the service screen. The site has no
+// form endpoint, so the note goes to admin@nohm.app as an email the
+// person sends from their own mail app.
+
+export const REFERRAL_TO = 'admin@nohm.app';
+
+/** The first thing to fix on the referral form, or null when it can be sent. */
+export function referralProblem(f) {
+  const name = (f.name || '').trim();
+  const phone = (f.phone || '').trim();
+  const email = (f.email || '').trim();
+  if (!name) return "The contractor's name, please.";
+  if (!phone && !email) return 'A phone number or an email so we can reach them.';
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "That email doesn't look right.";
+  if (phone && phone.replace(/\D/g, '').length < 10) return "That phone number doesn't look right.";
+  return null;
+}
+
+/** The mailto: link that carries the referral. */
+export function referralMailto(f) {
+  const line = (k, v) => `${k}: ${(v || '').trim() || '—'}`;
+  const body = [
+    line('Contractor', f.name),
+    line('Phone', f.phone),
+    line('Email', f.email),
+    line('Referred by', f.referredBy),
+  ].join('\n');
+  const subject = `Contractor referral: ${(f.name || '').trim()}`;
+  return `mailto:${REFERRAL_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 // ── Step rules ────────────────────────────────────────────────────
 
 /**

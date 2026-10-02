@@ -3,26 +3,44 @@
 // what the server and lib/flow.js say; they decide nothing themselves.
 
 import { h, append, field, button, money, clear } from '../../nohm/dom.js';
-import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, stepProblem, lateAfternoonPremium, cancellationTermsQuery } from '../lib/flow.js';
+import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, pickerTrades, referralProblem, referralMailto, stepProblem, lateAfternoonPremium, cancellationTermsQuery } from '../lib/flow.js';
 export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
 import { mountCardForm } from './card.js';
 
+// The trade glyphs, the same as the cards on /services. Each icon is a
+// list of [tag, attributes]; built with createElementNS, never innerHTML.
+const P = (d) => ['path', { d }];
 const TRADE_ICON = {
-  PLUMBING: 'M12 3c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 9 7 12 3z',
-  HVAC: 'M12 2v20M4.2 7l15.6 10M4.2 17L19.8 7',
-  ELECTRICAL: 'M13 2L5 13.5h6L10 22l8-11.5h-6L13 2z',
-  APPLIANCE: 'M4 2.5h16v19H4zM12 9a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z',
-  ROOFING: 'M3 11l9-7 9 7M5 10v10h14V10',
+  PLUMBING: [P('M12 3c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 9 7 12 3z')],
+  HVAC: [P('M12 2v20M4.2 7l15.6 10M4.2 17L19.8 7'), P('M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5')],
+  ELECTRICAL: [P('M13 2L5 13.5h6L10 22l8-11.5h-6L13 2z')],
+  APPLIANCE: [['rect', { x: 4, y: 2.5, width: 16, height: 19, rx: 2 }], ['circle', { cx: 12, cy: 13.5, r: 4.5 }], P('M7.5 6h.01M10.5 6h.01')],
+  ROOFING: [P('M3 11l9-7 9 7M5 10v10h14V10')],
+  LOCKSMITH: [['circle', { cx: 8, cy: 15, r: 4.5 }], P('M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2')],
+  PRESSURE_WASHING: [P('M3 10h9l3-3h3v6h-3l-3-3'), P('M18 10h3'), P('M7 10v4a2 2 0 0 0 2 2h1'), P('M19 14l2 3M17 15l1 4M21 12l2 1')],
+  HANDYMAN: [P('M14.5 5.5l4 4-9.5 9.5-4-4z'), P('M13 4l2-2 7 7-2 2'), P('M5 15l-2.5 2.5 4 4L9 19')],
+  LANDSCAPING: [P('M5 20c0-8.5 5-14 15-15-.5 9.5-6.5 14.5-15 15z'), P('M5 20l8-8'), P('M2 21h20')],
+  GUTTERS: [P('M2 9l10-6 10 6'), P('M3 12h18v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 14z'), P('M17.5 15.5V21')],
+  GARAGE_DOOR: [P('M3 21V9l9-6 9 6v12'), P('M6.5 21v-9h11v9M6.5 15h11M6.5 18h11')],
+  PEST_CONTROL: [['ellipse', { cx: 12, cy: 14, rx: 4.5, ry: 6 }], P('M12 8v12M9.5 4.5L10.8 8M14.5 4.5L13.2 8M7.5 12H4M7.5 16.5l-3 2M16.5 12H20M16.5 16.5l3 2')],
+  PAINTING: [['rect', { x: 3, y: 3, width: 15, height: 6, rx: 1.5 }], P('M18 6h3v6h-9v3'), ['rect', { x: 10.5, y: 15, width: 3, height: 6.5, rx: 1 }]],
+  FLOORING: [['rect', { x: 3, y: 3, width: 18, height: 18, rx: 1.5 }], P('M3 9h18M3 15h18M9 3v6M15 9v6M8 15v6')],
+  HOUSE_CLEANING: [P('M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z'), P('M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z')],
+  TREE_SERVICE: [P('M12 2l6 8h-3l4 6H5l4-6H6z'), P('M12 16v6')],
 };
-const svg = (d) => {
-  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+const SVG_NS = 'http://www.w3.org/2000/svg';
+/** An icon from its shape list, or a single path string. */
+const svg = (shapes) => {
+  const s = document.createElementNS(SVG_NS, 'svg');
   s.setAttribute('viewBox', '0 0 24 24');
   s.setAttribute('aria-hidden', 'true');
-  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  p.setAttribute('d', d);
-  s.appendChild(p);
+  for (const [tag, attrs] of typeof shapes === 'string' ? [P(shapes)] : shapes) {
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    s.appendChild(el);
+  }
   return s;
 };
 
@@ -56,8 +74,10 @@ function footer(a, next, { label = 'Continue', disabled = false, back = true } =
 
 export function serviceScreen(a) {
   const trades = bookableTrades(a.state.trades);
+  const tiles = pickerTrades(a.state.trades);
   const grid = h('div.b-grid');
   const matches = h('div.b-matches');
+  const ask = h('p.b-ask', { hidden: true, role: 'status' });
   const q = h('input.b-search', { type: 'search', placeholder: 'What needs fixing? "no hot water", "AC not cooling"…', autocomplete: 'off', 'aria-label': 'What needs fixing' });
 
   const pickTrade = (t, issue) => {
@@ -65,10 +85,26 @@ export function serviceScreen(a) {
     a.go(issue ? 'details' : 'issue');
   };
 
+  // A trade the server doesn't book online yet: say so and point to
+  // the same "tell us what you need" email as the services page.
+  const askFor = (t) => {
+    clear(ask);
+    ask.hidden = false;
+    ask.append(h('b', `${t.label} isn’t bookable online yet.`), ' ', h('a', { href: `mailto:admin@nohm.app?subject=${encodeURIComponent(`Service request: ${t.label}`)}` }, 'Tell us what you need'), ' and we’ll line up a local pro.');
+    ask.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  };
+  const choose = (t, issue) => (t.bookable ? pickTrade(t, issue) : askFor(t));
+
   function drawGrid() {
     clear(grid);
-    for (const t of trades) {
-      grid.append(h('button.b-tile', { type: 'button', onClick: () => pickTrade(t), dataset: { trade: t.name } }, [svg(TRADE_ICON[t.name] || TRADE_ICON.PLUMBING), h('b', t.label), h('span', BLURB[t.name] || t.description || '')]));
+    for (const t of tiles) {
+      const tile = h('button.b-tile', { type: 'button', class: t.bookable ? '' : 'ask', onClick: () => choose(t), dataset: t.bookable ? { trade: t.name } : { ask: t.name } }, [
+        svg(TRADE_ICON[t.name] || TRADE_ICON.HANDYMAN),
+        h('b', t.label),
+        h('span', t.blurb || BLURB[t.name] || t.description || ''),
+        t.bookable ? null : h('small', 'By request'),
+      ]);
+      grid.append(tile);
     }
   }
 
@@ -80,12 +116,14 @@ export function serviceScreen(a) {
       return;
     }
     const hits = [];
-    for (const t of trades) {
-      for (const i of issuesForTrade(t.name)) {
-        const hay = `${t.label} ${i.title} ${i.description}`.toLowerCase();
-        if (hay.includes(text)) hits.push({ t, i });
+    for (const t of tiles) {
+      if (t.bookable) {
+        for (const i of issuesForTrade(t.name)) {
+          const hay = `${t.label} ${i.title} ${i.description}`.toLowerCase();
+          if (hay.includes(text)) hits.push({ t, i });
+        }
       }
-      if (t.label.toLowerCase().includes(text)) hits.push({ t, i: null });
+      if (`${t.label} ${t.blurb || ''}`.toLowerCase().includes(text)) hits.push({ t, i: null });
     }
     matches.hidden = false;
     if (!hits.length) {
@@ -93,7 +131,7 @@ export function serviceScreen(a) {
       return;
     }
     for (const { t, i } of hits.slice(0, 6)) {
-      matches.append(h('button.b-match', { type: 'button', onClick: () => pickTrade(t, i) }, [h('span.b-emoji', i ? i.emoji : '🔧'), h('span', [h('b', i ? i.title : t.label), h('small', i ? `${t.label} · ${i.description}` : BLURB[t.name] || '')])]));
+      matches.append(h('button.b-match', { type: 'button', onClick: () => choose(t, i) }, [h('span.b-emoji', i ? i.emoji : '🔧'), h('span', [h('b', i ? i.title : t.label), h('small', i ? `${t.label} · ${i.description}` : t.blurb || BLURB[t.name] || '')])]));
     }
   }
   q.addEventListener('input', search);
@@ -108,9 +146,46 @@ export function serviceScreen(a) {
     h('div.b-searchwrap', [svg('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4'), q]),
     matches,
     grid,
+    ask,
     h('p.b-line', [h('b', 'Standard has no NOHM fee.'), ' A pro in a day or two. ', promo && promo.discounted && promo.promoLabel ? h('span', promo.promoLabel) : null]),
     a.state.user ? h('p.b-small', ['Signed in as ', h('b', a.state.user.email || prettyPhone(a.state.user.phone)), ' · ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]) : null,
     h('p.b-small', ["Don't see your trade? ", h('a', { href: '/services' }, 'See every service'), ' and ', h('a', { href: 'mailto:admin@nohm.app?subject=Service request' }, 'tell us what you need'), '.']),
+    referralBlock(a),
+  ]);
+}
+
+/**
+ * "Know a great contractor?" A short form; sending opens the person's
+ * mail app with the note addressed to NOHM (the site has no form
+ * endpoint). Validation lives in lib/flow.js.
+ */
+function referralBlock(a) {
+  const name = field({ label: 'Their name', name: 'ref-name', autocomplete: 'off', maxlength: 80 });
+  const phone = field({ label: 'Phone', type: 'tel', name: 'ref-phone', inputmode: 'tel', autocomplete: 'off', maxlength: 20 });
+  const email = field({ label: 'Email', type: 'email', name: 'ref-email', inputmode: 'email', autocomplete: 'off', maxlength: 120 });
+  const by = field({ label: 'Who can we say referred them?', name: 'ref-by', autocomplete: 'off', maxlength: 80, placeholder: 'Your name' });
+  const fields = { name, phone, email, by };
+  const send = button('Send', { submit: true, key: 'refer' });
+
+  const form = h('form.b-form.b-refer-form', { novalidate: true, onSubmit: (e) => {
+    e.preventDefault();
+    const f = { name: name.value, phone: phone.value, email: email.value, referredBy: by.value };
+    for (const x of Object.values(fields)) x.setError('');
+    const p = referralProblem(f);
+    if (p) {
+      const at = !f.name.trim() ? name : f.email.trim() && /email/i.test(p) ? email : phone;
+      at.setError(p);
+      at.input.focus();
+      return;
+    }
+    window.location.href = referralMailto(f);
+    a.toast('Thanks. Your mail app has the note ready to send.');
+  } }, [name.el, h('div.b-two', [phone.el, email.el]), by.el, send]);
+
+  return h('section.b-refer', [
+    h('h2.b-h2', 'Know a great contractor?'),
+    h('p.b-sub', 'Someone who’d be a good fit for NOHM? Tell us who, and we’ll reach out.'),
+    form,
   ]);
 }
 
