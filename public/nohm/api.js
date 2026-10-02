@@ -1,4 +1,4 @@
-// Every NOHM endpoint the website uses, by name. Paths and bodies
+// Every NOHM endpoint the website uses (/book and /join), by name. Paths and bodies
 // match the server's controllers (the-nohm-application-1.1/backend);
 // nothing here decides anything, it only carries requests. Public
 // routes pass auth:false so a stale token can't 401 them.
@@ -22,9 +22,9 @@ export function createApi(http, session) {
       loginVerifyDeviceOtp: (email, code) => http.post('/auth/login/verify-device-otp', { email, code, ...dev(), trustDevice: true }, { auth: false }),
       loginSendOtp: (phone) => http.post('/auth/login/send-otp', { phone }, { auth: false }),
       loginVerifyOtp: (phone, code) => http.post('/auth/login/verify-otp', { phone, code, ...dev() }, { auth: false }),
-      googleSignin: (idToken) => http.post('/auth/google/signin', { idToken, role: 'HOMEOWNER', ...dev() }, { auth: false }),
+      googleSignin: (idToken, role = 'HOMEOWNER') => http.post('/auth/google/signin', { idToken, role, ...dev() }, { auth: false }),
       socialSignupSendOtp: (phone) => http.post('/auth/social-signup/send-otp', { phone }, { auth: false }),
-      googleSignupWithPhone: (idToken, phone, code) => http.post('/auth/google/signup-with-phone', { idToken, phone, code, role: 'HOMEOWNER', ...dev() }, { auth: false }),
+      googleSignupWithPhone: (idToken, phone, code, role = 'HOMEOWNER') => http.post('/auth/google/signup-with-phone', { idToken, phone, code, role, ...dev() }, { auth: false }),
       me: () => http.get('/auth/me'),
       logout: () => http.post('/auth/logout'),
     },
@@ -66,6 +66,45 @@ export function createApi(http, session) {
       demand: (tradeId, propertyId) => http.post('/now/demand', { tradeId, propertyId }),
       dispatch: (body) => http.post('/now/dispatch', body),
       job: (id) => http.get(`/now/jobs/${encodeURIComponent(id)}`),
+    },
+
+    // ── Pros: onboarding (modules/contractors, modules/stripe) ───
+    contractors: {
+      dashboard: () => http.get('/contractors/dashboard'),
+      profile: () => http.get('/contractors/profile'),
+      /** PATCH, but firstName, lastName, businessName, baseZip and serviceRadius are always required. */
+      updateProfile: (body) => http.patch('/contractors/profile', body),
+      checklist: () => http.get('/contractors/checklist'),
+      attestation: (attestedName) => http.post('/contractors/attestation', { attestedName }),
+      videoComplete: () => http.post('/contractors/video-complete'),
+      submitReview: () => http.post('/contractors/submit-review'),
+      documents: () => http.get('/contractors/documents'),
+      uploadDocument: (docType, file) => {
+        const form = new FormData();
+        form.append('docType', docType);
+        form.append('file', file, file.name);
+        return http.postForm('/contractors/documents', form);
+      },
+      deleteDocument: (id) => http.delete(`/contractors/documents/${encodeURIComponent(id)}`),
+    },
+    stripeConnect: {
+      create: () => http.post('/stripe/connect/create'),
+      refresh: () => http.post('/stripe/connect/refresh'),
+      status: () => http.get('/stripe/connect/status'),
+    },
+    contractorInvites: {
+      checkPhone: () => http.get('/contractor-invites/check-phone'),
+      byCode: (code) => http.get(`/contractor-invites/code/${encodeURIComponent(code)}`),
+      accept: (inviteCode) => http.post('/contractor-invites/accept', { inviteCode }),
+    },
+
+    // ── Renters: the landlord's invite (modules/tenants) ─────────
+    tenants: {
+      myInvites: () => http.get('/tenants/my-invites'),
+      invite: (code) => http.get(`/tenants/invite/${encodeURIComponent(code)}`),
+      sendOtp: (code) => http.post(`/tenants/invite/${encodeURIComponent(code)}/send-otp`),
+      accept: (code, otpCode) => http.post(`/tenants/invite/${encodeURIComponent(code)}/accept`, { otpCode }),
+      myProperty: () => http.get('/tenants/my-property'),
     },
   };
 }

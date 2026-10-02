@@ -80,5 +80,6 @@ export function createHttp({ baseUrl, session, fetchImpl = fetch }) {
     post: (path, body, opts) => send('POST', path, { ...opts, body }),
     patch: (path, body, opts) => send('PATCH', path, { ...opts, body }),
     postForm: (path, form, opts) => send('POST', path, { ...opts, form }),
+    delete: (path, opts) => send('DELETE', path, opts),
   };
 }

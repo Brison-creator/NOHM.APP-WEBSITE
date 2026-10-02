@@ -6,12 +6,12 @@
 // GET /auth/me, GET /properties, GET /stripe/customer/payment-method.
 // The job itself: POST /jobs (or /now/dispatch), then POST /jobs/:id/photos.
 
-import { createSession } from './lib/session.js';
-import { createHttp } from './lib/http.js';
-import { createApi } from './lib/api.js';
+import { createSession } from '../nohm/session.js';
+import { createHttp } from '../nohm/http.js';
+import { createApi } from '../nohm/api.js';
 import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction } from './lib/flow.js';
-import { randomId } from './lib/format.js';
-import { h, clear } from './ui/dom.js';
+import { randomId } from '../nohm/format.js';
+import { h, clear } from '../nohm/dom.js';
 import * as screens from './ui/screens.js';
 
 const config = window.NOHM_BOOK;
@@ -201,7 +201,9 @@ function render() {
   clear(root);
   const fn = {
     service: screens.serviceScreen, issue: screens.issueScreen, details: screens.detailsScreen, speed: screens.speedScreen,
-    schedule: screens.scheduleScreen, account: screens.accountScreen, home: screens.homeScreen, card: screens.cardScreen,
+    schedule: screens.scheduleScreen,
+    account: (app) => screens.accountScreen(app, { role: 'HOMEOWNER', signupSub: 'Takes a minute. Your request is saved while you do.', signinSub: 'Your request is saved. Sign in to send it.' }),
+    home: screens.homeScreen, card: screens.cardScreen,
     review: screens.reviewScreen, now: screens.nowScreen, done: screens.doneScreen,
   }[a.step];
   root.append(fn(a));

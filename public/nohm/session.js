@@ -1,4 +1,4 @@
-// Who is signed in, in this browser. Tokens live in localStorage (the
+// Who is signed in, in this browser (shared by /book and /join). Tokens live in localStorage (the
 // server only speaks Authorization: Bearer; it sets no cookies). One
 // device id per browser so the server's trusted-device logic works
 // for the web the way it does for a phone.
@@ -9,7 +9,7 @@ import { randomId } from './format.js';
 
 const TOKENS = 'nohm.book.tokens';
 const DEVICE = 'nohm.book.device';
-const DRAFT = 'nohm.book.draft';
+const DRAFT = 'nohm.draft.';
 
 export function createSession(store, { appVersion = 'web-1.0', deviceName = 'Web browser' } = {}) {
   const read = (k) => {
@@ -58,14 +58,15 @@ export function createSession(store, { appVersion = 'web-1.0', deviceName = 'Web
     deviceFields() {
       return { deviceId: device.deviceId, deviceName, deviceType: 'web', appVersion };
     },
-    saveDraft(d) {
-      write(DRAFT, d);
+    /** A named draft (one per flow: 'book', 'join'), kept across reloads. */
+    saveDraft(d, name = 'book') {
+      write(DRAFT + name, d);
     },
-    loadDraft() {
-      return read(DRAFT);
+    loadDraft(name = 'book') {
+      return read(DRAFT + name);
     },
-    clearDraft() {
-      write(DRAFT, null);
+    clearDraft(name = 'book') {
+      write(DRAFT + name, null);
     },
   };
 }

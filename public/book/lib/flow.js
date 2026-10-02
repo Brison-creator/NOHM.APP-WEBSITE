@@ -8,7 +8,7 @@
 // keeps the person from sending something the server would refuse.
 
 import { jobTitle } from './issues.js';
-import { scheduledDateIso, windowByKey, toE164US, isEmail } from './format.js';
+import { scheduledDateIso, windowByKey } from '../../nohm/format.js';
 
 /** The steps in order. "schedule" is Standard-only; "account" and "card" are skipped when already done. */
 export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'account', 'home', 'card', 'review', 'done'];
@@ -189,31 +189,6 @@ export function nowDispatchBody(draft, availabilityId, pricing) {
     tradeId: draft.trade.id,
     issueSummary: draft.description.trim().slice(0, LIMITS.issueSummaryMax),
     shownFeeCents: fee.current,
-  };
-}
-
-// ── Account forms ─────────────────────────────────────────────────
-
-/** Problems with a sign-up form, keyed by field; {} when it's fine. */
-export function signupProblems(f) {
-  const e = {};
-  if (!(f.firstName || '').trim()) e.firstName = 'First name';
-  if (!(f.lastName || '').trim()) e.lastName = 'Last name';
-  if (!isEmail(f.email)) e.email = 'A real email address';
-  if (!toE164US(f.phone)) e.phone = 'A US mobile number';
-  if ((f.password || '').length < 8) e.password = 'At least 8 characters';
-  return e;
-}
-
-/** The send-otp body for email sign-up, normalized the way the server wants it. */
-export function signupBody(f) {
-  return {
-    firstName: f.firstName.trim(),
-    lastName: f.lastName.trim(),
-    email: f.email.trim().toLowerCase(),
-    phone: toE164US(f.phone),
-    password: f.password,
-    role: 'HOMEOWNER',
   };
 }
 

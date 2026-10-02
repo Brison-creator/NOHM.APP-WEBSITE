@@ -5,11 +5,12 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, signupProblems, signupBody, bookingErrorAction, restoreDraft, persistableDraft } from '../../public/book/lib/flow.js';
+import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft } from '../../public/book/lib/flow.js';
+import { signupProblems, signupBody } from '../../public/nohm/signup.js';
 import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib/issues.js';
-import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/book/lib/format.js';
-import { createSession } from '../../public/book/lib/session.js';
-import { createHttp, ApiError } from '../../public/book/lib/http.js';
+import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/nohm/format.js';
+import { createSession } from '../../public/nohm/session.js';
+import { createHttp, ApiError } from '../../public/nohm/http.js';
 
 const TRADES = [
   { id: 't-plumb', name: 'PLUMBING', label: 'Plumbing', bookable: true, isActive: true },
@@ -131,6 +132,7 @@ test('sign-up form: problems are named per field; the body is normalized', () =>
   const f = { firstName: ' Ava ', lastName: 'Ng', email: ' Ava@Example.com ', phone: '(512) 555-0123', password: 'longenough' };
   assert.deepEqual(signupProblems(f), {});
   assert.deepEqual(signupBody(f), { firstName: 'Ava', lastName: 'Ng', email: 'ava@example.com', phone: '+15125550123', password: 'longenough', role: 'HOMEOWNER' });
+  assert.equal(signupBody(f, 'CONTRACTOR').role, 'CONTRACTOR');
 });
 
 test('server errors route the way the app routes them', () => {

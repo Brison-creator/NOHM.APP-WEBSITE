@@ -31,15 +31,18 @@ public/book/
   config.js         apiBase, Stripe publishable key, Google client id, store links
   app.js            state + navigation + submit; the only file that knows every piece
   lib/flow.js       the rules: step order, what each step needs, the exact server bodies, error routing
-  lib/api.js        every endpoint by name, no logic
-  lib/http.js       bearer, one refresh on 401 then retry, ApiError{status, code, body}
-  lib/session.js    tokens, device id, draft persistence (storage injected)
   lib/issues.js     the app's issue catalog, verbatim
-  lib/format.js     phone → E.164, money, windows, local ISO dates, ids
-  ui/dom.js         h(), field(), button(): no innerHTML anywhere
   ui/screens.js     one function per step; renders what flow.js/the server say
   ui/card.js        Stripe.js, loaded only on the card step
-  ui/google.js      Google Identity Services, loaded only if configured
+public/nohm/        shared with /join
+  api.js            every endpoint by name, no logic
+  http.js           bearer, one refresh on 401 then retry, ApiError{status, code, body}
+  session.js        tokens, device id, named drafts (storage injected)
+  format.js         phone → E.164, money, windows, local ISO dates, ids
+  dom.js            h(), field(), button(): no innerHTML anywhere
+  signup.js         the sign-up form's rules and body, by role
+  account.js        the account screen (sign up, sign in, Google), by role
+  google.js         Google Identity Services, loaded only if configured
 tools/book/
   flow.test.mjs     node --test: rules, bodies, error routing, session, http (15 tests)
   stub-server.mjs   serves public/ + a stand-in API with the real response shapes; logs every request

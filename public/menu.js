@@ -33,6 +33,7 @@
     '<li><a href="/local-pros">Local Pros</a></li>' +
     '<li><a href="/quotes">Three Quotes</a></li>' +
     '<li><a href="/pros">For Pros</a></li>' +
+    '<li><a href="/join">Join as a Pro</a></li>' +
     '<li><a href="' + store + '">Download the App</a></li>' +
     '<li><a href="/step-in">When NOHM Steps In</a></li>' +
     '<li><a href="/support">Support</a></li>' +
