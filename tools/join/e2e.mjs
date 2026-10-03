@@ -185,6 +185,30 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await ctx.close();
 }
 
+// ── An existing pro who starts a sign-up, then signs in instead: no invite step ──
+{
+  await reset();
+  await fetch(`${BASE}/__role?r=CONTRACTOR`); // the account that signs in is a pro's
+  const { ctx, page } = await fresh();
+  await page.goto(`${BASE}/join/${api}`);
+  await page.waitForSelector('[data-key=signup]');
+  await page.fill('#f-firstName', 'Ray'); await page.fill('#f-lastName', 'Diaz'); await page.fill('#f-email', 'ray@example.com'); await page.fill('#f-phone', '501-555-0199'); await page.fill('#f-password', 'longenough1');
+  await page.click('[data-key=signup]');
+  await page.waitForSelector('#f-code');
+  await page.click('text=Change my details');
+  await page.waitForSelector('.b-tab');
+  await page.click('.b-tab:nth-child(2)');
+  await page.fill('#f-email', 'ava@example.com');
+  await page.fill('#f-password', 'password1');
+  await page.click('[data-key=signin]');
+  await page.waitForSelector('#f-businessName');
+  assert.equal(await page.$('[data-key=invite-lookup]'), null);
+  const calls = await log();
+  assert.ok(!calls.some((c) => c.path.startsWith('/contractor-invites/')), 'a sign-in never opens the invite step');
+  console.log('✓ Pro: a sign-up dropped for Sign in goes straight to the pro’s step, no invite step');
+  await ctx.close();
+}
+
 // ── Renter ────────────────────────────────────────────────────────
 {
   await reset();

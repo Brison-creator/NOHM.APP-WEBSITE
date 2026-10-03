@@ -59,11 +59,19 @@ export function accountScreen(a, opts = {}) {
   let mode = a.state.accountMode || 'signup';
   const err = h('p.b-err', { role: 'alert' });
 
+  // Choosing Sign in drops a sign-up started here, so an existing account
+  // isn't treated as new when it signs in (no invite step for a returning pro).
+  function forgetSignup() {
+    a.state.pendingSignup = null;
+    a.state.pendingPhoneSignup = null;
+    a.state.pendingGoogle = null;
+  }
+
   function tabs() {
     const newOn = mode === 'signup' || mode === 'signup-phone';
     return h('div.b-tabs', { role: 'tablist' }, [
       h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': newOn ? 'true' : 'false', class: newOn ? 'on' : '', onClick: () => { mode = 'signup'; draw(); } }, 'New to NOHM'),
-      h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': mode === 'signin' ? 'true' : 'false', class: mode === 'signin' ? 'on' : '', onClick: () => { mode = 'signin'; draw(); } }, 'Sign in'),
+      h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': mode === 'signin' ? 'true' : 'false', class: mode === 'signin' ? 'on' : '', onClick: () => { forgetSignup(); mode = 'signin'; draw(); } }, 'Sign in'),
     ]);
   }
 

@@ -331,6 +331,7 @@ http.createServer(async (req, res) => {
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__role') { world.role = url.searchParams.get('r') || 'HOMEOWNER'; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__credits') { world.credits = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__webconfig') { world.webConfig = url.searchParams.get('mode') || 'ok'; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__stripe-done') { world.stripeDone = true; return json(res, 200, { ok: true }); }
