@@ -58,4 +58,6 @@ body {
   .k-stage { flex-direction: column; align-items: center; }
   .k-side .phone { width: min(400px, 92vw); height: 760px; flex: none; }
   .k-qr { display: none; }
+  /* The hint sits low, clear of the NOHM mark. */
+  .k-attract { top: auto; bottom: max(24px, env(safe-area-inset-bottom)); }
 }

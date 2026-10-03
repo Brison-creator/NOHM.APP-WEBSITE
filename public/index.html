@@ -49,23 +49,28 @@
     }
 
     /* Same height as Tesla's phone hero: about 59% of the screen, so the next
-       section peeks up underneath. */
-    .hero { position: relative; height: calc(100svh - 170px); min-height: 420px; background: #16171a; }
+       section peeks up underneath. Taller when a slide's words need it: each
+       slide lays its words out below the top bar and above the dots, and the
+       hero grows rather than letting them run under either. */
+    .hero { position: relative; display: grid; min-height: max(420px, calc(100svh - 170px)); background: #16171a; }
     .slides {
-      display: flex; height: 100%;
+      display: flex;
       overflow-x: auto; overscroll-behavior-x: contain;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
     }
     .slides::-webkit-scrollbar { display: none; }
-    .slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden; }
+    .slide {
+      position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden;
+      display: flex; flex-direction: column; box-sizing: border-box; padding: 52px 0 44px;
+    }
     .slide img, .slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .slide .narrow-only { display: block; }
     .slide .wide-only { display: none; }
     .slide .washer { object-position: 50% 0%; }
     .slide .pro { object-position: 50% 0%; }
     /* This slide's phone photo has his face up top, so its words sit low. */
-    .slide .copy.low { top: auto; bottom: 44px; }
+    .slide .copy.low { margin: auto 0 0; }
     .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
     .slide .fixed { object-position: 44% 50%; }
     /* Shade the top of the photo so the white words read on any picture,
@@ -101,7 +106,7 @@
     @media (prefers-reduced-motion: reduce) { .mission-bg::before { animation: none; } }
     .slide.mission::after { background: linear-gradient(to top, rgba(0, 0, 0, .3), rgba(0, 0, 0, 0) 14%); }
     .slide .copy {
-      position: absolute; z-index: 1; left: 0; right: 0; top: calc(52px + 10svh);
+      position: relative; z-index: 1; margin: 10svh 0 auto;
       padding: 0 24px;
       text-align: center; color: #fff;
     }
@@ -382,14 +387,14 @@
     }
 
     @media (min-width: 900px) {
-      .hero { height: 100svh; }
+      .hero { min-height: 100svh; }
       .slide .washer { object-position: 50% 45%; }
-      .slide .copy { top: calc(52px + 5svh); }
+      .slide .copy { margin: 5svh 0 auto; }
       .slide .pro { object-position: 50% 0%; }
-      .slide .copy.low { top: calc(52px + 5svh); bottom: auto; }
+      .slide .copy.low { margin: 5svh 0 auto; }
       .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.34) 40%, rgba(0,0,0,0) 62%), linear-gradient(to top, rgba(0,0,0,.3), rgba(0,0,0,0) 14%); }
       /* The door photo has his face where the words would go, so they sit low. */
-      .slide .copy.base { top: auto; bottom: 64px; }
+      .slide .copy.base { margin: auto 0 20px; }
       .slide:has(.copy.base)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
       .cards { padding: 24px 0 0; }
       /* Wider screens fit two cards and a peek of the third. */
@@ -408,7 +413,7 @@
       .dock { display: none; }
       body { padding-bottom: 0; }
     }
-    .slide .copy.mid { top: 50%; transform: translateY(-50%); max-width: 860px; margin: 0 auto; }
+    .slide .copy.mid { margin: auto; width: 100%; max-width: 860px; box-sizing: border-box; padding: 20px 24px; }
     .slide .copy.mid h2 { font-size: clamp(26px, 3.4vw, 44px); }
     .slide .copy.mid .lede { max-width: 640px; margin: 16px auto 26px; color: rgba(255, 255, 255, .82); line-height: 1.5; }
   </style>
