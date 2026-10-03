@@ -136,10 +136,3 @@ a.store-badge > img {
   .store-cta { flex-direction: column; align-items: flex-start; row-gap: 2px; }
   .store-cta--center { align-items: center; }
 }
-
-/* Room for one badge only (the phone dock): show the visitor's store.
-   /menu.js marks Android phones with <html data-platform="android">;
-   everyone else, and anyone without JavaScript, gets the App Store. */
-.store-pick .store-badge--google-play { display: none; }
-[data-platform="android"] .store-pick .store-badge--google-play { display: block; }
-[data-platform="android"] .store-pick .store-badge--app-store { display: none; }

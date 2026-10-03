@@ -1,11 +1,7 @@
 // Adds the Menu button to the top bar and the full-screen menu it opens.
-// Also the check of which store fits the phone in hand: Android
-// gets Google Play, everyone else the App Store. It marks Android phones
-// with <html data-platform="android"> for /store-cta.css, which shows the
-// matching badge where only one fits (the homepage's phone dock).
+// Its download link goes to Google Play on Android, the App Store otherwise.
 (function () {
   var android = /android/i.test(navigator.userAgent);
-  if (android) document.documentElement.setAttribute('data-platform', 'android');
 
   var bar = document.querySelector('.bar');
   if (!bar) return;
