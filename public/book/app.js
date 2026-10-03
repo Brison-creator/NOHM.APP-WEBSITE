@@ -223,6 +223,7 @@ const a = {
 function clearPending() {
   a.state.accountMode = null;
   a.state.pendingSignup = null;
+  a.state.pendingPhoneSignup = null;
   a.state.pendingLogin = null;
   a.state.pendingGoogle = null;
 }

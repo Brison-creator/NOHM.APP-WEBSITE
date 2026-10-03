@@ -31,6 +31,10 @@ export function createApi(http, session) {
       emailSignupSendOtp: (body) => http.post('/auth/email-signup/send-otp', body, { auth: false }),
       /** Step 2: the code plus the same fields again creates the account and signs in. */
       emailSignupVerify: (body, code) => http.post('/auth/email-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
+      /** Phone sign-up, step 1: { phone, role } → a code to the phone. 409 when the phone is taken. */
+      phoneSignupSendOtp: ({ phone, role }) => http.post('/auth/phone-signup/send-otp', { phone, role }, { auth: false }),
+      /** Step 2: { phone, firstName, lastName, role, email? } plus the code creates the account and signs in. */
+      phoneSignupVerify: (body, code) => http.post('/auth/phone-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
       loginEmailPassword: async (email, password) => {
         const deviceSecret = session.deviceSecret(email);
         const res = await http.post('/auth/login/email-password', { email, password, ...dev(), ...(deviceSecret ? { deviceSecret } : {}) }, { auth: false });

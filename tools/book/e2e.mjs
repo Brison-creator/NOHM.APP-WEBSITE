@@ -71,6 +71,13 @@ function withExifOrientation(jpeg, o) {
   return Buffer.concat([jpeg.subarray(0, 2), Buffer.from([0xff, 0xe1]), len, payload, jpeg.subarray(2)]);
 }
 
+/** Every phone field on the screen carries the SMS consent words under it. */
+async function consentUnderEveryPhone(page, where) {
+  const fields = await page.$$eval('input[type=tel]', (els) => els.map((el) => (el.closest('.b-field').querySelector('.b-hint') || {}).textContent || ''));
+  assert.ok(fields.length > 0, `a phone field on ${where}`);
+  for (const hint of fields) assert.match(hint, /agree to get account texts from NOHM.*Reply STOP to opt out/, `SMS consent under the phone field on ${where}`);
+}
+
 async function fresh() {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   // A stand-in Stripe.js that records the key the page hands it, so the
@@ -470,6 +477,70 @@ for (const mode of ['fail', 'empty']) {
   assert.equal(await page.evaluate(() => window.__stripeKey), undefined, 'no card form without the server’s key');
   assert.equal(await page.$eval('[data-key=savecard]', (b) => b.disabled), true);
   console.log(`✓ /config/web ${mode}: no card form and no Google button, each with a clear message`);
+  await ctx.close();
+}
+
+// ── Run 8: phone sign-up (no email, no password); the SMS consent under every phone field ──
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(`${PAGE}&trade=plumbing`);
+  await page.waitForSelector('.b-choice');
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'Toilet runs all night and the handle sticks.');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=EXPRESS]');
+  await page.waitForSelector('[data-key=phone-signup]');
+  await consentUnderEveryPhone(page, 'email sign-up');
+  await page.click('[data-key=phone-signup]');
+  await page.waitForSelector('[data-key=phone-signup-send]');
+  await snap(page, 'phone-signup');
+  assert.equal(await page.$('#f-password'), null, 'no password on phone sign-up');
+  await consentUnderEveryPhone(page, 'phone sign-up');
+  // A phone that already has an account: the server's own words.
+  await page.fill('#f-firstName', 'Ava');
+  await page.fill('#f-lastName', 'Ng');
+  await page.fill('#f-phone', '(512) 555-0100');
+  await page.click('[data-key=phone-signup-send]');
+  await page.waitForFunction(() => /already has an account/.test(document.querySelector('p.b-err').textContent));
+  await page.fill('#f-phone', '(512) 555-0123');
+  await page.click('[data-key=phone-signup-send]');
+  await page.waitForSelector('#f-code');
+  await page.fill('#f-code', '000000');
+  await page.click('[data-key=verify]');
+  await page.waitForSelector('#e-code:not(:empty)');
+  await page.fill('#f-code', '123456');
+  await page.click('[data-key=verify]');
+  await addHome(page);
+  await page.waitForSelector('[data-key=confirm]');
+  await page.click('[data-key=confirm]');
+  await page.waitForFunction(() => document.body.textContent.includes('The closest pro gets it first'));
+
+  const calls = await log();
+  const sends = calls.filter((c) => c.path === '/auth/phone-signup/send-otp');
+  assert.deepEqual(sends.map((c) => c.body), [{ phone: '+15125550100', role: 'HOMEOWNER' }, { phone: '+15125550123', role: 'HOMEOWNER' }]);
+  const verify = calls.filter((c) => c.path === '/auth/phone-signup/verify-otp').pop().body;
+  assert.deepEqual(Object.keys(verify).sort(), ['appVersion', 'code', 'deviceId', 'deviceName', 'deviceType', 'firstName', 'lastName', 'phone', 'role']);
+  assert.deepEqual([verify.phone, verify.firstName, verify.lastName, verify.role, verify.code, verify.deviceType], ['+15125550123', 'Ava', 'Ng', 'HOMEOWNER', '123456', 'web']);
+  assert.ok(!calls.some((c) => c.path.startsWith('/auth/email-signup')), 'no email sign-up call');
+  assert.ok(!calls.some((c) => c.path === '/auth/check-exists'), 'no email given, nothing to check');
+  assert.ok(calls.some((c) => c.path === '/jobs' && c.method === 'POST' && c.auth === 'Bearer acc-1'));
+
+  // Sign-in by text code has the consent line too.
+  await reset();
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(`${PAGE}&trade=hvac`);
+  await page.waitForSelector('.b-choice');
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'No air at all from the vents upstairs.');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=EXPRESS]');
+  await page.waitForSelector('.b-tab');
+  await page.click('.b-tab:nth-child(2)');
+  await page.click('text=Sign in with a text code instead');
+  await page.waitForSelector('#f-phone');
+  await consentUnderEveryPhone(page, 'text-code sign-in');
+  console.log('✓ Phone sign-up: name + phone → code → account (server’s DTO exactly, taken phone shows the server’s message); SMS consent under every phone field');
   await ctx.close();
 }
 

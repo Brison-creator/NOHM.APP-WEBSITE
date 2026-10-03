@@ -29,8 +29,10 @@ let PRICING = {
 };
 // A made-up test key: the page must use whatever the server publishes.
 const STUB_STRIPE_KEY = 'pk_test_stubFromServer123';
+const SIGNUP_ROLES = ['HOMEOWNER', 'PROPERTY_MANAGER', 'TENANT', 'CONTRACTOR'];
+const TAKEN_PHONE = '+15125550100';
 const USER = { id: 'u1', firstName: 'Ava', lastName: 'Ng', email: 'ava@example.com', phone: '+15125550123', role: 'HOMEOWNER' };
-const world = { properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {}, webConfig: 'ok' };
+const world = { properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {}, webConfig: 'ok', phoneOtp: {} };
 function freshPro() {
   return { contractorId: 'C-000042', applicationStatus: 'DRAFT', dispatchEligible: false, shiftStatus: 'OFF_SHIFT', profile: { businessName: 'Not Provided', baseZip: null, serviceRadius: null, attestedAt: null, attestedName: null, stripeComplete: false, videoCompleted: false }, trades: [], documents: [] };
 }
@@ -119,6 +121,8 @@ const BODIES = {
   'POST /auth/login/verify-device-otp': { required: ['email', 'code', 'deviceId'], optional: [...DEVICE, 'trustDevice'] },
   'POST /auth/email-signup/send-otp': { required: ['firstName', 'lastName', 'email', 'phone', 'password', 'role'] },
   'POST /auth/email-signup/verify-otp': { required: ['phone', 'code', 'firstName', 'lastName', 'email', 'password', 'role', ...DEVICE] },
+  'POST /auth/phone-signup/send-otp': { required: ['phone', 'role'] },
+  'POST /auth/phone-signup/verify-otp': { required: ['phone', 'code', 'firstName', 'lastName', 'role', ...DEVICE], optional: ['email'] },
   'POST /properties/check-type': { required: ['googlePlaceId', 'formattedAddress', 'latitude', 'longitude'] },
   'POST /properties/shell': { required: ['googlePlaceId', 'formattedAddress', 'latitude', 'longitude'] },
   'POST /jobs': { required: ['propertyId', 'title', 'description', 'tradeId', 'idempotencyKey'], optional: ['urgency', 'scheduledDate', 'scheduledTimeWindow', 'photos', 'isExpress', 'shownFeeCents', 'useCreditsForExpressFee', 'diagnosticQuestion'] },
@@ -154,6 +158,24 @@ function api(method, url, body, req) {
   if (p === '/auth/check-exists') return [200, { exists: body.email === 'taken@example.com' }];
   if (p === '/auth/email-signup/send-otp') return body.email === 'taken@example.com' ? [409, { message: 'Email already registered' }] : [200, { message: 'OTP sent' }];
   if (p === '/auth/email-signup/verify-otp') { if (body.code !== '123456') return [400, { message: 'Invalid or expired code' }]; world.role = body.role || 'HOMEOWNER'; world.user = { ...USER, firstName: body.firstName, lastName: body.lastName, email: body.email, phone: body.phone, role: world.role }; return [201, { accessToken: 'acc-1', refreshToken: 'ref-1', user: world.user }]; }
+  // Phone sign-up (auth.controller.ts, auth-signup.service.ts): a taken phone is a 409 before any text.
+  if (p === '/auth/phone-signup/send-otp') {
+    if (!/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(body.phone)) return [400, { message: ['phone must be a valid phone number'] }];
+    if (!SIGNUP_ROLES.includes(body.role)) return [400, { message: ['role must be a signup account type'] }];
+    if (body.phone === TAKEN_PHONE) return [409, { message: 'This phone number already has an account. Please sign in with your email and password.' }];
+    world.phoneOtp[body.phone] = true;
+    return [200, { message: 'OTP sent successfully' }];
+  }
+  if (p === '/auth/phone-signup/verify-otp') {
+    if (body.email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(body.email)) return [400, { message: ['email must be an email'] }];
+    if (body.firstName.length > 60 || body.lastName.length > 60) return [400, { message: ['firstName must be shorter than or equal to 60 characters'] }];
+    if (!SIGNUP_ROLES.includes(body.role)) return [400, { message: ['role must be a signup account type'] }];
+    if (!world.phoneOtp[body.phone] || body.code !== '123456') return [401, { message: 'Invalid OTP' }];
+    if (body.email === 'taken@example.com') return [409, { message: 'This email already has an account. Please sign in with your email and password.' }];
+    world.role = body.role;
+    world.user = { ...USER, firstName: body.firstName, lastName: body.lastName, email: body.email || null, phone: body.phone, role: world.role };
+    return [200, { accessToken: 'acc-1', refreshToken: 'ref-1', user: world.user }];
+  }
   if (p === '/auth/login/email-password') return body.password === 'password1' ? [200, { status: 'authenticated', accessToken: 'acc-1', refreshToken: 'ref-1', user: USER }] : [401, { message: 'Invalid credentials' }];
   if (p === '/auth/refresh') return body.refreshToken === 'ref-1' ? [200, { accessToken: 'acc-1', refreshToken: 'ref-1' }] : [401, { message: 'bad refresh' }];
   if (p === '/auth/logout') return [200, { success: true }];
@@ -273,7 +295,7 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }

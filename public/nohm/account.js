@@ -1,11 +1,12 @@
 // The account step shared by /book, /join and /join/renter: sign up
-// (email, phone, password → text code), sign in (password, with the
+// with a phone (name + phone → text code, email optional, no password)
+// or with email (email, phone, password → text code), sign in (password, with the
 // new-browser code; or a phone code), optional Google. The host app
 // passes `a` with: api, config, webConfig(), state, run(), account.signedIn(res),
 // account.google(idToken), canGoBack(), back(), and `role` + `copy`.
 
 import { h, append, field, button, clear } from './dom.js';
-import { signupProblems, signupBody } from './signup.js';
+import { signupProblems, signupBody, phoneSignupProblems, phoneSignupStart, phoneSignupBody } from './signup.js';
 import { prettyPhone, toE164US } from './format.js';
 import { mountGoogleButton } from './google.js';
 import { GOOGLE_UNAVAILABLE } from './web-config.js';
@@ -37,8 +38,9 @@ export function accountScreen(a, opts = {}) {
   const err = h('p.b-err', { role: 'alert' });
 
   function tabs() {
+    const newOn = mode === 'signup' || mode === 'signup-phone';
     return h('div.b-tabs', { role: 'tablist' }, [
-      h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': mode === 'signup' ? 'true' : 'false', class: mode === 'signup' ? 'on' : '', onClick: () => { mode = 'signup'; draw(); } }, 'New to NOHM'),
+      h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': newOn ? 'true' : 'false', class: newOn ? 'on' : '', onClick: () => { mode = 'signup'; draw(); } }, 'New to NOHM'),
       h('button.b-tab', { type: 'button', role: 'tab', 'aria-selected': mode === 'signin' ? 'true' : 'false', class: mode === 'signin' ? 'on' : '', onClick: () => { mode = 'signin'; draw(); } }, 'Sign in'),
     ]);
   }
@@ -91,7 +93,47 @@ export function accountScreen(a, opts = {}) {
     return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, btn, h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. How NOHM texts: ', h('a', { href: '/sms' }, 'nohm.app/sms'), '.'])]);
   }
 
-  function codeForm({ phone, onCode, onResend }) {
+  // Phone sign-up: name and phone (email optional), a code, the account.
+  function phoneSignupForm() {
+    const f = {
+      firstName: field({ label: 'First name', name: 'firstName', autocomplete: 'given-name', maxlength: 60 }),
+      lastName: field({ label: 'Last name', name: 'lastName', autocomplete: 'family-name', maxlength: 60 }),
+      phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT }),
+      email: field({ label: 'Email (optional)', name: 'email', type: 'email', autocomplete: 'email', inputmode: 'email', hint: 'You can add it later in the app.' }),
+    };
+    const btn = button('Text me a code', { key: 'phone-signup-send', submit: true });
+    const submit = async (e) => {
+      e && e.preventDefault();
+      const values = Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v.value]));
+      const problems = phoneSignupProblems(values);
+      Object.entries(f).forEach(([k, v]) => v.setError(problems[k]));
+      if (Object.keys(problems).length) return;
+      const body = phoneSignupBody(values, role);
+      btn.busy(true, 'Sending…');
+      try {
+        // An email the server would refuse after the code is used up: ask first.
+        if (body.email) {
+          const exists = await a.api.auth.checkExists(body.email);
+          if (exists && exists.exists) { f.email.setError('That email already has a NOHM account. Sign in instead, or leave it empty.'); return; }
+        }
+        await a.api.auth.phoneSignupSendOtp(phoneSignupStart(values, role));
+        a.state.pendingPhoneSignup = body;
+        mode = 'signup-phone-code';
+        draw();
+      } catch (ex) {
+        err.textContent = ex.message;
+      } finally {
+        btn.busy(false);
+      }
+    };
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.phone.el, f.email.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Use email and a password instead'), h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. How NOHM texts: ', h('a', { href: '/sms' }, 'nohm.app/sms'), '.'])]);
+  }
+
+  function phoneSignupButton() {
+    return h('div', [button('Sign up with your phone', { kind: 'sec', key: 'phone-signup', onClick: () => { mode = 'signup-phone'; draw(); } }), h('p.b-or', 'or with email')]);
+  }
+
+  function codeForm({ phone, onCode, onResend, back = 'signup' }) {
     const code = field({ label: `Code we texted ${prettyPhone(phone)}`, name: 'code', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 6 });
     const btn = button('Verify', { key: 'verify', submit: true });
     const submit = async (e) => {
@@ -101,7 +143,7 @@ export function accountScreen(a, opts = {}) {
       try { await onCode(code.value.trim()); } catch (ex) { code.setError(ex.message); } finally { btn.busy(false); }
     };
     setTimeout(() => code.input.focus(), 0);
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [code.el, btn, onResend ? h('button.b-link', { type: 'button', onClick: () => a.run(onResend, err, 'Sent another code.') }, 'Send a new code') : null, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Change my details')]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [code.el, btn, onResend ? h('button.b-link', { type: 'button', onClick: () => a.run(onResend, err, 'Sent another code.') }, 'Send a new code') : null, h('button.b-link', { type: 'button', onClick: () => { mode = back; draw(); } }, 'Change my details')]);
   }
 
   function signinForm() {
@@ -134,7 +176,7 @@ export function accountScreen(a, opts = {}) {
   }
 
   function phoneSigninForm() {
-    const phone = field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel' });
+    const phone = field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT });
     const btn = button('Text me a code', { key: 'phone', submit: true });
     const submit = async (e) => {
       e && e.preventDefault();
@@ -158,7 +200,9 @@ export function accountScreen(a, opts = {}) {
     const title = mode.startsWith('signin') ? 'Welcome back' : opts.signupTitle || 'Create your NOHM account';
     const sub = mode.startsWith('signin') ? opts.signinSub || '' : opts.signupSub || 'Takes a minute.';
     const body = [];
-    if (mode === 'signup') body.push(googleRow(), signupForm());
+    if (mode === 'signup') body.push(googleRow(), phoneSignupButton(), signupForm());
+    else if (mode === 'signup-phone') body.push(phoneSignupForm());
+    else if (mode === 'signup-phone-code') body.push(codeForm({ phone: a.state.pendingPhoneSignup.phone, back: 'signup-phone', onCode: async (code) => a.account.signedIn(await a.api.auth.phoneSignupVerify(a.state.pendingPhoneSignup, code)), onResend: () => a.api.auth.phoneSignupSendOtp(phoneSignupStart(a.state.pendingPhoneSignup, role)) }));
     else if (mode === 'signup-code') body.push(codeForm({ phone: a.state.pendingSignup.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.emailSignupVerify(a.state.pendingSignup, code)), onResend: () => a.api.auth.emailSignupSendOtp(a.state.pendingSignup) }));
     else if (mode === 'google-phone') {
       const phone = field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT });
@@ -174,7 +218,7 @@ export function accountScreen(a, opts = {}) {
     else if (mode === 'signin-code') body.push(h('p.b-line', `New browser. We texted a code to ${a.state.pendingLogin.maskedPhone || 'your phone'}.`), codeForm({ phone: a.state.pendingLogin.maskedPhone || '', onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyDeviceOtp(a.state.pendingLogin.email, code)) }));
     else if (mode === 'signin-phone') body.push(phoneSigninForm());
     else if (mode === 'signin-phone-code') body.push(codeForm({ phone: a.state.pendingLogin.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyOtp(a.state.pendingLogin.phone, code)), onResend: () => a.api.auth.loginSendOtp(a.state.pendingLogin.phone) }));
-    append(wrap, [head(title, sub), mode === 'signup' || mode === 'signin' ? tabs() : null, ...body, err, footer(a)]);
+    append(wrap, [head(title, sub), mode === 'signup' || mode === 'signup-phone' || mode === 'signin' ? tabs() : null, ...body, err, footer(a)]);
   }
   draw();
   return wrap;

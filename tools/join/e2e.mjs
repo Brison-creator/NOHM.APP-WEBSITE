@@ -46,6 +46,19 @@ async function signUp(page) {
   await page.fill('#f-code', '123456');
   await page.click('[data-key=verify]');
 }
+async function phoneSignUp(page, { email } = {}) {
+  await page.waitForSelector('[data-key=phone-signup]');
+  await page.click('[data-key=phone-signup]');
+  await page.waitForSelector('[data-key=phone-signup-send]');
+  await page.fill('#f-firstName', 'Ray');
+  await page.fill('#f-lastName', 'Diaz');
+  await page.fill('#f-phone', '501-555-0199');
+  if (email) await page.fill('#f-email', email);
+  await page.click('[data-key=phone-signup-send]');
+  await page.waitForSelector('#f-code');
+  await page.fill('#f-code', '123456');
+  await page.click('[data-key=verify]');
+}
 const tmp = path.join(os.tmpdir(), 'nohm-doc.png');
 fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
 
@@ -132,7 +145,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await reset();
   const { ctx, page } = await fresh();
   await page.goto(`${BASE}/join/renter/${api}`);
-  await signUp(page);
+  await phoneSignUp(page, { email: 'Ray@Example.com' });
   await page.waitForSelector('[data-invite="482913"]');
   await snap(page, 'renter-invite');
   assert.match(await page.textContent('[data-invite="482913"]'), /11008 Chambers Rd, Bauxite.*\$1,250 on the 1st/s);
@@ -158,8 +171,11 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   const seq = calls.map((c) => `${c.method} ${c.path}`).filter((x) => x.includes('/tenants/'));
   assert.deepEqual(seq.slice(0, 5), ['GET /tenants/my-property', 'GET /tenants/my-invites', 'GET /tenants/invite/482913', 'POST /tenants/invite/482913/send-otp', 'POST /tenants/invite/482913/accept']);
   assert.equal(calls.filter((c) => c.path.endsWith('/accept')).length, 2, 'the wrong code was sent once and refused');
-  assert.equal(calls.find((c) => c.path === '/auth/email-signup/verify-otp').body.role, 'TENANT');
-  console.log('✓ Renter: sign-up → invite (listed and typed) → text code → lease linked, survives reload');
+  assert.deepEqual(calls.find((c) => c.path === '/auth/phone-signup/send-otp').body, { phone: '+15015550199', role: 'TENANT' });
+  const pv = calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body;
+  assert.deepEqual([pv.role, pv.email, pv.phone], ['TENANT', 'ray@example.com', '+15015550199']);
+  assert.ok(calls.some((c) => c.path === '/auth/check-exists'), 'a given email is checked before the code is spent');
+  console.log('✓ Renter: phone sign-up (with email) → invite (listed and typed) → text code → lease linked, survives reload');
   await ctx.close();
 }
 

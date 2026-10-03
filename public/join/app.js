@@ -96,6 +96,7 @@ const a = {
       session.setTokens(res);
       a.state.accountMode = null;
       a.state.pendingSignup = null;
+      a.state.pendingPhoneSignup = null;
       a.state.pendingLogin = null;
       a.state.pendingGoogle = null;
       try {
