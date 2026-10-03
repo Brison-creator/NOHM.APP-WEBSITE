@@ -35,7 +35,10 @@ public/book/
   lib/flow.js       the rules: step order, what each step needs, the exact server bodies, error routing
   lib/issues.js     the app's issue catalog, verbatim
   lib/photos.js     shrink each photo in the browser, upload one per request, name failures
-  ui/screens.js     one function per step; renders what flow.js/the server say
+  ui/screens.js     steps 1–5 (service → schedule), one function per step; re-exports the rest
+  ui/home.js        steps 7–8: the home (HIN) and the card on file
+  ui/send.js        steps 9–10: review, the NOHM NOW list, done
+  ui/parts.js       heading, footer, icons, the fee-hold line
   ui/card.js        Stripe.js, loaded only on the card step
 public/nohm/        shared with /join
   api.js            every endpoint by name, no logic
@@ -50,7 +53,10 @@ public/nohm/        shared with /join
 tools/book/
   flow.test.mjs     node --test: rules, bodies, error routing, session, http (15 tests)
   stub-server.mjs   serves public/ + a stand-in API with the real response shapes; logs every request
-  e2e.mjs           headless Chromium through all three tiers against the stub; asserts the bodies sent
+  e2e.mjs           headless Chromium against the stub, all runs in order; asserts the bodies sent
+  e2e/lib.mjs       the shared browser, stub controls and steps
+  e2e/booking.mjs   runs 1–5: Standard, Express, NOW, error paths
+  e2e/extras.mjs    runs 6–8: photos, /config/web missing, phone sign-up
 docs/web-booking.md this file
 ```
 
