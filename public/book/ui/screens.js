@@ -8,6 +8,7 @@ export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
 import { mountCardForm } from './card.js';
+import { preparePhoto, photoFailureText } from '../lib/photos.js';
 import { CARD_UNAVAILABLE } from '../../nohm/web-config.js';
 
 const TRADE_ICON = {
@@ -145,19 +146,34 @@ export function detailsScreen(a) {
     });
     addBtn.hidden = photos.length >= LIMITS.photos;
   }
-  const addBtn = h('button.b-addphoto', { type: 'button', onClick: () => photoIn.click() }, [svg('M4 7h3l2-3h6l2 3h3v12H4zM12 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z'), ` Add photos (up to ${LIMITS.photos})`]);
-  photoIn.addEventListener('change', () => {
-    for (const f of photoIn.files) {
-      if (photos.length >= LIMITS.photos) break;
-      if (f.size > LIMITS.photoBytes) { a.toast(`${f.name} is over 10 MB.`); continue; }
-      photos.push(f);
-    }
+  const addLabel = ` Add photos (up to ${LIMITS.photos})`;
+  const addText = document.createTextNode(addLabel);
+  const addBtn = h('button.b-addphoto', { type: 'button', onClick: () => photoIn.click() }, [svg('M4 7h3l2-3h6l2 3h3v12H4zM12 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z'), addText]);
+  let preparing = 0;
+  // Each photo is shrunk here (long edge 2048 px, JPEG), so what's sent
+  // is small; one that can't be used is named and the rest are kept.
+  photoIn.addEventListener('change', async () => {
+    const picked = [...photoIn.files].slice(0, Math.max(0, LIMITS.photos - photos.length));
     photoIn.value = '';
+    if (!picked.length) return;
+    preparing++;
+    addBtn.disabled = true;
+    addText.textContent = ' Preparing photos…';
+    const problems = [];
+    for (const f of picked) {
+      try {
+        const ready = await preparePhoto(f);
+        if (photos.length < LIMITS.photos) photos.push(ready);
+      } catch (ex) { problems.push(ex.message); }
+    }
+    if (--preparing === 0) { addBtn.disabled = false; addText.textContent = addLabel; }
+    if (problems.length) a.toast(problems.join(' '));
     drawThumbs();
   });
   drawThumbs();
 
   const go = () => {
+    if (preparing) return a.toast('One moment, the photos are still being prepared.');
     a.setDraft({ description: desc.value, photos });
     const p = stepProblem('details', a.draft);
     if (p) return desc.setError(p);
@@ -534,6 +550,7 @@ export function doneScreen(a) {
     head(d.tier === 'NOW' ? 'A pro is on the way.' : 'Request sent.', job.jobNumber ? `Job ${job.jobNumber}` : ''),
     h('div.b-card', [h('b', `${d.trade.label} · ${d.issue.title}`), h('p', a.state.property ? a.state.property.formattedAddress : ''), a.state.property && a.state.property.hin ? h('p.b-small', `HIN ${a.state.property.hin}`) : null]),
     status,
+    photoFailureText(a.state.photoFailures) ? h('p.b-err.b-photofail', { role: 'alert' }, photoFailureText(a.state.photoFailures)) : null,
     pros,
     err,
     h('div.b-card.blue', [h('b', 'Everything else lives in the app.'), h('p', 'Live tracking, chat with your pro, the door PIN, the estimate to approve, and this home’s record.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM')]),

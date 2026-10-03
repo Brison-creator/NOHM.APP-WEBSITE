@@ -10,14 +10,14 @@ Branch: `web-booking`. Not merged. The lead engineer audits and integrates.
 |---|---|---|
 | 1 | **Service**: search pill + one tile per bookable trade (`GET /trades`, `bookable !== false`). Typing searches trade names and the app's issue catalog; a hit jumps straight to details. | `GET /trades`, `GET /config/pricing` (public, on load; nothing else until sign-in) |
 | 2 | **Issue**: the trade's five issues, copied from the app (`lib/issues.js`). Feeds the job title `"<Trade> · <Issue>"`, as the app does. | — |
-| 3 | **Details**: free text (≤2000) + up to 5 photos (≤10 MB, JPEG/PNG/WebP/HEIC). | — |
+| 3 | **Details**: free text (≤2000) + up to 5 photos (JPEG/PNG/WebP/HEIC). Each photo is shrunk in the browser as it's added (`lib/photos.js`: long edge 2048 px, JPEG 0.85, the camera's EXIF orientation baked in); a small one goes as it is, a HEIC the browser can't read goes as it is if it's within 10 MB. One that can't be used is named. | — |
 | 4 | **Speed**: Standard (free), NOHM Express, NOHM NOW, with the regular price struck through while `hasLiveDiscount`. | — |
 | 5 | **Schedule** (Standard only): today + 7 days, four arrival windows; windows that have closed today are disabled; late afternoon shows its +$20 premium. | — |
 | 6 | **Account** (skipped when signed in): sign-up (email, phone, password → text code → account), sign-in (email + password, with the new-browser text code; or phone code), optional Google. | `POST /auth/check-exists`, `/auth/email-signup/send-otp`, `/auth/email-signup/verify-otp`; `/auth/login/email-password`, `/auth/login/verify-device-otp`, `/auth/login/send-otp`, `/auth/login/verify-otp`; `/auth/google/signin`, `/auth/social-signup/send-otp`, `/auth/google/signup-with-phone`; then `GET /auth/me`, `GET /properties`, `GET /stripe/customer/payment-method` |
 | 7 | **Home**: pick one of the person's homes, or add one: address search → check → shell → confirm SINGLE, which issues the HIN. An address that already has a record (claimable, or owned by someone else) or is multi-unit is sent to the app; those flows (claim verification, unit pick, dispute) stay app-only. | `GET /places/autocomplete`, `GET /places/details`, `POST /properties/check-type`, `POST /properties/shell`, `POST /properties/:id/confirm` |
 | 8 | **Card** (skipped when one is on file): Stripe.js card element → `confirmCardSetup` → server records it. | `POST /stripe/customer/setup-intent`, `POST /stripe/customer/confirm-card` |
 | 9 | **Review**: every choice with an Edit link, the fee, the server's cancellation disclosure, and one button. | `GET /jobs/cancellation-terms` |
-| 10 | **Send**: Standard/Express → `POST /jobs`, then photos. NOW → the live list, pick a pro → `POST /now/dispatch`, then photos. | `POST /jobs`, `POST /jobs/:id/photos`; `GET /now/live`, `POST /now/demand`, `POST /now/dispatch` |
+| 10 | **Send**: Standard/Express → `POST /jobs`, then photos. NOW → the live list, pick a pro → `POST /now/dispatch`, then photos. Photos go **one per request** (the server appends each; its 25 MB request cap could otherwise refuse five at once), and the done screen names any that failed. | `POST /jobs`, `POST /jobs/:id/photos` (once per photo); `GET /now/live`, `POST /now/demand`, `POST /now/dispatch` |
 | 11 | **Done**: Standard shows the matched pros and lets the person pick one; Express and NOW say what happens next. Everything after that (tracking, chat, PIN, estimate approval) points to the app. | `GET /jobs/:id`, `GET /jobs/:id/matched-contractors`, `POST /jobs/:id/select-contractor` |
 
 The draft (everything but the photo files) lives in `sessionStorage`, so a sign-in or a reload keeps the person's place, and signing out clears it. Tokens live in `localStorage` with one device id per browser (`deviceType: 'web'`). When the server trusts the browser for an email it hands back a `deviceSecret`; the browser keeps it per email and sends it with the next password sign-in, as the app does, so a known browser isn't texted a code each time.
@@ -34,6 +34,7 @@ public/book/
   app.js            state + navigation + submit; the only file that knows every piece
   lib/flow.js       the rules: step order, what each step needs, the exact server bodies, error routing
   lib/issues.js     the app's issue catalog, verbatim
+  lib/photos.js     shrink each photo in the browser, upload one per request, name failures
   ui/screens.js     one function per step; renders what flow.js/the server say
   ui/card.js        Stripe.js, loaded only on the card step
 public/nohm/        shared with /join

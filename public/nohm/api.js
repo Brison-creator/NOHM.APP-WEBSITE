@@ -77,9 +77,14 @@ export function createApi(http, session) {
       cancellationTerms: (q) => http.get(`/jobs/cancellation-terms?${new URLSearchParams(q)}`),
       create: (body) => http.post('/jobs', body),
       get: (id) => http.get(`/jobs/${encodeURIComponent(id)}`),
-      uploadPhotos: (id, files) => {
+      /**
+       * One photo per request (field `files`; the server appends it to
+       * the job). Several in one request could pass the server's 25 MB
+       * request cap and lose them all; see book/lib/photos.js.
+       */
+      uploadPhoto: (id, file) => {
         const form = new FormData();
-        for (const f of files) form.append('files', f, f.name);
+        form.append('files', file, file.name);
         return http.postForm(`/jobs/${encodeURIComponent(id)}/photos`, form);
       },
       matchedContractors: (id) => http.get(`/jobs/${encodeURIComponent(id)}/matched-contractors`),

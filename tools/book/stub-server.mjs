@@ -61,10 +61,54 @@ function readBody(req) {
       }
       const fields = {};
       for (const m of raw.toString('latin1').matchAll(/name="([^"]+)"\r\n\r\n([^\r]*)\r\n/g)) if (!m[0].includes('filename=')) fields[m[1]] = m[2];
-      resolve({ _bytes: raw.length, _contentType: req.headers['content-type'] || '', _fields: fields });
+      const files = multipartFiles(raw, req.headers['content-type'] || '');
+      resolve({ _bytes: raw.length, _contentType: req.headers['content-type'] || '', _fields: fields, _files: files });
     });
   });
 }
+
+// The file parts of a multipart body: field, name, type, size, and the
+// image's pixel size (JPEG or PNG) so a test can see what was sent.
+function multipartFiles(raw, contentType) {
+  const m = /boundary=(?:"([^"]+)"|([^;\s]+))/.exec(contentType);
+  if (!m) return [];
+  const boundary = Buffer.from(`--${m[1] || m[2]}`);
+  const out = [];
+  let at = raw.indexOf(boundary);
+  while (at !== -1) {
+    const start = at + boundary.length;
+    if (raw.slice(start, start + 2).toString() === '--') break;
+    const next = raw.indexOf(boundary, start);
+    if (next === -1) break;
+    const part = raw.slice(start + 2, next - 2);
+    const sep = part.indexOf('\r\n\r\n');
+    const head = part.slice(0, sep).toString('latin1');
+    const filename = /filename="([^"]*)"/.exec(head);
+    if (filename) {
+      const data = part.slice(sep + 4);
+      out.push({ field: (/name="([^"]*)"/.exec(head) || [])[1], name: filename[1], type: ((/Content-Type:\s*([^\r\n]+)/i.exec(head) || [])[1] || '').trim(), size: data.length, ...imageSize(data) });
+    }
+    at = next;
+  }
+  return out;
+}
+function imageSize(b) {
+  if (b.length > 24 && b.readUInt32BE(0) === 0x89504e47) return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
+  if (b[0] === 0xff && b[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) { i++; continue; }
+      const marker = b[i + 1];
+      const len = b.readUInt16BE(i + 2);
+      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return { height: b.readUInt16BE(i + 5), width: b.readUInt16BE(i + 7) };
+      i += 2 + len;
+    }
+  }
+  return {};
+}
+// The server's request cap (common/http/request-limits.ts): anything
+// declared over 25 MB is refused before it's read.
+const UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
 
 // The real server's ValidationPipe (whitelist + forbidNonWhitelisted):
 // a field it doesn't know, or a required one missing, is a 400. Field
@@ -186,8 +230,24 @@ function api(method, url, body, req) {
     world.offers[id] = [{ contractorId: 'c-1', contractor: { id: 'c-1', businessName: 'Diaz Plumbing', averageRating: 4.9, completedJobsCount: 212, yearsExperience: 11, hasNohmProBadge: true, user: { firstName: 'Ray', lastName: 'Diaz' } } }];
     return [201, job];
   }
+  // POST /jobs/:id/photos (jobs.controller.ts): multer field `files`, up to 5,
+  // each at most 10 MB and image/(jpeg|png|webp|heic|heif); appended; 200.
   let m = /^\/jobs\/([^/]+)\/photos$/.exec(p);
-  if (m) { const j = world.jobs[m[1]]; if (!j) return [404, { message: 'Job not found' }]; j.photos.push(`https://cdn.test/${m[1]}/photo.jpg`); return [201, j]; }
+  if (m && method === 'POST') {
+    const j = world.jobs[m[1]];
+    if (!j) return [404, { message: 'Job not found' }];
+    const files = body._files || [];
+    if (files.some((f) => f.field !== 'files')) return [400, { message: 'Unexpected field' }];
+    if (files.length > 5) return [400, { message: 'Too many files' }];
+    if (!files.length) return [400, { message: 'File is required' }];
+    const big = files.find((f) => f.size > 10 * 1024 * 1024);
+    if (big) return [400, { message: `Validation failed (current file size is ${big.size}, expected size is less than 10485760)` }];
+    if (files.some((f) => !/^image\/(jpeg|png|webp|heic|heif)$/.test(f.type))) return [400, { message: 'Validation failed (expected type is /^image\\/(jpeg|png|webp|heic|heif)$/)' }];
+    world.photoPosts = (world.photoPosts || 0) + 1;
+    if (world.photoFailAt === world.photoPosts) return [413, { statusCode: 413, message: 'That upload is too large.' }];
+    for (const f of files) j.photos.push(`https://cdn.test/${m[1]}/${f.name}`);
+    return [200, j];
+  }
   m = /^\/jobs\/([^/]+)\/matched-contractors$/.exec(p);
   if (m) return world.jobs[m[1]] ? [200, { job: world.jobs[m[1]], offers: world.offers[m[1]] || [] }] : [404, { message: 'Job not found' }];
   m = /^\/jobs\/([^/]+)\/select-contractor$/.exec(p);
@@ -211,12 +271,19 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__webconfig') { world.webConfig = url.searchParams.get('mode') || 'ok'; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__stripe-done') { world.stripeDone = true; return json(res, 200, { ok: true }); }
   if (url.pathname.startsWith('/api/v1/')) {
+    const declared = Number(req.headers['content-length']);
+    if (Number.isFinite(declared) && declared > UPLOAD_MAX_BYTES) {
+      log.push({ method: req.method, path: url.pathname.replace('/api/v1', ''), auth: req.headers.authorization || null, body: { _bytes: declared }, status: 413 });
+      req.resume();
+      return json(res, 413, { statusCode: 413, message: 'That upload is too large.' });
+    }
     const body = await readBody(req);
     const entry = { method: req.method, path: url.pathname.replace('/api/v1', '') + url.search, auth: req.headers.authorization || null, body };
     log.push(entry);

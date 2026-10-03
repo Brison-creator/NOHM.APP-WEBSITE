@@ -4,7 +4,8 @@
 // Order of calls on a fresh visit: GET /trades and GET /config/pricing
 // (public). Nothing else until the person signs in. After sign-in:
 // GET /auth/me, GET /properties, GET /stripe/customer/payment-method.
-// The job itself: POST /jobs (or /now/dispatch), then POST /jobs/:id/photos.
+// The job itself: POST /jobs (or /now/dispatch), then POST /jobs/:id/photos
+// once per photo.
 
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
@@ -12,6 +13,7 @@ import { createApi, apiBaseFor } from '../nohm/api.js';
 import { createWebConfig } from '../nohm/web-config.js';
 import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction } from './lib/flow.js';
 import { randomId } from '../nohm/format.js';
+import { uploadEach } from './lib/photos.js';
 import { h, clear } from '../nohm/dom.js';
 import * as screens from './ui/screens.js';
 
@@ -83,6 +85,7 @@ const a = {
     this.draft = emptyDraft();
     session.clearDraft();
     this.state.job = null;
+    this.state.photoFailures = [];
     this.go('service');
   },
   toast(msg) {
@@ -172,9 +175,9 @@ const a = {
   },
   async afterJob(job) {
     this.state.job = job;
-    if (this.draft.photos && this.draft.photos.length) {
-      try { await api.jobs.uploadPhotos(job.id, this.draft.photos); } catch { this.toast('The request went out, but the photos didn’t upload. You can add them in the app.'); }
-    }
+    // One request per photo, so one that fails doesn't take the others
+    // with it; the done screen names any that didn't land.
+    this.state.photoFailures = await uploadEach(this.draft.photos, (f) => api.jobs.uploadPhoto(job.id, f));
     session.clearDraft();
     this.go('done');
   },

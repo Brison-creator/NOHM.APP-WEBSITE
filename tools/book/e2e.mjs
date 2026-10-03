@@ -1,9 +1,10 @@
 // End to end in a headless browser against the stub server:
 //   node tools/book/stub-server.mjs 8787 &  node tools/book/e2e.mjs
 // Walks the real page through every step the way a person would,
-// then checks what the page sent the server. Three runs: Standard
-// (sign-up, add a home, pick a pro), Express with a card missing
-// (the card step appears and the job carries the shown fee), and NOW.
+// then checks what the page sent the server: Standard (sign-up, add a
+// home, pick a pro), Express with a card missing (the card step appears
+// and the job carries the shown fee), NOW, the error paths, photos
+// (shrunk, one per request), and the server's web settings missing.
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,6 +12,8 @@ import path from 'node:path';
 import os from 'node:os';
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
+import zlib from 'node:zlib';
+import crypto from 'node:crypto';
 
 // Playwright from this repo if installed, else the global one.
 const require = createRequire(import.meta.url);
@@ -43,6 +46,30 @@ const FAKE_STRIPE = `window.Stripe = function (key) {
   window.__stripeKey = key;
   return { elements: function () { return { create: function () { return { mount: function (el) { el.dataset.stripeMounted = '1'; }, on: function () {}, destroy: function () {} }; } }; } };
 };`;
+
+/** A PNG of random pixels (it doesn't compress, so it's as big as it looks). */
+function noisePng(w, h) {
+  const row = w * 3 + 1;
+  const raw = crypto.randomBytes(row * h);
+  for (let y = 0; y < h; y++) raw[y * row] = 0; // filter: none
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const td = Buffer.concat([Buffer.from(type), data]);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(zlib.crc32(td));
+    return Buffer.concat([len, td, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2; // 8-bit RGB
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw, { level: 0 })), chunk('IEND', Buffer.alloc(0))]);
+}
+
+/** The JPEG with an EXIF block whose Orientation tag is `o` (6 = rotate 90° clockwise to view). */
+function withExifOrientation(jpeg, o) {
+  const tiff = Buffer.from([0x4d, 0x4d, 0x00, 0x2a, 0, 0, 0, 8, 0, 1, 0x01, 0x12, 0, 3, 0, 0, 0, 1, 0, o, 0, 0, 0, 0, 0, 0]);
+  const payload = Buffer.concat([Buffer.from('Exif\0\0', 'latin1'), tiff]);
+  const len = Buffer.alloc(2); len.writeUInt16BE(payload.length + 2);
+  return Buffer.concat([jpeg.subarray(0, 2), Buffer.from([0xff, 0xe1]), len, payload, jpeg.subarray(2)]);
+}
 
 async function fresh() {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -340,7 +367,73 @@ async function addHome(page) {
   await ctx.close();
 }
 
-// ── Run 6: the server's web settings don't load: card entry and Google say so ──
+// ── Run 6: photos: big ones shrunk in the browser, EXIF turned upright, one per request, a failure named ──
+{
+  await reset();
+  // A 4000×3000 photo of noise: about 36 MB as PNG, well over the server's 10 MB per photo.
+  const big = path.join(os.tmpdir(), 'nohm-big.png');
+  fs.writeFileSync(big, noisePng(4000, 3000));
+  assert.ok(fs.statSync(big).size > 30 * 1024 * 1024);
+  const { ctx, page } = await fresh();
+  await page.goto(`${PAGE}&trade=plumbing`);
+  await page.waitForSelector('.b-choice');
+  // A 3000×1000 JPEG whose EXIF says "rotate 90°": the phone held upright. Upright it is 1000×3000.
+  const wide = await page.evaluate(async () => {
+    const c = document.createElement('canvas');
+    c.width = 3000; c.height = 1000;
+    const g = c.getContext('2d');
+    g.fillStyle = '#356CA3'; g.fillRect(0, 0, 3000, 1000);
+    g.fillStyle = '#fff'; g.fillRect(0, 0, 300, 1000);
+    const b = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.9));
+    return Array.from(new Uint8Array(await b.arrayBuffer()));
+  });
+  const rotated = path.join(os.tmpdir(), 'nohm-rotated.jpg');
+  fs.writeFileSync(rotated, withExifOrientation(Buffer.from(wide), 6));
+  const tiny = path.join(os.tmpdir(), 'nohm-tiny.png');
+  fs.writeFileSync(tiny, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
+
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'Water under the sink, cabinet floor is soft.');
+  await page.setInputFiles('#f-photos', [big, rotated, tiny]);
+  await page.waitForFunction(() => document.querySelectorAll('.b-thumb').length === 3, null, { timeout: 30000 });
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=EXPRESS]');
+  await page.waitForSelector('[data-key=signin], [data-key=signup]');
+  await page.click('.b-tab:nth-child(2)');
+  await page.fill('#f-email', 'ava@example.com');
+  await page.fill('#f-password', 'password1');
+  await page.click('[data-key=signin]');
+  await addHome(page);
+  await page.waitForSelector('[data-key=confirm]');
+  assert.match(await page.textContent('.b-card'), /Photos\s*3/);
+  await fetch(`${BASE}/__photo-fail?nth=2`); // the server refuses the second photo
+  await page.click('[data-key=confirm]');
+  await page.waitForSelector('.b-photofail');
+  await snap(page, 'done-photo-failed');
+  assert.match(await page.textContent('.b-photofail'), /the photo nohm-rotated\.jpg didn’t upload \(That upload is too large\)/);
+  assert.match(await page.textContent('.b-h1'), /Request sent/);
+
+  const calls = await log();
+  const posts = calls.filter((c) => /^\/jobs\/[^/]+\/photos$/.test(c.path));
+  assert.equal(posts.length, 3, 'one request per photo');
+  for (const p of posts) {
+    assert.equal(p.body._files.length, 1, 'exactly one photo in each request');
+    assert.equal(p.body._files[0].field, 'files');
+    assert.ok(p.body._bytes < 25 * 1024 * 1024, 'each request is under the server cap');
+    assert.ok(p.body._files[0].size <= 10 * 1024 * 1024, 'each photo is within the server’s 10 MB');
+  }
+  const [b, r, t] = posts.map((p) => p.body._files[0]);
+  assert.equal(b.name, 'nohm-big.jpg');
+  assert.equal(b.type, 'image/jpeg');
+  assert.deepEqual([b.width, b.height], [2048, 1536], 'long edge capped at 2048, shape kept');
+  assert.deepEqual([r.width, r.height], [683, 2048], 'the EXIF rotation is baked in: upright, then capped');
+  assert.equal(t.name, 'nohm-tiny.png', 'a tiny photo goes as it is');
+  assert.deepEqual(posts.map((p) => p.status), [200, 413, 200]);
+  console.log('✓ Photos: a 36 MB photo shrunk to 2048 px JPEG, EXIF orientation kept upright, one request each, the failed one named');
+  await ctx.close();
+}
+
+// ── Run 7: the server’s web settings don't load: card entry and Google say so ──
 for (const mode of ['fail', 'empty']) {
   await reset('?card=false');
   await fetch(`${BASE}/__webconfig?mode=${mode}`);
