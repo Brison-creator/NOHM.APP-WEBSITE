@@ -29,7 +29,7 @@ const http = createHttp({ baseUrl: apiBase, session });
 const api = createApi(http, session);
 
 const COPY = {
-  pro: { signupTitle: 'Join NOHM as a pro', signupSub: 'Your account first. Then your profile, payouts and the Standard: about ten minutes.', signinSub: 'Pick up where you left off.' },
+  pro: { phoneTitle: 'Join NOHM as a pro', phoneSub: 'Your mobile number first. Then your profile, payouts and the Standard: about ten minutes.', signupTitle: 'Join NOHM as a pro', signupSub: 'Your account first. Then your profile, payouts and the Standard.', signinSub: 'Pick up where you left off.' },
   renter: { signupTitle: 'Join NOHM as a renter', signupSub: 'Use the phone number your landlord has for you; the invite is matched to it.', signinSub: 'Sign in to accept your landlord’s invite.' },
 };
 
@@ -94,6 +94,7 @@ const a = {
       session.setTokens(res);
       a.state.accountMode = null;
       a.state.pendingSignup = null;
+      a.state.pendingPhone = null;
       a.state.pendingLogin = null;
       a.state.pendingGoogle = null;
       try {

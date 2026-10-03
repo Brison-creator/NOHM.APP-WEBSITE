@@ -99,6 +99,16 @@ function api(method, url, body, req) {
   const needAuth = () => (auth === 'Bearer acc-1' ? null : json);
   if (p === '/trades' && method === 'GET') return [200, TRADES];
   if (p === '/config/pricing' && method === 'GET') return [200, PRICING];
+  if (p === '/auth/phone-signup/send-otp') return world.takenPhones && world.takenPhones.includes(body.phone) ? [409, { message: 'This phone number is already registered.' }] : [200, { message: 'OTP sent successfully' }];
+  if (p === '/auth/phone-signup/verify-otp') {
+    if (body.code !== '123456') return [401, { message: 'Invalid OTP' }];
+    for (const k of ['phone', 'code', 'firstName', 'lastName', 'email', 'role', 'deviceId', 'deviceName', 'deviceType', 'appVersion']) if (!body[k]) return [400, { message: [`${k} should not be empty`] }];
+    if (body.password !== undefined) return [400, { message: ['property password should not exist'] }];
+    world.role = body.role; world.user = { ...USER, firstName: body.firstName, lastName: body.lastName, email: body.email, phone: body.phone, role: world.role };
+    return [200, { accessToken: 'acc-1', refreshToken: 'ref-1', user: world.user }];
+  }
+  if (p === '/auth/login/send-otp') return [200, { success: true, expiresIn: 300 }];
+  if (p === '/auth/login/verify-otp') return body.code === '123456' ? [200, { accessToken: 'acc-1', refreshToken: 'ref-1', user: { ...(world.user || USER), role: world.role } }] : [401, { message: 'Invalid code' }];
   if (p === '/auth/check-exists') return [200, { exists: body.email === 'taken@example.com' }];
   if (p === '/auth/email-signup/send-otp') return body.email === 'taken@example.com' ? [409, { message: 'Email already registered' }] : [200, { message: 'OTP sent' }];
   if (p === '/auth/email-signup/verify-otp') { if (body.code !== '123456') return [400, { message: 'Invalid or expired code' }]; world.role = body.role || 'HOMEOWNER'; world.user = { ...USER, firstName: body.firstName, lastName: body.lastName, email: body.email, phone: body.phone, role: world.role }; return [201, { accessToken: 'acc-1', refreshToken: 'ref-1', user: world.user }]; }
@@ -203,7 +213,7 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.takenPhones = (url.searchParams.get('taken') || '').split(',').filter(Boolean); world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__stripe-done') { world.stripeDone = true; return json(res, 200, { ok: true }); }

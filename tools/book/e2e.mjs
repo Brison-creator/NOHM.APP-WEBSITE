@@ -64,14 +64,17 @@ async function describeAndSpeed(page, tier, text) {
 }
 
 async function signUp(page) {
-  await page.waitForSelector('[data-key=signup]');
+  // Phone first: the number, then name and email, then the code.
+  await page.waitForSelector('[data-key=phone]');
   await snap(page, 'account');
+  await page.fill('#f-phone', '(512) 555-0123');
+  await page.click('[data-key=phone]');
+  await page.waitForSelector('#f-firstName');
+  await snap(page, 'account-details');
   await page.fill('#f-firstName', 'Ava');
   await page.fill('#f-lastName', 'Ng');
   await page.fill('#f-email', 'ava@example.com');
-  await page.fill('#f-phone', '(512) 555-0123');
-  await page.fill('#f-password', 'longenough1');
-  await page.click('[data-key=signup]');
+  await page.click('[data-key=details]');
   await page.waitForSelector('#f-code');
   await page.fill('#f-code', '000000');
   await page.click('[data-key=verify]');
@@ -146,13 +149,13 @@ async function addHome(page) {
   assert.ok(!calls.slice(0, 2).some((c) => c.auth), 'no token on public calls');
   const seq = paths.filter((p) => !p.startsWith('GET /trades') && !p.startsWith('GET /config'));
   assert.deepEqual(seq, [
-    'POST /auth/check-exists', 'POST /auth/email-signup/send-otp', 'POST /auth/email-signup/verify-otp', 'POST /auth/email-signup/verify-otp',
+    'POST /auth/phone-signup/send-otp', 'POST /auth/phone-signup/verify-otp', 'POST /auth/phone-signup/verify-otp',
     'GET /auth/me', 'GET /properties', 'GET /stripe/customer/payment-method',
     'GET /places/autocomplete', 'GET /places/details', 'POST /properties/check-type', 'POST /properties/shell', 'POST /properties/p-1/confirm',
     'GET /jobs/cancellation-terms', 'POST /jobs', 'POST /jobs/j-1042/photos', 'GET /jobs/j-1042', 'GET /jobs/j-1042/matched-contractors', 'POST /jobs/j-1042/select-contractor',
   ]);
-  const verify = calls.find((c) => c.path === '/auth/email-signup/verify-otp').body;
-  assert.deepEqual(Object.keys(verify).sort(), ['appVersion', 'code', 'deviceId', 'deviceName', 'deviceType', 'email', 'firstName', 'lastName', 'password', 'phone', 'role']);
+  const verify = calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body;
+  assert.deepEqual(Object.keys(verify).sort(), ['appVersion', 'code', 'deviceId', 'deviceName', 'deviceType', 'email', 'firstName', 'lastName', 'phone', 'role'], 'no password anywhere');
   assert.equal(verify.phone, '+15125550123');
   assert.equal(verify.role, 'HOMEOWNER');
   assert.equal(verify.deviceType, 'web');
@@ -220,11 +223,14 @@ async function addHome(page) {
   await page.waitForSelector('.b-choice');
   await page.click('.b-choice:nth-child(5)'); // Sewer backup
   await describeAndSpeed(page, 'NOW', 'Sewage coming up in the downstairs shower.');
-  await page.waitForSelector('[data-key=signin], [data-key=signup]');
-  await page.click('.b-tab:nth-child(2)');
-  await page.fill('#f-email', 'ava@example.com');
-  await page.fill('#f-password', 'password1');
-  await page.click('[data-key=signin]');
+  // A number that already has an account: one field, a sign-in code, in.
+  await fetch(`${BASE}/__reset?taken=%2B15125550123`);
+  await page.waitForSelector('[data-key=phone]');
+  await page.fill('#f-phone', '512-555-0123');
+  await page.click('[data-key=phone]');
+  await page.waitForFunction(() => document.body.textContent.includes('This number has a NOHM account'));
+  await page.fill('#f-code', '123456');
+  await page.click('[data-key=verify]');
   await addHome(page);
   await page.waitForSelector('[data-key=confirm]');
   assert.match(await page.textContent('[data-key=confirm]'), /ready now/);
@@ -239,7 +245,9 @@ async function addHome(page) {
   const d = calls.find((c) => c.path === '/now/dispatch').body;
   assert.deepEqual(d, { availabilityId: 'av-1', propertyId: 'p-1', tradeId: 't-plumb', issueSummary: 'Sewage coming up in the downstairs shower.', shownFeeCents: 3000 });
   assert.ok(!calls.some((c) => c.path === '/jobs' && c.method === 'POST'), 'NOW never goes through POST /jobs');
-  console.log('✓ NOW: sign-in with password, live list, dispatch body');
+  const seq3 = calls.map((c) => `${c.method} ${c.path}`).filter((x) => x.includes('/auth/'));
+  assert.deepEqual(seq3.slice(0, 3), ['POST /auth/phone-signup/send-otp', 'POST /auth/login/send-otp', 'POST /auth/login/verify-otp'], 'a known number is offered sign-in, not sign-up');
+  console.log('✓ NOW: a returning number signs in with a code, live list, dispatch body');
   await ctx.close();
 }
 

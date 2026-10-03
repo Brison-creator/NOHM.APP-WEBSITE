@@ -25,6 +25,10 @@ export function createApi(http, session) {
     // ── Account ─────────────────────────────────────────────────
     auth: {
       checkExists: (email) => http.post('/auth/check-exists', { email }, { auth: false }),
+      /** Phone-first, step 1: a code to a new number (409 when the number has an account: offer sign-in). */
+      phoneSignupSendOtp: (phone) => http.post('/auth/phone-signup/send-otp', { phone }, { auth: false }),
+      /** Phone-first, step 2: the code plus a name and email make the account; no password. */
+      phoneSignupVerify: ({ phone, code, firstName, lastName, email }, role) => http.post('/auth/phone-signup/verify-otp', { phone, code, firstName, lastName, email, role, ...dev() }, { auth: false }),
       /** Email sign-up, step 1: texts a code to the phone. 409 when the email or phone is taken. */
       emailSignupSendOtp: (body) => http.post('/auth/email-signup/send-otp', body, { auth: false }),
       /** Step 2: the code plus the same fields again creates the account and signs in. */

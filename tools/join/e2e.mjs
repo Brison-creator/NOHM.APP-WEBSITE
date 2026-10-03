@@ -34,14 +34,15 @@ async function snap(page, name) {
   if (shots) { await page.waitForTimeout(350); await page.screenshot({ path: path.join(shots, `${String(++n).padStart(2, '0')}-${name}.png`), fullPage: true }); }
 }
 async function signUp(page) {
-  await page.waitForSelector('[data-key=signup]');
+  await page.waitForSelector('[data-key=phone]');
   await snap(page, 'account');
+  await page.fill('#f-phone', '501-555-0199');
+  await page.click('[data-key=phone]');
+  await page.waitForSelector('#f-firstName');
   await page.fill('#f-firstName', 'Ray');
   await page.fill('#f-lastName', 'Diaz');
   await page.fill('#f-email', 'ray@example.com');
-  await page.fill('#f-phone', '501-555-0199');
-  await page.fill('#f-password', 'longenough1');
-  await page.click('[data-key=signup]');
+  await page.click('[data-key=details]');
   await page.waitForSelector('#f-code');
   await page.fill('#f-code', '123456');
   await page.click('[data-key=verify]');
@@ -113,7 +114,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   const calls = await log();
   const prof = calls.find((c) => c.method === 'PATCH' && c.path === '/contractors/profile').body;
   assert.deepEqual(prof, { firstName: 'Ray', lastName: 'Diaz', businessName: 'Diaz Plumbing', baseZip: '72011', serviceRadius: 30, primaryTradeId: 't-plumb', licenseNumber: 'MP-4471', yearsExperience: 11, serviceCallFeeRange: '$89' });
-  const verify = calls.find((c) => c.path === '/auth/email-signup/verify-otp').body;
+  const verify = calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body;
   assert.equal(verify.role, 'CONTRACTOR');
   assert.equal(verify.phone, '+15015550199');
   const docs = calls.filter((c) => c.path === '/contractors/documents' && c.method === 'POST');
@@ -158,7 +159,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   const seq = calls.map((c) => `${c.method} ${c.path}`).filter((x) => x.includes('/tenants/'));
   assert.deepEqual(seq.slice(0, 5), ['GET /tenants/my-property', 'GET /tenants/my-invites', 'GET /tenants/invite/482913', 'POST /tenants/invite/482913/send-otp', 'POST /tenants/invite/482913/accept']);
   assert.equal(calls.filter((c) => c.path.endsWith('/accept')).length, 2, 'the wrong code was sent once and refused');
-  assert.equal(calls.find((c) => c.path === '/auth/email-signup/verify-otp').body.role, 'TENANT');
+  assert.equal(calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body.role, 'TENANT');
   console.log('✓ Renter: sign-up → invite (listed and typed) → text code → lease linked, survives reload');
   await ctx.close();
 }
@@ -174,9 +175,10 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.fill('#f-description', 'Leak under the sink, cabinet is wet.');
   await page.click('[data-key=next]');
   await page.click('[data-tier=EXPRESS]');
-  await page.waitForSelector('[data-key=signup]');
-  await page.fill('#f-firstName', 'Ava'); await page.fill('#f-lastName', 'Ng'); await page.fill('#f-email', 'ava@example.com'); await page.fill('#f-phone', '5125550123'); await page.fill('#f-password', 'longenough1');
-  await page.click('[data-key=signup]');
+  await page.waitForSelector('[data-key=phone]');
+  await page.fill('#f-phone', '5125550123'); await page.click('[data-key=phone]');
+  await page.waitForSelector('#f-firstName');
+  await page.fill('#f-firstName', 'Ava'); await page.fill('#f-lastName', 'Ng'); await page.fill('#f-email', 'ava@example.com'); await page.click('[data-key=details]');
   await page.waitForSelector('#f-code'); await page.fill('#f-code', '123456'); await page.click('[data-key=verify]');
   await page.waitForSelector('#f-address');
   await page.goto(`${BASE}/join/${api}`);

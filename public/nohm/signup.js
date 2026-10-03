@@ -27,3 +27,12 @@ export function signupBody(f, role = 'HOMEOWNER') {
     role,
   };
 }
+
+/** Problems with the phone-first details form (name and email), keyed by field. */
+export function detailsProblems(f) {
+  const e = {};
+  if (!(f.firstName || '').trim()) e.firstName = 'First name';
+  if (!(f.lastName || '').trim()) e.lastName = 'Last name';
+  if (!isEmail(f.email)) e.email = 'A real email address';
+  return e;
+}

@@ -217,6 +217,7 @@ const a = {
 function clearPending() {
   a.state.accountMode = null;
   a.state.pendingSignup = null;
+  a.state.pendingPhone = null;
   a.state.pendingLogin = null;
   a.state.pendingGoogle = null;
 }
@@ -262,7 +263,7 @@ function render() {
   const fn = {
     service: screens.serviceScreen, issue: screens.issueScreen, details: screens.detailsScreen, speed: screens.speedScreen,
     schedule: screens.scheduleScreen,
-    account: (app) => screens.accountScreen(app, { role: 'HOMEOWNER', signupSub: 'Takes a minute. Your request is saved while you do.', signinSub: 'Your request is saved. Sign in to send it.' }),
+    account: (app) => screens.accountScreen(app, { role: 'HOMEOWNER', phoneTitle: 'Your mobile number', phoneSub: 'Your request is saved. We text you a code, new or returning.', signupSub: 'Takes a minute. Your request is saved while you do.', signinSub: 'Your request is saved. Sign in to send it.' }),
     home: screens.homeScreen, card: screens.cardScreen,
     review: screens.reviewScreen, now: screens.nowScreen, done: screens.doneScreen, 'wrong-role': wrongRoleScreen,
   }[a.step] || screens.serviceScreen;
