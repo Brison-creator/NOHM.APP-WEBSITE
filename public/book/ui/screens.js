@@ -8,7 +8,7 @@ export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
 import { mountCardForm } from './card.js';
-import { preparePhoto, photoFailureText } from '../lib/photos.js';
+import { preparePhoto, photoFailureText, splitToLimit, overLimitText } from '../lib/photos.js';
 import { CARD_UNAVAILABLE } from '../../nohm/web-config.js';
 
 const TRADE_ICON = {
@@ -153,9 +153,10 @@ export function detailsScreen(a) {
   // Each photo is shrunk here (long edge 2048 px, JPEG), so what's sent
   // is small; one that can't be used is named and the rest are kept.
   photoIn.addEventListener('change', async () => {
-    const picked = [...photoIn.files].slice(0, Math.max(0, LIMITS.photos - photos.length));
+    const { take: picked, dropped } = splitToLimit(photoIn.files, photos.length);
     photoIn.value = '';
-    if (!picked.length) return;
+    let over = dropped;
+    if (!picked.length) { if (over) a.toast(overLimitText(over)); return; }
     preparing++;
     addBtn.disabled = true;
     addText.textContent = ' Preparing photos…';
@@ -164,10 +165,12 @@ export function detailsScreen(a) {
       try {
         const ready = await preparePhoto(f);
         if (photos.length < LIMITS.photos) photos.push(ready);
+        else over++; // another pick filled the last spots meanwhile
       } catch (ex) { problems.push(ex.message); }
     }
     if (--preparing === 0) { addBtn.disabled = false; addText.textContent = addLabel; }
-    if (problems.length) a.toast(problems.join(' '));
+    const notes = [overLimitText(over), ...problems].filter(Boolean);
+    if (notes.length) a.toast(notes.join(' '));
     drawThumbs();
   });
   drawThumbs();

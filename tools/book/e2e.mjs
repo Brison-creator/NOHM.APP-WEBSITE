@@ -454,6 +454,23 @@ async function addHome(page) {
   await ctx.close();
 }
 
+// ── Run 6b: picking more than 5 photos: 5 are added and the rest are counted out loud ──
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(`${PAGE}&trade=plumbing`);
+  await page.waitForSelector('.b-choice');
+  await page.click('.b-choice');
+  await page.waitForSelector('#f-description');
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+  await page.setInputFiles('#f-photos', [1, 2, 3, 4, 5, 6, 7].map((n) => ({ name: `p${n}.png`, mimeType: 'image/png', buffer: png })));
+  await page.waitForFunction(() => document.querySelectorAll('.b-thumb').length === 5);
+  await page.waitForFunction(() => /Up to 5 photos; 2 not added\./.test(document.getElementById('book-toast').textContent));
+  assert.equal(await page.isHidden('.b-addphoto'), true, 'no more to add');
+  console.log('✓ Photos: 7 picked, 5 added, "Up to 5 photos; 2 not added."');
+  await ctx.close();
+}
+
 // ── Run 7: the server’s web settings don't load: card entry and Google say so ──
 for (const mode of ['fail', 'empty']) {
   await reset('?card=false');

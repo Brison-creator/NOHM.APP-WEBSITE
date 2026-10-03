@@ -5,7 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { PHOTO, fitWithin, jpegName, preparePhoto, uploadEach, photoFailureText, PhotoError } from '../../public/book/lib/photos.js';
+import { PHOTO, fitWithin, jpegName, preparePhoto, uploadEach, photoFailureText, PhotoError, splitToLimit, overLimitText } from '../../public/book/lib/photos.js';
 import { createApi } from '../../public/nohm/api.js';
 
 const MB = 1024 * 1024;
@@ -120,4 +120,15 @@ test('the endpoint sends exactly one file per request, as `files`', async () => 
   const entries = [...forms[0].form.entries()];
   assert.equal(entries.length, 1);
   assert.equal(entries[0][0], 'files');
+});
+
+test('photos past 5 are not added, and the person is told how many', () => {
+  const seven = ['1', '2', '3', '4', '5', '6', '7'].map((n) => ({ name: `${n}.jpg` }));
+  assert.deepEqual(splitToLimit(seven, 0).take.map((f) => f.name), ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg']);
+  assert.equal(splitToLimit(seven, 0).dropped, 2);
+  assert.equal(splitToLimit(seven.slice(0, 3), 4).dropped, 2);
+  assert.equal(splitToLimit(seven.slice(0, 2), 5).take.length, 0);
+  assert.equal(splitToLimit(seven.slice(0, 2), 1).dropped, 0);
+  assert.equal(overLimitText(2), 'Up to 5 photos; 2 not added.');
+  assert.equal(overLimitText(0), null);
 });

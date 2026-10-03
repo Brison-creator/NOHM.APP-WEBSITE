@@ -97,6 +97,18 @@ export async function preparePhoto(file, deps = browserPhotoDeps()) {
   }
 }
 
+/** The photos that fit under the limit, and how many didn't. */
+export function splitToLimit(files, have, limit = LIMITS.photos) {
+  const room = Math.max(0, limit - (have || 0));
+  const list = [...(files || [])];
+  return { take: list.slice(0, room), dropped: Math.max(0, list.length - room) };
+}
+
+/** "Up to 5 photos; 2 not added." or null. */
+export function overLimitText(dropped, limit = LIMITS.photos) {
+  return dropped > 0 ? `Up to ${limit} photos; ${dropped} not added.` : null;
+}
+
 /**
  * Upload each photo in its own request, in order. Resolves to the ones
  * that failed: [{ name, message }] (empty when all landed).
