@@ -12,7 +12,7 @@ import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
 import { createWebConfig } from '../nohm/web-config.js';
 import { h, clear } from '../nohm/dom.js';
-import { accountScreen } from '../nohm/account.js';
+import { accountScreen, clearPending, signingUp } from '../nohm/account.js';
 import { proStepFor } from './lib/pro-flow.js';
 import { renterStepFor } from './lib/renter-flow.js';
 import * as pro from './ui/pro-screens.js';
@@ -99,13 +99,9 @@ const a = {
   account: {
     async signedIn(res) {
       // A brand-new pro account gets the optional invite-code step first.
-      const signedUp = Boolean(a.state.pendingSignup || a.state.pendingPhoneSignup || (a.state.pendingGoogle && a.state.pendingGoogle.phone));
+      const signedUp = signingUp(a.state);
       session.setTokens(res);
-      a.state.accountMode = null;
-      a.state.pendingSignup = null;
-      a.state.pendingPhoneSignup = null;
-      a.state.pendingLogin = null;
-      a.state.pendingGoogle = null;
+      clearPending(a.state);
       try {
         await loadAccount();
       } catch (ex) {

@@ -100,3 +100,17 @@ test('pro invite endpoints: preview by code, accept with { inviteCode } only', a
   await api.contractorInvites.accept('ckinvray0001');
   assert.deepEqual(seen, [['GET', '/contractor-invites/code/ck%2F1%202'], ['POST', '/contractor-invites/accept', { inviteCode: 'ckinvray0001' }]]);
 });
+
+test('one shared clearPending for /book and /join; signingUp tells a sign-up from a sign-in', async () => {
+  const { clearPending, signingUp } = await import('../../public/nohm/account.js');
+  const state = { accountMode: 'signup-code', pendingSignup: { phone: '+1' }, pendingPhoneSignup: { phone: '+1' }, pendingLogin: { email: 'a' }, pendingGoogle: { idToken: 't', phone: '+1' }, user: 'kept' };
+  assert.equal(signingUp(state), true);
+  clearPending(state);
+  assert.deepEqual(state, { accountMode: null, pendingSignup: null, pendingPhoneSignup: null, pendingLogin: null, pendingGoogle: null, user: 'kept' });
+  assert.equal(signingUp(state), false);
+  assert.equal(signingUp({ pendingGoogle: { idToken: 't' } }), false, 'Google before a phone is given is not a sign-up yet');
+  assert.equal(signingUp({ pendingPhoneSignup: {} }), true);
+  const fs = await import('node:fs');
+  for (const f of ['public/book/app.js', 'public/join/app.js']) assert.doesNotMatch(fs.readFileSync(new URL(`../../${f}`, import.meta.url), 'utf8'), /pendingPhoneSignup = null/, `${f} uses the shared clearPending`);
+  assert.equal(fs.readFileSync(new URL('../../public/nohm/account.js', import.meta.url), 'utf8').split('By continuing you agree').length - 1, 1, 'one Terms/Privacy/SMS line');
+});

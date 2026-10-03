@@ -19,6 +19,28 @@ import { GOOGLE_UNAVAILABLE } from './web-config.js';
 export const SMS_CONSENT =
   'By entering your number, you agree to get account texts from NOHM, like login codes and job updates. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help.';
 
+/**
+ * Forget any sign-in or sign-up in progress (the codes asked for, the
+ * Google token waiting for a phone). Shared by /book and /join.
+ */
+export function clearPending(state) {
+  state.accountMode = null;
+  state.pendingSignup = null;
+  state.pendingPhoneSignup = null;
+  state.pendingLogin = null;
+  state.pendingGoogle = null;
+}
+
+/** Whether a sign-up (not a sign-in) is what's being finished. */
+export function signingUp(state) {
+  return Boolean(state.pendingSignup || state.pendingPhoneSignup || (state.pendingGoogle && state.pendingGoogle.phone));
+}
+
+/** The Terms / Privacy / SMS line under every sign-up form. */
+function legalLine() {
+  return h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. How NOHM texts: ', h('a', { href: '/sms' }, 'nohm.app/sms'), '.']);
+}
+
 function head(title, sub) {
   return h('header.b-head', [h('h1.b-h1', title), sub ? h('p.b-sub', sub) : null]);
 }
@@ -90,7 +112,7 @@ export function accountScreen(a, opts = {}) {
         btn.busy(false);
       }
     };
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, btn, h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. How NOHM texts: ', h('a', { href: '/sms' }, 'nohm.app/sms'), '.'])]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, btn, legalLine()]);
   }
 
   // Phone sign-up: name and phone (email optional), a code, the account.
@@ -126,7 +148,7 @@ export function accountScreen(a, opts = {}) {
         btn.busy(false);
       }
     };
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.phone.el, f.email.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Use email and a password instead'), h('p.b-small', ['By continuing you agree to NOHM’s ', h('a', { href: '/terms' }, 'Terms'), ' and ', h('a', { href: '/privacy' }, 'Privacy Policy'), '. How NOHM texts: ', h('a', { href: '/sms' }, 'nohm.app/sms'), '.'])]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.phone.el, f.email.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Use email and a password instead'), legalLine()]);
   }
 
   function phoneSignupButton() {

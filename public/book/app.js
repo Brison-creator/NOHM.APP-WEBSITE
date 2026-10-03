@@ -16,6 +16,7 @@ import { randomId } from '../nohm/format.js';
 import { uploadEach } from './lib/photos.js';
 import { h, clear } from '../nohm/dom.js';
 import * as screens from './ui/screens.js';
+import { clearPending } from '../nohm/account.js';
 
 const config = window.NOHM_BOOK;
 const root = document.getElementById('book');
@@ -112,7 +113,7 @@ const a = {
   account: {
     async signedIn(res) {
       session.setTokens(res);
-      clearPending();
+      clearPending(a.state);
       try {
         await loadAccount();
       } catch (ex) {
@@ -138,7 +139,7 @@ const a = {
     // The request in progress goes with the account: the next person on
     // this computer starts clean.
     session.clear();
-    clearPending();
+    clearPending(a.state);
     Object.assign(this.state, { user: null, properties: null, property: null, hasCard: false, card: null, wrongRole: false });
     this.draft = emptyDraft();
     this.history = [];
@@ -219,14 +220,6 @@ const a = {
     }
   },
 };
-
-function clearPending() {
-  a.state.accountMode = null;
-  a.state.pendingSignup = null;
-  a.state.pendingPhoneSignup = null;
-  a.state.pendingLogin = null;
-  a.state.pendingGoogle = null;
-}
 
 async function loadAccount() {
   const me = await api.auth.me();
