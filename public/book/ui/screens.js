@@ -409,6 +409,19 @@ export function reviewScreen(a) {
   const terms = h('p.b-small', '…');
   a.api.jobs.cancellationTerms(cancellationTermsQuery(d)).then((t) => (terms.textContent = (t && t.disclosure) || '')).catch(() => (terms.textContent = ''));
 
+  // Express: if the server says the person has spendable NOHM Credits,
+  // offer to put them toward the fee (off unless ticked). How many apply
+  // is the server's call when it holds the fee; nothing here changes the price.
+  const credits = h('div.b-credits');
+  if (d.tier === 'EXPRESS') {
+    a.api.credits.balance().then((r) => {
+      const n = Math.floor(Number(r && r.balance));
+      if (!(n > 0)) { if (a.draft.useCredits) a.setDraft({ useCredits: false }); return; }
+      const box = h('input', { type: 'checkbox', id: 'f-credits', checked: a.draft.useCredits === true, onChange: () => a.setDraft({ useCredits: box.checked }) });
+      credits.append(h('label.b-check', { htmlFor: 'f-credits' }, [box, h('span', [h('b', 'Put my NOHM Credits toward this fee'), h('small', `You have ${n}. NOHM applies what this fee allows when it’s held; the rest goes on your card.`)])]));
+    }).catch(() => { if (a.draft.useCredits) a.setDraft({ useCredits: false }); });
+  }
+
   const row = (label, value, step) => h('div.b-row', [h('span.b-muted', label), h('span', value), step ? h('button.b-edit', { type: 'button', onClick: () => a.go(step) }, 'Edit') : null]);
   const btn = button(d.tier === 'NOW' ? 'See who’s ready now' : d.tier === 'EXPRESS' ? 'Send to the closest pro' : 'Send my request', { key: 'confirm' });
   const err = h('p.b-err', { role: 'alert' });
@@ -427,6 +440,7 @@ export function reviewScreen(a) {
       h('div.b-row.b-total', [h('span', 'NOHM fee'), h('span', [fee && fee.discounted ? h('s', money(fee.base)) : null, ' ', fee ? (fee.current ? money(fee.current) : 'None') : '…'])]),
       win && win.premium ? h('div.b-row', [h('span.b-muted', 'Late afternoon premium'), h('span', premiumText(a) || 'Applies')]) : null,
     ]),
+    credits,
     h('p.b-small', d.tier === 'STANDARD' ? 'No NOHM fee. Your pro’s estimate comes to you for approval before any work starts.' : HOLD),
     terms,
     err,

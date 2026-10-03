@@ -111,6 +111,9 @@ body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color
 .b-row:last-child { border-bottom: 0; }
 .b-row.b-total { font-weight: var(--weight-ui-strong); grid-template-columns: 1fr auto; }
 .b-row s { color: #6e6e73; font-weight: var(--weight-body); }
+.b-check { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; padding: 12px 14px; border: 1px solid #d0d1d2; border-radius: 4px; font-size: 15px; line-height: 1.45; color: #393c41; cursor: pointer; }
+.b-check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: #356CA3; flex: none; }
+.b-check small { display: block; margin-top: 2px; font-size: 13px; color: #6e6e73; }
 .b-edit { border: 0; background: none; color: #356ca3; font: var(--weight-ui) 13px/1 var(--font-text); cursor: pointer; padding: 12px 0 12px 12px; margin: -12px 0; }
 .b-inline { border: 0; background: none; padding: 0; color: #356ca3; font-family: var(--font-text); font-weight: var(--weight-ui); font-size: inherit; cursor: pointer; }
 

@@ -224,6 +224,7 @@ async function addHome(page) {
   assert.equal(await page.evaluate(() => window.__stripeKey), 'pk_test_stubFromServer123');
   // No Stripe here (offline); the server says a card exists after a reload, the way it would after confirm-card.
   await fetch(`${BASE}/__reset?card=true`); // keeps the session; resets the world (home is re-added below)
+  await fetch(`${BASE}/__credits?n=15`);
   await page.reload();
   // The photo file can't survive a reload: the page says so and asks for it on the details step, then resumes.
   await page.waitForSelector('#f-description');
@@ -235,6 +236,12 @@ async function addHome(page) {
   await page.waitForSelector('[data-key=confirm]');
   assert.match(await page.textContent('[data-key=confirm]'), /closest pro/);
   assert.match(await page.textContent('.b-card'), /\$40\s*\$20/);
+  // The server says there are 15 spendable credits: the opt-in shows, off; ticking it sends only the opt-in.
+  await page.waitForSelector('#f-credits');
+  assert.equal(await page.isChecked('#f-credits'), false);
+  assert.match(await page.textContent('.b-check'), /You have 15/);
+  await page.check('#f-credits');
+  assert.match(await page.textContent('.b-card'), /\$40\s*\$20/, 'the fee shown is still the server’s');
   await page.click('[data-key=confirm]');
   await page.waitForFunction(() => document.body.textContent.includes('The closest pro gets it first'));
   await snap(page, 'done-express');
@@ -242,9 +249,11 @@ async function addHome(page) {
   const job = calls.find((c) => c.path === '/jobs').body;
   assert.equal(job.isExpress, true);
   assert.equal(job.shownFeeCents, 2000);
+  assert.equal(job.useCreditsForExpressFee, true);
+  assert.ok(calls.some((c) => c.method === 'GET' && c.path === '/nohmcredit/balance'));
   assert.equal(job.scheduledDate, undefined);
   assert.equal(job.title, 'HVAC · No cool air');
-  console.log('✓ Express: ?trade= deep link, card step shown when missing, draft survives reload, shown fee sent');
+  console.log('✓ Express: ?trade= deep link, card step shown when missing, draft survives reload, shown fee sent, NOHM Credits opt-in sent only when ticked');
   await ctx.close();
 }
 
@@ -292,6 +301,10 @@ async function addHome(page) {
   await signUp(page);
   await addHome(page);
   await page.waitForSelector('[data-key=confirm]');
+  // No spendable credits on the server: no offer.
+  for (let i = 0; i < 50 && !(await log()).some((c) => c.path === '/nohmcredit/balance'); i++) await page.waitForTimeout(100);
+  await page.waitForTimeout(200);
+  assert.equal(await page.$('#f-credits'), null, 'no credits, no offer');
 
   // The fee changes under the person: the server refuses, the page reloads the price and says so.
   await fetch(`${BASE}/__express-price?cents=4000`);
@@ -334,6 +347,7 @@ async function addHome(page) {
   calls = await log();
   const last = calls.filter((c) => c.path === '/jobs' && c.method === 'POST').pop().body;
   assert.notEqual(last.idempotencyKey, posts[2].body.idempotencyKey, 'an edit means a new key');
+  assert.ok(calls.filter((c) => c.path === '/jobs' && c.method === 'POST').every((c) => !('useCreditsForExpressFee' in c.body)), 'no opt-in unless ticked');
   assert.match(last.description, /outlet is warm/);
   console.log('✓ Errors: PRICE_CHANGED reloads and retires the key, 409 retries once then stops, Back/Forward, edits get a new key');
   await ctx.close();

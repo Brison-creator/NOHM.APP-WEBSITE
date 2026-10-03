@@ -318,3 +318,16 @@ test('a paid tier is offered only when the server publishes its price', () => {
   assert.deepEqual(offeredTiers(PRICING).map((t) => t.key), ['STANDARD', 'EXPRESS', 'NOW']);
   assert.deepEqual(offeredTiers(null).map((t) => t.key), ['STANDARD', 'EXPRESS', 'NOW']);
 });
+
+test('NOHM Credits: only the Express opt-in is sent, and only when ticked; the server decides the amount', () => {
+  assert.equal(emptyDraft().useCredits, false, 'off unless the person ticks it');
+  const plain = jobBody(readyDraft('EXPRESS'), PRICING);
+  assert.equal('useCreditsForExpressFee' in plain, false);
+  const opted = jobBody({ ...readyDraft('EXPRESS'), useCredits: true }, PRICING);
+  assert.equal(opted.useCreditsForExpressFee, true);
+  assert.equal(opted.shownFeeCents, 2000, 'the shown fee is the server’s, untouched by credits');
+  assert.equal(Object.keys(opted).some((k) => /credit/i.test(k) && k !== 'useCreditsForExpressFee'), false, 'no amount is sent');
+  const standard = jobBody({ ...readyDraft('STANDARD'), useCredits: true }, PRICING);
+  assert.equal('useCreditsForExpressFee' in standard, false, 'never on Standard');
+  assert.equal(restoreDraft(persistableDraft({ ...readyDraft('EXPRESS'), useCredits: true })).useCredits, true, 'the choice survives a reload');
+});

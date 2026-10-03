@@ -206,6 +206,8 @@ function api(method, url, body, req) {
   im = /^\/tenants\/invite\/(\d+)\/accept$/.exec(p);
   if (im) { if (!world.otpSent[im[1]]) return [400, { message: 'Request a code first' }]; if (body.otpCode !== '123456') return [400, { message: 'Invalid or expired code' }]; world.tenant.linked = true; return [201, { success: true, leaseId: 'lease-1', property: { id: 'p-9', address: INVITE.propertyAddress, city: INVITE.propertyCity, state: INVITE.propertyState } }]; }
   if (p === '/tenants/my-property') return [200, world.tenant.linked ? { hasProperty: true, property: { id: 'p-9', hin: '7QW-3HN-2KD', address: INVITE.propertyAddress, city: INVITE.propertyCity, state: INVITE.propertyState, zipCode: '72011' }, lease: { id: 'lease-1', rentAmount: 1250, startDate: '2026-11-01', endDate: null, dueDay: 1 }, landlord: { name: 'Kristi M.', phone: '+15015550100' } } : { hasProperty: false }];
+  // GET /nohmcredit/balance (nohmcredit.service.ts getBalance): whole credits.
+  if (p === '/nohmcredit/balance') return [200, { balance: world.credits || 0, pendingBalance: 0, totalBalance: world.credits || 0 }];
   if (p === '/properties' && method === 'GET') return [200, { properties: world.properties, total: world.properties.length }];
   if (p === '/stripe/customer/payment-method') return [200, world.hasCard ? { hasCard: true, last4: '4242', brand: 'visa' } : { hasCard: false }];
   if (p === '/stripe/customer/setup-intent') return [201, { clientSecret: 'seti_secret', customerId: 'cus_1' }];
@@ -271,10 +273,11 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__credits') { world.credits = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__webconfig') { world.webConfig = url.searchParams.get('mode') || 'ok'; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__stripe-done') { world.stripeDone = true; return json(res, 200, { ok: true }); }
   if (url.pathname.startsWith('/api/v1/')) {

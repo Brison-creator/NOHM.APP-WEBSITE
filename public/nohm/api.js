@@ -72,6 +72,12 @@ export function createApi(http, session) {
       confirmCard: () => http.post('/stripe/customer/confirm-card'),
     },
 
+    // ── NOHM Credits (read-only here) ───────────────────────────
+    credits: {
+      /** { balance (spendable), pendingBalance, totalBalance }, in whole credits. */
+      balance: () => http.get('/nohmcredit/balance'),
+    },
+
     // ── Booking ─────────────────────────────────────────────────
     jobs: {
       cancellationTerms: (q) => http.get(`/jobs/cancellation-terms?${new URLSearchParams(q)}`),

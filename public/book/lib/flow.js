@@ -31,6 +31,7 @@ export function emptyDraft() {
     day: null, // 'YYYY-MM-DD'
     window: null, // WINDOWS key
     propertyId: null,
+    useCredits: false, // Express only: the person opted to put their NOHM Credits toward the fee
     idempotencyKey: null, // set once per draft, reused on retry
   };
 }
@@ -201,6 +202,9 @@ export function jobBody(draft, pricing) {
     if (!fee) throw new Error('Price not loaded');
     body.isExpress = true;
     body.shownFeeCents = fee.current;
+    // Only the opt-in goes: how many credits apply is the server's call
+    // when it holds the fee. Never sent unless the person ticked it.
+    if (draft.useCredits === true) body.useCreditsForExpressFee = true;
   } else {
     body.scheduledDate = scheduledDateIso(draft.day);
     body.scheduledTimeWindow = draft.window;
