@@ -32,7 +32,7 @@ const STUB_STRIPE_KEY = 'pk_test_stubFromServer123';
 const SIGNUP_ROLES = ['HOMEOWNER', 'PROPERTY_MANAGER', 'TENANT', 'CONTRACTOR'];
 const TAKEN_PHONE = '+15125550100';
 const USER = { id: 'u1', firstName: 'Ava', lastName: 'Ng', email: 'ava@example.com', phone: '+15125550123', role: 'HOMEOWNER' };
-const world = { properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {}, webConfig: 'ok', phoneOtp: {} };
+const world = { properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {}, webConfig: 'ok', phoneOtp: {}, proInvites: freshProInvites() };
 function freshPro() {
   return { contractorId: 'C-000042', applicationStatus: 'DRAFT', dispatchEligible: false, shiftStatus: 'OFF_SHIFT', profile: { businessName: 'Not Provided', baseZip: null, serviceRadius: null, attestedAt: null, attestedName: null, stripeComplete: false, videoCompleted: false }, trades: [], documents: [] };
 }
@@ -44,6 +44,14 @@ function proChecklist(p) {
     tradesSelected: p.trades.length > 0, activationFeePaid: false, stripeConnect: p.profile.stripeComplete,
     headshot: Boolean(docs.HEADSHOT), driversLicense: Boolean(docs.DRIVERS_LICENSE), tradeLicense: primary && primary.licenseRequired ? Boolean(docs.TRADE_LICENSE) : null, insurance: Boolean(docs.INSURANCE_PROOF),
     videoCompleted: p.profile.videoCompleted, attestation: Boolean(p.profile.attestedAt) }, tradeLicenseRequired: Boolean(primary && primary.licenseRequired) };
+}
+// Pro invites (contractor-invites.service.ts): codes are cuids, case-sensitive.
+function freshProInvites() {
+  const expiresAt = new Date(Date.now() + 30 * 86400000).toISOString();
+  return {
+    ckinvray0001: { contractorPhone: '+15015550199', contractorName: 'Ray Diaz', invitedByName: 'Kristi M', invitedByUserId: 'u-kristi', status: 'PENDING', expiresAt },
+    ckinvother002: { contractorPhone: '+15015550111', contractorName: 'Sam Lee', invitedByName: 'Kristi M', invitedByUserId: 'u-kristi', status: 'PENDING', expiresAt },
+  };
 }
 // propertyAddress is the home's formattedAddress, city and state included, as the server sends it.
 const INVITE = { inviteCode: '482913', tenantName: 'Ava Ng', propertyAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', propertyCity: 'Bauxite', propertyState: 'AR', landlordName: 'Kristi M.', rentAmount: 1250, leaseStartDate: '2026-11-01', leaseDueDay: 1, leaseEndDate: null };
@@ -128,6 +136,7 @@ const BODIES = {
   'POST /jobs': { required: ['propertyId', 'title', 'description', 'tradeId', 'idempotencyKey'], optional: ['urgency', 'scheduledDate', 'scheduledTimeWindow', 'photos', 'isExpress', 'shownFeeCents', 'useCreditsForExpressFee', 'diagnosticQuestion'] },
   'POST /now/dispatch': { required: ['availabilityId', 'propertyId', 'tradeId', 'issueSummary'], optional: ['shownFeeCents', 'emergencyId'] },
   'POST /contractors/attestation': { required: ['attestedName'] },
+  'POST /contractor-invites/accept': { required: ['inviteCode'] },
 };
 function bodyProblem(method, p, body) {
   const rule = BODIES[`${method} ${p}`] || (method === 'POST' && /^\/properties\/[^/]+\/confirm$/.test(p) ? { required: ['structureType'] } : null);
@@ -219,6 +228,29 @@ function api(method, url, body, req) {
   if (p === '/contractors/submit-review') { const c = proChecklist(world.pro).checklist; const miss = ['publicProfile', 'tradesSelected', 'stripeConnect', 'attestation'].filter((k) => !c[k]); if (miss.length) return [400, { message: `Incomplete steps: ${miss.join(', ')}` }]; world.pro.applicationStatus = 'PENDING_DOC_REVIEW'; return [201, { applicationStatus: 'PENDING_DOC_REVIEW' }]; }
   if (p === '/stripe/connect/create' || p === '/stripe/connect/refresh') { world.stripeAccount = true; return [201, { url: `http://localhost:${PORT}/stripe/return/`, expiresAt: new Date(Date.now() + 300000).toISOString() }]; }
   if (p === '/stripe/connect/status') { if (world.stripeDone) world.pro.profile.stripeComplete = true; return [200, world.stripeAccount ? { hasAccount: true, stripeComplete: world.stripeDone, chargesEnabled: world.stripeDone, payoutsEnabled: world.stripeDone, detailsSubmitted: world.stripeDone } : { hasAccount: false, stripeComplete: false, payoutEnabled: false }]; }
+  // ── Pro invites (contractor-invites.controller.ts; signed in, no role guard) ──
+  if (p === '/contractor-invites/check-phone') {
+    const phone = (world.user || USER).phone;
+    const hit = Object.entries(world.proInvites).find(([, v]) => v.contractorPhone === phone && v.status === 'PENDING');
+    return [200, hit ? { hasInvite: true, inviteCode: hit[0], contractorName: hit[1].contractorName, invitedByName: hit[1].invitedByName } : { hasInvite: false }];
+  }
+  let ci = /^\/contractor-invites\/code\/([^/]+)$/.exec(p);
+  if (ci && method === 'GET') {
+    const inv = world.proInvites[decodeURIComponent(ci[1])];
+    return inv ? [200, { contractorName: inv.contractorName, status: inv.status, expiresAt: inv.expiresAt, invitedByName: inv.invitedByName }] : [404, { message: 'Invite code not found.' }];
+  }
+  if (p === '/contractor-invites/accept' && method === 'POST') {
+    if (typeof body.inviteCode !== 'string' || body.inviteCode.length < 4) return [400, { message: ['inviteCode must be longer than or equal to 4 characters'] }];
+    const inv = world.proInvites[body.inviteCode];
+    if (!inv) return [404, { message: 'Invite code not found.' }];
+    if (inv.status !== 'PENDING') return [400, { message: 'This invite has already been used or expired.' }];
+    if (world.role !== 'CONTRACTOR') return [403, { message: 'Only a pro account can accept a pro invite.' }];
+    if ((world.user || USER).phone !== inv.contractorPhone) return [403, { message: 'This invite was sent to a different phone number.' }];
+    if (world.pro.invitedByUserId) return [400, { message: 'You have already joined NOHM through an invite.' }];
+    inv.status = 'ACCEPTED';
+    world.pro.invitedByUserId = inv.invitedByUserId;
+    return [201, { success: true, invitedByUserId: inv.invitedByUserId }];
+  }
   // ── Renters ──
   if (p === '/tenants/my-invites') return [200, world.tenant.linked ? [] : [INVITE]];
   let im = /^\/tenants\/invite\/(\d+)$/.exec(p);
@@ -295,7 +327,7 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }

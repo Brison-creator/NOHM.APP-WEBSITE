@@ -8,7 +8,8 @@ Branch: `web-booking` (with `/book`). Not merged.
 
 | Step | Screen | Server |
 |---|---|---|
-| Account | Sign up with `role: CONTRACTOR` (first, last, email, mobile, password → text code), or sign in. Same shared screen as `/book`. | `POST /auth/email-signup/send-otp`, `/verify-otp`; sign-in routes; then `GET /auth/me`, `GET /contractors/dashboard` |
+| Account | Sign up with `role: CONTRACTOR` (phone: first, last, mobile, optional email → text code; or email: first, last, email, mobile, password → text code), or sign in. Same shared screen as `/book`. | `POST /auth/phone-signup/send-otp`, `/verify-otp` or `/auth/email-signup/send-otp`, `/verify-otp`; sign-in routes; then `GET /auth/me`, `GET /contractors/dashboard` |
+| Invite code (optional) | Right after sign-up (and from the profile's "Have an invite code?" link): the code is prefilled if the server has an invite for this phone; look it up (who sent it), then accept. Only a pro account at the invited phone can accept; a refusal shows the server's message. Skip moves on. | `GET /contractor-invites/check-phone`, `GET /contractor-invites/code/:code`, `POST /contractor-invites/accept { inviteCode }` |
 | Profile | Name, business name, main trade + optional second (from `GET /trades`), home ZIP, radius 10/20/30, years, license number, service call fee, hourly rate, bio. One save. | `PATCH /contractors/profile` (the full DTO: `firstName, lastName, businessName, baseZip, serviceRadius` always; `primaryTradeId, secondaryTradeId, bio, licenseNumber, yearsExperience, serviceCallFeeRange, hourlyRateRange` when filled) |
 | Documents | Headshot and driver's license (needed before dispatch), trade license when the trade needs one, proof of insurance. Each uploads on pick; replace any time before review; rejected ones say why. Skippable. | `POST /contractors/documents` (multipart `file` + `docType`), `GET /contractors/documents` |
 | Payouts | Opens Stripe Connect in a new tab; this page polls status every 5 s and moves on when Stripe reports complete. | `GET /stripe/connect/status`, `POST /stripe/connect/create` or `/refresh` |
@@ -18,7 +19,7 @@ Branch: `web-booking` (with `/book`). Not merged.
 
 Where a returning pro lands is decided by `proStepFor(dashboard)` in `lib/pro-flow.js` from the server's `applicationStatus` and `checklist`. Nothing about progress is stored on the site; a reload re-asks the server.
 
-Stripe's return page (`/stripe/return`) is the existing static one; it tells the person to go back to the NOHM tab, which has been polling.
+Stripe's return and refresh pages (`/stripe/return`, `/stripe/refresh`) are static and shared with landlords' rent payouts, so they claim nothing about status: back from Stripe, open the NOHM app to see where you are (or go back to the nohm.app tab, which has been polling). They link no app route: the app has no universal link and Android no `nohm://` scheme.
 
 ## Renter: `/join/renter`
 

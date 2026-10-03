@@ -79,3 +79,24 @@ test('renter codes and steps', () => {
   assert.equal(inviteLine({ rentAmount: 1250, leaseDueDay: 1, leaseStartDate: '2026-11-01T00:00:00.000Z' }), '$1,250 on the 1st · from Nov 1, 2026');
   assert.equal(inviteLine({ rentAmount: 900, leaseDueDay: 3 }), '$900 on the 3rd');
 });
+
+test('pro invite code: trimmed, case kept, only the server’s 4-character rule checked here', async () => {
+  const { proInviteCode, proInviteCodeProblem, inviteStatusLine } = await import('../../public/join/lib/pro-flow.js');
+  assert.equal(proInviteCode('  ckInv0001 '), 'ckInv0001');
+  assert.equal(proInviteCodeProblem('abc'), 'The invite code from the text you got.');
+  assert.equal(proInviteCodeProblem(' abcd '), null);
+  assert.equal(proInviteCodeProblem('x'.repeat(65)), 'That doesn’t look like an invite code.');
+  assert.equal(inviteStatusLine('PENDING'), null);
+  assert.match(inviteStatusLine('ACCEPTED'), /already been used/);
+  assert.match(inviteStatusLine('EXPIRED'), /expired/);
+});
+
+test('pro invite endpoints: preview by code, accept with { inviteCode } only', async () => {
+  const { createApi } = await import('../../public/nohm/api.js');
+  const seen = [];
+  const http = { get: async (p) => (seen.push(['GET', p]), {}), post: async (p, b) => (seen.push(['POST', p, b]), {}) };
+  const api = createApi(http, { deviceFields: () => ({}) });
+  await api.contractorInvites.byCode('ck/1 2');
+  await api.contractorInvites.accept('ckinvray0001');
+  assert.deepEqual(seen, [['GET', '/contractor-invites/code/ck%2F1%202'], ['POST', '/contractor-invites/accept', { inviteCode: 'ckinvray0001' }]]);
+});

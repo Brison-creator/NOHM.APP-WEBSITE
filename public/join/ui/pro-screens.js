@@ -3,7 +3,7 @@
 // the person is; these screens show it and send the next thing.
 
 import { h, append, field, button, clear } from '../../nohm/dom.js';
-import { RADII, DOC_TYPES, docTypesFor, profileProblems, profileBody, profileFormFrom, submitBlockers, docsMissing, statusCopy, attestationProblem } from '../lib/pro-flow.js';
+import { RADII, DOC_TYPES, docTypesFor, profileProblems, profileBody, profileFormFrom, submitBlockers, docsMissing, statusCopy, attestationProblem, proInviteCode, proInviteCodeProblem, inviteStatusLine } from '../lib/pro-flow.js';
 import { prettyPhone } from '../../nohm/format.js';
 
 const LOCAL_STUB = /^(localhost|127\.0\.0\.1)$/;
@@ -20,6 +20,71 @@ export function stepsBar(current) {
   const names = [['profile', 'Profile'], ['documents', 'Documents'], ['payouts', 'Payouts'], ['agreement', 'Agreement'], ['review', 'Submit']];
   const idx = names.findIndex(([k]) => k === current);
   return h('ol.b-steps', names.map(([k, label], i) => h('li', { class: i < idx ? 'done' : i === idx ? 'now' : '' }, label)));
+}
+
+// ── Invite code (optional) ────────────────────────────────────────
+// Shown once the pro account exists (right after sign-up, or from the
+// profile's link). Look the code up, then accept it. Whether it works
+// (unused, not expired, sent to this account's phone) is the server's
+// answer; a refusal shows the server's message.
+
+export function inviteScreen(a) {
+  const code = field({ label: 'Invite code', name: 'proInviteCode', autocomplete: 'off', maxlength: 64, hint: 'From the text whoever invited you sent.' });
+  const err = h('p.b-err', { role: 'alert' });
+  const found = h('p.b-line');
+  const preview = h('div.b-preview');
+  const lookup = button('Look up code', { key: 'invite-lookup', submit: true });
+  let shown = null;
+
+  // A pending invite for this account's phone, if the server has one.
+  a.api.contractorInvites.checkPhone().then((r) => {
+    if (!r || !r.hasInvite || !r.inviteCode || code.value) return;
+    code.input.value = r.inviteCode;
+    found.textContent = r.invitedByName ? `${r.invitedByName} invited you. Look it up to accept.` : 'There’s an invite for your number. Look it up to accept.';
+  }).catch(() => { /* optional: type it instead */ });
+
+  // One blue button at a time: once a code is shown, Accept is the main one.
+  const unshow = () => { clear(preview); shown = null; lookup.classList.remove('sec'); };
+  function drawPreview(inv, c) {
+    clear(preview);
+    shown = c;
+    lookup.classList.add('sec');
+    const accept = button('Accept invite', { key: 'invite-accept' });
+    accept.addEventListener('click', async () => {
+      err.textContent = '';
+      accept.busy(true, 'Accepting…');
+      try {
+        await a.api.contractorInvites.accept(shown);
+        a.toast(inv.invitedByName ? `Invite accepted. ${inv.invitedByName} will see you joined.` : 'Invite accepted.');
+        await a.continueOnboarding();
+      } catch (ex) { err.textContent = ex.message; accept.busy(false); }
+    });
+    const status = inviteStatusLine(inv.status);
+    append(preview, [h('div.b-card', [h('b', inv.invitedByName ? `From ${inv.invitedByName}` : 'NOHM invite'), inv.contractorName ? h('p', `For ${inv.contractorName}`) : null, status ? h('p.b-small', status) : null]), accept]);
+  }
+
+  const submit = async (e) => {
+    e && e.preventDefault();
+    err.textContent = '';
+    const p = proInviteCodeProblem(code.value);
+    code.setError(p);
+    if (p) return;
+    const c = proInviteCode(code.value);
+    lookup.busy(true, 'Looking up…');
+    try {
+      drawPreview(await a.api.contractorInvites.byCode(c), c);
+    } catch (ex) { unshow(); err.textContent = ex.message; } finally { lookup.busy(false); }
+  };
+  code.input.addEventListener('input', () => { if (shown && proInviteCode(code.value) !== shown) unshow(); });
+
+  return h('section.b-screen', [
+    head('Have an invite code?', 'If a landlord or homeowner invited you to NOHM, enter their code. Optional: skip it if you don’t have one.'),
+    found,
+    h('form.b-form', { onSubmit: submit, novalidate: true }, [code.el, lookup]),
+    preview,
+    err,
+    h('div.b-foot', [button('Skip', { kind: 'sec', key: 'invite-skip', onClick: () => a.continueOnboarding() })]),
+  ]);
 }
 
 // ── Profile + trades ──────────────────────────────────────────────
@@ -75,6 +140,7 @@ export function profileScreen(a) {
   return h('section.b-screen', [
     stepsBar('profile'),
     head('Your profile', 'What homeowners see when you take their job.'),
+    h('p.b-small', [h('button.b-inline', { type: 'button', dataset: { key: 'have-invite' }, onClick: () => a.go('invite') }, 'Have an invite code?')]),
     h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.businessName.el, f.primaryTradeId.el, f.secondaryTradeId.el, h('div.b-two', [f.baseZip.el, f.yearsExperience.el]), f.serviceRadius.el, f.licenseNumber.el, h('div.b-two', [f.serviceCallFeeRange.el, f.hourlyRateRange.el]), f.bio.el, err, h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, btn])]),
   ]);
 }

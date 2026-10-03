@@ -159,3 +159,32 @@ export function attestationProblem(name) {
   if (n.length > 100) return 'Up to 100 characters.';
   return null;
 }
+
+/**
+ * A pro invite code as typed: trimmed, case kept (the server's codes
+ * are case-sensitive). Whether it's valid, unused and for this phone is
+ * the server's answer (GET /contractor-invites/code/:code, POST
+ * /contractor-invites/accept).
+ */
+export function proInviteCode(code) {
+  return String(code || '').trim();
+}
+
+/** Only the server's own shape rule (AcceptInviteDto: at least 4 characters). */
+export function proInviteCodeProblem(code) {
+  const c = proInviteCode(code);
+  if (c.length < 4) return 'The invite code from the text you got.';
+  if (c.length > 64) return 'That doesn’t look like an invite code.';
+  return null;
+}
+
+/** Plain words for an invite's status from the preview. */
+export function inviteStatusLine(status) {
+  switch (status) {
+    case 'PENDING': return null;
+    case 'ACCEPTED': return 'This invite has already been used.';
+    case 'EXPIRED': return 'This invite has expired.';
+    case 'CANCELLED': return 'This invite was cancelled.';
+    default: return status ? `This invite shows as ${String(status).toLowerCase()}.` : null;
+  }
+}

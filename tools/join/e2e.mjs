@@ -69,6 +69,28 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.goto(`${BASE}/join/${api}`);
   await signUp(page);
 
+  // The optional invite step, once the pro account exists: the server found an invite for this phone.
+  await page.waitForSelector('[data-key=invite-lookup]');
+  await page.waitForFunction(() => document.getElementById('f-proInviteCode').value === 'ckinvray0001');
+  assert.match(await page.textContent('.b-line'), /Kristi M invited you/);
+  await snap(page, 'pro-invite');
+  // Someone else's code: previewed, then refused by the server in its own words.
+  await page.fill('#f-proInviteCode', 'ckinvother002');
+  await page.click('[data-key=invite-lookup]');
+  await page.waitForSelector('[data-key=invite-accept]');
+  assert.match(await page.textContent('.b-preview'), /From Kristi M/);
+  await page.click('[data-key=invite-accept]');
+  await page.waitForFunction(() => /sent to a different phone number/.test(document.querySelector('p.b-err').textContent));
+  // A code that doesn't exist: the server's 404 message.
+  await page.fill('#f-proInviteCode', 'nope1234');
+  await page.click('[data-key=invite-lookup]');
+  await page.waitForFunction(() => /Invite code not found/.test(document.querySelector('p.b-err').textContent));
+  assert.equal(await page.$('[data-key=invite-accept]'), null);
+  await page.fill('#f-proInviteCode', ' ckinvray0001 ');
+  await page.click('[data-key=invite-lookup]');
+  await page.waitForSelector('[data-key=invite-accept]');
+  await page.click('[data-key=invite-accept]');
+
   await page.waitForSelector('#f-businessName');
   await snap(page, 'pro-profile');
   await page.click('[data-key=next]');
@@ -128,6 +150,9 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   assert.deepEqual(prof, { firstName: 'Ray', lastName: 'Diaz', businessName: 'Diaz Plumbing', baseZip: '72011', serviceRadius: 30, primaryTradeId: 't-plumb', licenseNumber: 'MP-4471', yearsExperience: 11, serviceCallFeeRange: '$89' });
   const verify = calls.find((c) => c.path === '/auth/email-signup/verify-otp').body;
   assert.equal(verify.role, 'CONTRACTOR');
+  const inv = calls.map((c) => `${c.method} ${c.path} ${c.status}`).filter((x) => x.includes('/contractor-invites/'));
+  assert.deepEqual(inv, ['GET /contractor-invites/check-phone 200', 'GET /contractor-invites/code/ckinvother002 200', 'POST /contractor-invites/accept 403', 'GET /contractor-invites/code/nope1234 404', 'GET /contractor-invites/code/ckinvray0001 200', 'POST /contractor-invites/accept 201']);
+  assert.deepEqual(calls.filter((c) => c.path === '/contractor-invites/accept').map((c) => c.body), [{ inviteCode: 'ckinvother002' }, { inviteCode: 'ckinvray0001' }], 'only { inviteCode }, trimmed, case kept');
   assert.equal(verify.phone, '+15015550199');
   const docs = calls.filter((c) => c.path === '/contractors/documents' && c.method === 'POST');
   assert.deepEqual(docs.map((d) => d.body._fields.docType), ['HEADSHOT', 'DRIVERS_LICENSE']);
@@ -136,7 +161,27 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   assert.ok(seq.includes('POST /stripe/connect/create'));
   assert.ok(seq.indexOf('POST /contractors/attestation') < seq.indexOf('POST /contractors/submit-review'));
   assert.ok(!seq.includes('POST /contractors/video-complete'), 'no video was shown, so none is marked watched');
-  console.log('✓ Pro: sign-up → profile+trades → documents → Stripe (new tab, polled) → agreement → submit → under review, survives reload');
+  console.log('✓ Pro: sign-up → invite code (server refusal shown, then accepted) → profile+trades → documents → Stripe (new tab, polled) → agreement → submit → under review, survives reload');
+  await ctx.close();
+}
+
+// ── Pro without an invite: skip it; a returning pro can still find it from the profile ──
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(`${BASE}/join/${api}`);
+  await phoneSignUp(page);
+  await page.waitForSelector('[data-key=invite-skip]');
+  await page.click('[data-key=invite-skip]');
+  await page.waitForSelector('#f-businessName');
+  await page.click('[data-key=have-invite]');
+  await page.waitForSelector('[data-key=invite-lookup]');
+  await page.click('[data-key=invite-skip]');
+  await page.waitForSelector('#f-businessName');
+  const calls = await log();
+  assert.ok(!calls.some((c) => c.path === '/contractor-invites/accept'), 'skipping sends nothing');
+  assert.equal(calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body.role, 'CONTRACTOR');
+  console.log('✓ Pro: phone sign-up, invite step skipped, reachable again from the profile');
   await ctx.close();
 }
 

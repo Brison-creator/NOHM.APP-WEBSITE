@@ -2,7 +2,7 @@
 // app uses, then each role's onboarding against the server. Which one
 // runs comes from <body data-join="pro|renter">.
 //
-// Pro: account → profile (with trades) → documents → payouts (Stripe
+// Pro: account → invite code (optional, after sign-up) → profile (with trades) → documents → payouts (Stripe
 // Connect) → agreement → submit → status. The server's dashboard says
 // where a returning pro is; nothing is tracked here.
 // Renter: account → the landlord's invite code → a text code → done.
@@ -91,8 +91,15 @@ const a = {
         return { hasProperty: false };
       });
   },
+  /** On to wherever the server's dashboard says this person is. */
+  async continueOnboarding() {
+    try { await this.refresh(); } catch { /* the next screen's call will say so */ }
+    this.go(firstStep());
+  },
   account: {
     async signedIn(res) {
+      // A brand-new pro account gets the optional invite-code step first.
+      const signedUp = Boolean(a.state.pendingSignup || a.state.pendingPhoneSignup || (a.state.pendingGoogle && a.state.pendingGoogle.phone));
       session.setTokens(res);
       a.state.accountMode = null;
       a.state.pendingSignup = null;
@@ -104,7 +111,7 @@ const a = {
       } catch (ex) {
         a.toast(ex.message || "Signed in, but your details didn't load.");
       }
-      a.go(firstStep());
+      a.go(MODE === 'pro' && signedUp && !a.state.wrongRole ? 'invite' : firstStep());
     },
     async google(idToken) {
       const res = await api.auth.googleSignin(idToken, ROLE);
@@ -158,7 +165,7 @@ function wrongRoleScreen() {
 function render() {
   clear(root);
   const screens = MODE === 'pro'
-    ? { account: (app) => accountScreen(app, { role: ROLE, ...COPY.pro }), profile: pro.profileScreen, documents: pro.documentsScreen, payouts: pro.payoutsScreen, agreement: pro.agreementScreen, review: pro.reviewScreen, status: pro.statusScreen, 'wrong-role': wrongRoleScreen }
+    ? { account: (app) => accountScreen(app, { role: ROLE, ...COPY.pro }), invite: pro.inviteScreen, profile: pro.profileScreen, documents: pro.documentsScreen, payouts: pro.payoutsScreen, agreement: pro.agreementScreen, review: pro.reviewScreen, status: pro.statusScreen, 'wrong-role': wrongRoleScreen }
     : { account: (app) => accountScreen(app, { role: ROLE, ...COPY.renter }), invite: renter.inviteScreen, confirm: renter.confirmScreen, done: renter.doneScreen, 'wrong-role': wrongRoleScreen };
   root.append((screens[a.step] || screens.account)(a));
   root.dataset.step = a.step;
