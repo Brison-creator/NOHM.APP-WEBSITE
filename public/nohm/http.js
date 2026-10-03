@@ -2,9 +2,13 @@
 // every failure into an ApiError with the server's `code`, and on a
 // 401 refreshes once and retries, the way the app's dio_client does.
 //
-// It never sends X-NOHM-Context (the server's CORS list doesn't allow
-// it; without it the server uses the person's primary role, which for
-// a homeowner is right).
+// It never sends X-NOHM-Context: the server's CORS allowedHeaders
+// (backend/src/main.ts) is ['Content-Type', 'Authorization'], so a
+// browser preflight carrying it is refused and every call would fail.
+// Without it the server uses the person's primary role (right for a
+// homeowner; an account with both homeowner and property-manager hats
+// gets the server's default side). Sending it needs one server line:
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-NOHM-Context'],
 
 export class ApiError extends Error {
   constructor(status, body, fallback) {
