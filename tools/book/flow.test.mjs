@@ -144,7 +144,7 @@ test('website slugs map to bookable server trades only', () => {
 test('issues: the app catalog by trade, the generic four otherwise', () => {
   assert.equal(issuesForTrade('plumbing').length, 5);
   assert.equal(issuesForTrade('ROOFING')[0].title, 'Roof leak');
-  assert.equal(issuesForTrade('LOCKSMITH'), ISSUES_FALLBACK);
+  assert.equal(issuesForTrade('CHIMNEY_SWEEP'), ISSUES_FALLBACK);
   assert.equal(jobTitle('HVAC', 'No heat'), 'HVAC · No heat');
 });
 

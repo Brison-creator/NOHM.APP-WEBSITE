@@ -18,14 +18,38 @@ const TRADE_ICON = {
   ELECTRICAL: 'M13 2L5 13.5h6L10 22l8-11.5h-6L13 2z',
   APPLIANCE: 'M4 2.5h16v19H4zM12 9a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z',
   ROOFING: 'M3 11l9-7 9 7M5 10v10h14V10',
+  // The rest are the /services card icons, as one path each.
+  LOCKSMITH: 'M8 10.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2',
+  PRESSURE_WASHING: 'M3 10h9l3-3h3v6h-3l-3-3M18 10h3M7 10v4a2 2 0 0 0 2 2h1M19 14l2 3M17 15l1 4M21 12l2 1',
+  HANDYMAN: 'M14.5 5.5l4 4-9.5 9.5-4-4zM13 4l2-2 7 7-2 2M5 15l-2.5 2.5 4 4L9 19',
+  LANDSCAPING: 'M5 20c0-8.5 5-14 15-15-.5 9.5-6.5 14.5-15 15zM5 20l8-8M2 21h20',
+  GUTTERS: 'M2 9l10-6 10 6M3 12h18v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 14zM17.5 15.5V21',
+  GARAGE_DOOR: 'M3 21V9l9-6 9 6v12M6.5 21v-9h11v9M6.5 15h11M6.5 18h11',
+  PEST_CONTROL: 'M12 8a4.5 6 0 1 0 0 12 4.5 6 0 0 0 0-12zM12 8v12M9.5 4.5L10.8 8M14.5 4.5L13.2 8M7.5 12H4M7.5 16.5l-3 2M16.5 12H20M16.5 16.5l3 2',
+  PAINTING: 'M4.5 3h12A1.5 1.5 0 0 1 18 4.5v3A1.5 1.5 0 0 1 16.5 9h-12A1.5 1.5 0 0 1 3 7.5v-3A1.5 1.5 0 0 1 4.5 3zM18 6h3v6h-9v3M11.5 15h1a1 1 0 0 1 1 1v4.5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V16a1 1 0 0 1 1-1z',
+  FLOORING: 'M4.5 3h15A1.5 1.5 0 0 1 21 4.5v15a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19.5v-15A1.5 1.5 0 0 1 4.5 3zM3 9h18M3 15h18M9 3v6M15 9v6M8 15v6',
+  HOUSE_CLEANING: 'M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8zM18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z',
+  TREE_SERVICE: 'M12 2l6 8h-3l4 6H5l4-6H6zM12 16v6',
 };
 
+// The same words as the /services cards.
 const BLURB = {
   PLUMBING: 'Leaks, clogs, water heaters',
   HVAC: 'No heat, no AC',
   ELECTRICAL: 'Outages, outlets, breakers',
   APPLIANCE: 'Washers, dryers, fridges',
   ROOFING: 'Leaks, shingles, gutters',
+  LOCKSMITH: 'Locked out, rekeys',
+  PRESSURE_WASHING: 'Driveways, siding, decks',
+  HANDYMAN: 'Small fixes, drywall patches',
+  LANDSCAPING: 'Mowing, beds, yard cleanups',
+  GUTTERS: 'Cleaning, repairs, guards',
+  GARAGE_DOOR: 'Stuck doors, springs, openers',
+  PEST_CONTROL: 'Ants, roaches, rodents',
+  PAINTING: 'Interior, exterior, touch-ups',
+  FLOORING: 'Installs, repairs, refinishing',
+  HOUSE_CLEANING: 'Regular, deep, move-out',
+  TREE_SERVICE: 'Trimming, removal, storm cleanup',
 };
 
 // ── 1. Service ────────────────────────────────────────────────────
@@ -44,7 +68,7 @@ export function serviceScreen(a) {
   function drawGrid() {
     clear(grid);
     for (const t of trades) {
-      grid.append(h('button.b-tile', { type: 'button', onClick: () => pickTrade(t), dataset: { trade: t.name } }, [svg(TRADE_ICON[t.name] || TRADE_ICON.PLUMBING), h('b', t.label), h('span', BLURB[t.name] || t.description || '')]));
+      grid.append(h('button.b-tile', { type: 'button', onClick: () => pickTrade(t), dataset: { trade: t.name } }, [svg(TRADE_ICON[t.name] || TRADE_ICON.HANDYMAN), h('b', t.label), h('span', BLURB[t.name] || t.description || '')]));
     }
   }
 
