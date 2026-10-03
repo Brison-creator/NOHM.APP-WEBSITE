@@ -8,6 +8,7 @@ export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
 import { mountCardForm } from './card.js';
+import { CARD_UNAVAILABLE } from '../../nohm/web-config.js';
 
 const TRADE_ICON = {
   PLUMBING: 'M12 3c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 9 7 12 3z',
@@ -347,8 +348,15 @@ export function cardScreen(a) {
   let form = null;
   let gone = false;
   a.onLeave(() => { gone = true; if (form) form.destroy(); });
-  mountCardForm({ host, publishableKey: a.config.stripePublishableKey, api: a.api, name: a.state.user ? `${a.state.user.firstName || ''} ${a.state.user.lastName || ''}`.trim() : undefined })
+  // The key is the server's (GET /config/web); without it there is no card form.
+  a.webConfig()
+    .then((cfg) => {
+      if (!cfg.stripePublishableKey) throw new Error(CARD_UNAVAILABLE);
+      if (gone) return null;
+      return mountCardForm({ host, publishableKey: cfg.stripePublishableKey, api: a.api, name: a.state.user ? `${a.state.user.firstName || ''} ${a.state.user.lastName || ''}`.trim() : undefined });
+    })
     .then((f) => {
+      if (!f) return;
       if (gone) return f.destroy();
       form = f;
       f.onChange(({ complete, error }) => { btn.disabled = !complete; err.textContent = error || ''; });

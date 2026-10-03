@@ -1,13 +1,14 @@
 // The account step shared by /book, /join and /join/renter: sign up
 // (email, phone, password → text code), sign in (password, with the
 // new-browser code; or a phone code), optional Google. The host app
-// passes `a` with: api, config, state, run(), account.signedIn(res),
+// passes `a` with: api, config, webConfig(), state, run(), account.signedIn(res),
 // account.google(idToken), canGoBack(), back(), and `role` + `copy`.
 
 import { h, append, field, button, clear } from './dom.js';
 import { signupProblems, signupBody } from './signup.js';
 import { prettyPhone, toE164US } from './format.js';
 import { mountGoogleButton } from './google.js';
+import { GOOGLE_UNAVAILABLE } from './web-config.js';
 
 /**
  * Under every phone field where a number is given for texts: the same
@@ -42,11 +43,18 @@ export function accountScreen(a, opts = {}) {
     ]);
   }
 
+  // The client id is the server's (GET /config/web). Without it, or if
+  // Google's script won't load, the row says so instead of a button.
   function googleRow() {
-    if (!a.config.googleClientId) return null;
     const host = h('div.b-google');
-    const row = h('div', [host, h('p.b-or', 'or')]);
-    mountGoogleButton({ host, clientId: a.config.googleClientId, onToken: (idToken) => a.run(() => a.account.google(idToken), err) }).catch(() => (row.hidden = true));
+    const row = h('div.b-googlerow', [host, h('p.b-or', 'or')]);
+    const off = () => { clear(row); row.append(h('p.b-small.b-google-off', GOOGLE_UNAVAILABLE)); };
+    a.webConfig()
+      .then((cfg) => {
+        if (!cfg.googleClientId) return off();
+        return mountGoogleButton({ host, clientId: cfg.googleClientId, onToken: (idToken) => a.run(() => a.account.google(idToken), err) });
+      })
+      .catch(off);
     return row;
   }
 

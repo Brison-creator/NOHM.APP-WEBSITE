@@ -10,6 +10,7 @@
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
+import { createWebConfig } from '../nohm/web-config.js';
 import { h, clear } from '../nohm/dom.js';
 import { accountScreen } from '../nohm/account.js';
 import { proStepFor } from './lib/pro-flow.js';
@@ -37,6 +38,7 @@ const a = {
   config,
   api,
   session,
+  webConfig: createWebConfig(api),
   state: { user: null, trades: [], dashboard: null, myProperty: null, invite: null },
   step: 'account',
   history: [],

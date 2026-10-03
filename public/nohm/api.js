@@ -21,6 +21,8 @@ export function createApi(http, session) {
     // ── Catalog (public) ────────────────────────────────────────
     trades: () => http.get('/trades', { auth: false }),
     pricing: () => http.get('/config/pricing', { auth: false }),
+    /** { stripePublishableKey, googleClientId }: the server's public settings for the site. */
+    webConfig: () => http.get('/config/web', { auth: false }),
 
     // ── Account ─────────────────────────────────────────────────
     auth: {

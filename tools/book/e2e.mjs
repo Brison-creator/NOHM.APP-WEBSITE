@@ -39,8 +39,16 @@ async function snap(page, name) {
   if (shots) await page.screenshot({ path: path.join(shots, `${String(++n).padStart(2, '0')}-${name}.png`), fullPage: true });
 }
 
+const FAKE_STRIPE = `window.Stripe = function (key) {
+  window.__stripeKey = key;
+  return { elements: function () { return { create: function () { return { mount: function (el) { el.dataset.stripeMounted = '1'; }, on: function () {}, destroy: function () {} }; } }; } };
+};`;
+
 async function fresh() {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  // A stand-in Stripe.js that records the key the page hands it, so the
+  // run never loads the real one and can check where the key came from.
+  await ctx.route('https://js.stripe.com/v3/', (route) => route.fulfill({ contentType: 'text/javascript', body: FAKE_STRIPE }));
   const page = await ctx.newPage();
   page.on('pageerror', (e) => { throw new Error(`page error: ${e.message}`); });
   // A browser-side error fails the run; the browser's own log line for an expected 4xx response does not.
@@ -184,6 +192,9 @@ async function addHome(page) {
   await page.waitForSelector('.b-cardhost');
   await snap(page, 'card');
   assert.match(await page.textContent('.b-sub'), /\$20 fee is held/);
+  // The card form gets the key the server published (GET /config/web), not one kept in the site.
+  await page.waitForSelector('.b-cardhost[data-stripe-mounted]');
+  assert.equal(await page.evaluate(() => window.__stripeKey), 'pk_test_stubFromServer123');
   // No Stripe here (offline); the server says a card exists after a reload, the way it would after confirm-card.
   await fetch(`${BASE}/__reset?card=true`); // keeps the session; resets the world (home is re-added below)
   await page.reload();
@@ -326,6 +337,32 @@ async function addHome(page) {
   await page.click('.b-foot .b-btn.sec');
   await page.waitForSelector('[data-key=confirm]');
   console.log('✓ NOW: a short note is sent back to details with the reason; the live list has a way back');
+  await ctx.close();
+}
+
+// ── Run 6: the server's web settings don't load: card entry and Google say so ──
+for (const mode of ['fail', 'empty']) {
+  await reset('?card=false');
+  await fetch(`${BASE}/__webconfig?mode=${mode}`);
+  const { ctx, page } = await fresh();
+  await page.goto(`${PAGE}&trade=hvac`);
+  await page.waitForSelector('.b-choice');
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'Upstairs unit runs but blows warm air.');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=EXPRESS]');
+  await page.waitForSelector('.b-google-off');
+  assert.match(await page.textContent('.b-google-off'), /Google isn’t available/);
+  await page.click('.b-tab:nth-child(2)');
+  await page.fill('#f-email', 'ava@example.com');
+  await page.fill('#f-password', 'password1');
+  await page.click('[data-key=signin]');
+  await addHome(page);
+  await page.waitForSelector('.b-cardhost');
+  await page.waitForFunction(() => /Card entry isn’t available/.test(document.querySelector('.b-err').textContent));
+  assert.equal(await page.evaluate(() => window.__stripeKey), undefined, 'no card form without the server’s key');
+  assert.equal(await page.$eval('[data-key=savecard]', (b) => b.disabled), true);
+  console.log(`✓ /config/web ${mode}: no card form and no Google button, each with a clear message`);
   await ctx.close();
 }
 

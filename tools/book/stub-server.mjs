@@ -27,8 +27,10 @@ let PRICING = {
   EXPRESS_PRIORITY_FEE: { key: 'EXPRESS_PRIORITY_FEE', baseAmountCents: 4000, currentAmountCents: 2000, hasLiveDiscount: true, savingsCents: 2000, promoLabel: 'Launch pricing' },
   NOHM_NOW_FEE: { key: 'NOHM_NOW_FEE', baseAmountCents: 6000, currentAmountCents: 3000, hasLiveDiscount: true, savingsCents: 3000, promoLabel: 'Launch pricing' },
 };
+// A made-up test key: the page must use whatever the server publishes.
+const STUB_STRIPE_KEY = 'pk_test_stubFromServer123';
 const USER = { id: 'u1', firstName: 'Ava', lastName: 'Ng', email: 'ava@example.com', phone: '+15125550123', role: 'HOMEOWNER' };
-const world = { properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {} };
+const world = { properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {}, webConfig: 'ok' };
 function freshPro() {
   return { contractorId: 'C-000042', applicationStatus: 'DRAFT', dispatchEligible: false, shiftStatus: 'OFF_SHIFT', profile: { businessName: 'Not Provided', baseZip: null, serviceRadius: null, attestedAt: null, attestedName: null, stripeComplete: false, videoCompleted: false }, trades: [], documents: [] };
 }
@@ -99,6 +101,12 @@ function api(method, url, body, req) {
   const needAuth = () => (auth === 'Bearer acc-1' ? null : json);
   if (p === '/trades' && method === 'GET') return [200, TRADES];
   if (p === '/config/pricing' && method === 'GET') return [200, PRICING];
+  // GET /config/web (app-version/web-config.controller.ts): public; null for a value the server doesn't have.
+  if (p === '/config/web' && method === 'GET') {
+    if (world.webConfig === 'fail') return [503, { message: 'Service Unavailable' }];
+    if (world.webConfig === 'empty') return [200, { stripePublishableKey: null, googleClientId: null }];
+    return [200, { stripePublishableKey: STUB_STRIPE_KEY, googleClientId: null }];
+  }
   if (p === '/auth/check-exists') return [200, { exists: body.email === 'taken@example.com' }];
   if (p === '/auth/email-signup/send-otp') return body.email === 'taken@example.com' ? [409, { message: 'Email already registered' }] : [200, { message: 'OTP sent' }];
   if (p === '/auth/email-signup/verify-otp') { if (body.code !== '123456') return [400, { message: 'Invalid or expired code' }]; world.role = body.role || 'HOMEOWNER'; world.user = { ...USER, firstName: body.firstName, lastName: body.lastName, email: body.email, phone: body.phone, role: world.role }; return [201, { accessToken: 'acc-1', refreshToken: 'ref-1', user: world.user }]; }
@@ -203,9 +211,10 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__webconfig') { world.webConfig = url.searchParams.get('mode') || 'ok'; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__stripe-done') { world.stripeDone = true; return json(res, 200, { ok: true }); }
   if (url.pathname.startsWith('/api/v1/')) {
     const body = await readBody(req);

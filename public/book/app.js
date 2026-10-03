@@ -9,6 +9,7 @@
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
+import { createWebConfig } from '../nohm/web-config.js';
 import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction } from './lib/flow.js';
 import { randomId } from '../nohm/format.js';
 import { h, clear } from '../nohm/dom.js';
@@ -32,6 +33,8 @@ const a = {
   config,
   api,
   session,
+  /** The server's public settings (Stripe key, Google client), asked once when a screen needs them. */
+  webConfig: createWebConfig(api),
   draft: emptyDraft(),
   state: { trades: [], pricing: null, user: null, properties: null, property: null, hasCard: false, card: null, job: null, wrongRole: false },
   step: 'service',

@@ -30,7 +30,7 @@ The draft (everything but the photo files) lives in `sessionStorage`, so a sign-
 public/book/
   index.html        the page (bar, progress line, #book, footer)
   book.css          the flow's styles: site palette, app shapes
-  config.js         apiBase, Stripe publishable key, Google client id, store links
+  config.js         apiBase and store links (the Stripe key and Google client come from GET /config/web)
   app.js            state + navigation + submit; the only file that knows every piece
   lib/flow.js       the rules: step order, what each step needs, the exact server bodies, error routing
   lib/issues.js     the app's issue catalog, verbatim
@@ -44,7 +44,8 @@ public/nohm/        shared with /join
   dom.js            h(), field(), button(): no innerHTML anywhere
   signup.js         the sign-up form's rules and body, by role
   account.js        the account screen (sign up, sign in, Google), by role
-  google.js         Google Identity Services, loaded only if configured
+  google.js         Google Identity Services, loaded only if the server publishes a client id
+  web-config.js     GET /config/web: the Stripe publishable key and Google client id; off (with a message) when missing
 tools/book/
   flow.test.mjs     node --test: rules, bodies, error routing, session, http (15 tests)
   stub-server.mjs   serves public/ + a stand-in API with the real response shapes; logs every request
@@ -57,7 +58,7 @@ Also changed: `customHttp.yml` (Amplify headers: `X-Frame-Options: DENY` and `fr
 ## Security boundaries
 
 - **The server decides everything.** The page sends only the fields the DTOs accept (the server's `forbidNonWhitelisted` would 400 anything else); `lib/flow.js` builds the bodies and tests pin them.
-- **No secrets on the site.** The Stripe key is the publishable one (the app ships the same). Card numbers go to Stripe, never to NOHM. The server's secret key is the only thing that can charge.
+- **No secrets on the site.** The Stripe key is the publishable one, read from the server (`GET /config/web`), never stored in the site. Card numbers go to Stripe, never to NOHM. The server's secret key is the only thing that can charge.
 - **`?api=` works on localhost only** (`app.js`): on nohm.app a link can't point the page at someone else's server.
 - **Nothing is innerHTML.** `ui/dom.js` builds elements; text the person or the server supplies is always a text node.
 - **Public routes send no token** (`auth: false`), so a stale token can't 401 the catalog.
@@ -67,7 +68,7 @@ Also changed: `customHttp.yml` (Amplify headers: `X-Frame-Options: DENY` and `fr
 ## Owner actions before it works on nohm.app
 
 1. **CORS.** Set the server's `CORS_ORIGIN` to include `https://nohm.app,https://www.nohm.app` (it's a comma-separated env var; the code falls back to localhost only). No code change needed. The page never sends `X-NOHM-Context`, which CORS doesn't allow.
-2. **Google (optional).** Put the web OAuth client id in `public/book/config.js` `googleClientId` and add `https://nohm.app` to that client's authorized JavaScript origins. The server verifies against `GOOGLE_CLIENT_ID`, which must be that same web client (the app already passes it as `serverClientId`). Leave it empty and the button doesn't show.
+2. **Stripe and Google come from the server.** The page reads `GET /config/web` (`{ stripePublishableKey, googleClientId }`, from the server's `STRIPE_PUBLISHABLE_KEY` and `GOOGLE_CLIENT_ID`). If the call fails or a value is empty, the card step says card entry isn't available and the account step says Google isn't available; there is no fallback key in the site. For Google, add `https://nohm.app` to that client's authorized JavaScript origins.
 3. **Apple sign-in** isn't on the web flow. It needs an Apple Services ID, a return URL and a server callback for the web; email and Google cover sign-up until then.
 4. Run the full flow once against the real server before linking the page from the homepage hero. The site uses the live Stripe key, so a test card is refused: use a real account and card (the owner's), book a Standard job for a later day, then cancel it in the app inside the free window. It creates a real job and real texts, so it's the owner's run, not an automated one.
 
