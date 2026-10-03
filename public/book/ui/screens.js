@@ -3,7 +3,7 @@
 // what the server and lib/flow.js say; they decide nothing themselves.
 
 import { h, append, field, button, money, clear } from '../../nohm/dom.js';
-import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, pickerTrades, referralProblem, referralMailto, stepProblem, lateAfternoonPremium, cancellationTermsQuery } from '../lib/flow.js';
+import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, pickerTrades, referralProblem, referralMailto, stepProblem, lateAfternoonPremium, cancellationTermsQuery, REQUEST_WHEN, REQUEST_LIMITS } from '../lib/flow.js';
 export { accountScreen } from '../../nohm/account.js';
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone, scheduledDateIso } from '../../nohm/format.js';
@@ -81,17 +81,15 @@ export function serviceScreen(a) {
   const q = h('input.b-search', { type: 'search', placeholder: 'What needs fixing? "no hot water", "AC not cooling"…', autocomplete: 'off', 'aria-label': 'What needs fixing' });
 
   const pickTrade = (t, issue) => {
-    a.setDraft({ trade: { id: t.id, name: t.name, label: t.label }, issue: issue || null });
+    a.setDraft({ kind: 'job', trade: { id: t.id, name: t.name, label: t.label }, issue: issue || null });
     a.go(issue ? 'details' : 'issue');
   };
 
-  // A trade the server doesn't book online yet: say so and point to
-  // the same "tell us what you need" email as the services page.
+  // A trade the server doesn't book online yet: a request. A person at
+  // NOHM lines up the pro; the page says so instead of pretending.
   const askFor = (t) => {
-    clear(ask);
-    ask.hidden = false;
-    ask.append(h('b', `${t.label} isn’t bookable online yet.`), ' ', h('a', { href: `mailto:admin@nohm.app?subject=${encodeURIComponent(`Service request: ${t.label}`)}` }, 'Tell us what you need'), ' and we’ll line up a local pro.');
-    ask.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    a.setDraft({ kind: 'request', trade: { id: t.id || null, name: t.name, label: t.label }, issue: null });
+    a.go('request');
   };
   const choose = (t, issue) => (t.bookable ? pickTrade(t, issue) : askFor(t));
 
@@ -186,6 +184,65 @@ function referralBlock(a) {
     h('h2.b-h2', 'Know a great contractor?'),
     h('p.b-sub', 'Someone who’d be a good fit for NOHM? Tell us who, and we’ll reach out.'),
     form,
+  ]);
+}
+
+// ── 1b. Request (a trade NOHM doesn't dispatch online yet) ────────
+
+export function requestScreen(a) {
+  const t = a.draft.trade;
+  const text = field({ label: 'What do you need done?', type: 'textarea', name: 'request', value: a.draft.requestText, placeholder: 'What, where, and anything the pro should know. A sentence or two is plenty.', maxlength: REQUEST_LIMITS.max });
+  text.input.addEventListener('input', () => a.setDraft({ requestText: text.input.value }));
+  const when = h('div.b-list');
+  const drawWhen = () => {
+    clear(when);
+    for (const [key, label] of Object.entries(REQUEST_WHEN)) {
+      when.append(h('button.b-choice', { type: 'button', class: a.draft.requestWhen === key ? 'on' : '', dataset: { when: key }, onClick: () => { a.setDraft({ requestWhen: key }); drawWhen(); } }, [h('span', [h('b', label)]), h('span.b-chev', '›')]));
+    }
+  };
+  drawWhen();
+  return h('section.b-screen', [
+    head(`${t.label}`, 'Tell us what you need. A person at NOHM lines up a local pro and texts you their name and a time.'),
+    h('div.b-card.blue', [h('b', 'How this one works'), h('p', `${t.label} isn’t booked online yet. We find the pro by hand, so there’s no instant match and no charge until a pro has agreed and you’ve said yes.`)]),
+    text.el,
+    h('h2.b-h2', 'When do you need it?'),
+    when,
+    footer(a, () => a.next()),
+  ]);
+}
+
+export function requestReviewScreen(a) {
+  const d = a.draft;
+  const err = h('p.b-err', { role: 'alert' });
+  const send = button('Send request', { key: 'send', onClick: () => a.submitRequest(send, err) });
+  const prop = a.state.property;
+  return h('section.b-screen', [
+    head('Ready to send?', 'We’ll find the pro and text you.'),
+    h('div.b-card', [
+      h('b', `${d.trade.label} · ${REQUEST_WHEN[d.requestWhen] || ''}`),
+      h('p', d.requestText),
+      prop ? h('p.b-small', prop.formattedAddress) : null,
+      a.state.user && a.state.user.phone ? h('p.b-small', `We’ll text ${prettyPhone(a.state.user.phone)}.`) : null,
+    ]),
+    h('p.b-small', 'No card needed now. Nothing is charged until a pro has agreed to a time and you’ve approved the price.'),
+    err,
+    footer(a, null),
+    h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, send]),
+  ]);
+}
+
+export function requestDoneScreen(a) {
+  const d = a.draft;
+  const r = a.state.request || {};
+  const again = r.duplicate;
+  return h('section.b-screen', [
+    head(again ? 'We already have this one.' : 'We’ve got it.', r.id ? `Request ${String(r.id).slice(-6).toUpperCase()}` : ''),
+    h('div.b-card', [h('b', `${d.trade.label} · ${REQUEST_WHEN[d.requestWhen] || ''}`), h('p', d.requestText), a.state.property ? h('p.b-small', a.state.property.formattedAddress) : null]),
+    h('p.b-line', again
+      ? `Your earlier ${d.trade.label.toLowerCase()} request is still open. We’ll text you as soon as we have a pro; no need to send another.`
+      : `A real person at NOHM is lining up a local ${d.trade.label.toLowerCase()} pro now. We’ll text you their name and a time, usually within a few hours. Nothing is charged until you’ve said yes.`),
+    h('div.b-card.blue', [h('b', 'Everything else lives in the app.'), h('p', 'Chat with your pro, this home’s record, and every repair in one place.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM')]),
+    h('p.b-small', [h('button.b-inline', { type: 'button', onClick: () => a.restart() }, 'Book something else')]),
   ]);
 }
 

@@ -71,6 +71,10 @@ export function createApi(http, session) {
     },
 
     // ── Booking ─────────────────────────────────────────────────
+    serviceRequests: {
+      create: (body) => http.post('/service-requests', body),
+      mine: () => http.get('/service-requests'),
+    },
     jobs: {
       cancellationTerms: (q) => http.get(`/jobs/cancellation-terms?${new URLSearchParams(q)}`),
       create: (body) => http.post('/jobs', body),

@@ -5,7 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, pickerTrades, SITE_TRADES, referralProblem, referralMailto, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers } from '../../public/book/lib/flow.js';
+import { STEPS, REQUEST_STEPS, REQUEST_WHEN, serviceRequestBody, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, pickerTrades, SITE_TRADES, referralProblem, referralMailto, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers } from '../../public/book/lib/flow.js';
 import { signupProblems, signupBody } from '../../public/nohm/signup.js';
 import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib/issues.js';
 import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/nohm/format.js';
@@ -342,4 +342,64 @@ test('a contractor referral needs a name and a way to reach them, then becomes a
   assert.ok(url.startsWith('mailto:admin@nohm.app?subject='));
   const body = decodeURIComponent(url.split('&body=')[1]);
   assert.equal(body, 'Contractor: Joe Diaz\nPhone: (501) 555-1234\nEmail: —\nReferred by: Ann Lee');
+});
+
+// ── By-request trades: a request, not a booking ───────────────────
+
+function requestDraft() {
+  const d = emptyDraft();
+  d.kind = 'request';
+  d.trade = { id: null, name: 'LOCKSMITH', label: 'Locksmith' };
+  d.requestText = 'Locked out of the back door; the deadbolt is stuck.';
+  d.requestWhen = 'ASAP';
+  return d;
+}
+
+test('a request walks service → request → account → home → review → done, skipping what is already true', () => {
+  const d = requestDraft();
+  assert.deepEqual(REQUEST_STEPS, ['service', 'request', 'account', 'home', 'request-review', 'request-done']);
+  assert.equal(nextStep('service', d, { signedIn: false, hasCard: false }), 'request');
+  assert.equal(nextStep('request', d, { signedIn: false, hasCard: false }), 'account');
+  assert.equal(nextStep('request', d, { signedIn: true, hasCard: false }), 'home');
+  d.propertyId = 'p1';
+  assert.equal(nextStep('request', d, { signedIn: true, hasCard: true }), 'request-review');
+  assert.equal(nextStep('request-review', d, { signedIn: true, hasCard: true }), 'request-done');
+  // Back from the review reopens the home step (its Edit), as the job flow does.
+  assert.equal(prevStep('request-review', d, { signedIn: true, hasCard: true }), 'home');
+  assert.equal(prevStep('home', d, { signedIn: true, hasCard: true }), 'request');
+  assert.equal(prevStep('request', d, {}), 'service');
+  // A job draft is untouched by the request steps.
+  assert.equal(nextStep('service', readyDraft(), { signedIn: true, hasCard: true }), 'issue');
+});
+
+test('a request needs a sentence and a time; nothing about speed, schedule or a card', () => {
+  const d = requestDraft();
+  assert.equal(stepProblem('request', d), null);
+  d.requestText = 'help';
+  assert.match(stepProblem('request', d), /sentence/);
+  d.requestText = 'x'.repeat(2001);
+  assert.match(stepProblem('request', d), /under 2000/);
+  d.requestText = 'Gutters overflow at the back corner.';
+  d.requestWhen = 'NEVER';
+  assert.match(stepProblem('request', d), /when/);
+  d.requestWhen = 'THIS_WEEK';
+  assert.equal(stepProblem('request', d), null);
+  assert.deepEqual(Object.keys(REQUEST_WHEN), ['ASAP', 'THIS_WEEK', 'FLEXIBLE']);
+});
+
+test('the request body carries the trade code, the words, when, the home, and where it came from', () => {
+  const d = requestDraft();
+  assert.throws(() => serviceRequestBody(d), /Add the home/);
+  d.propertyId = 'p1';
+  assert.deepEqual(serviceRequestBody(d), { trade: 'LOCKSMITH', tradeLabel: 'Locksmith', description: 'Locked out of the back door; the deadbolt is stuck.', preferredWhen: 'ASAP', propertyId: 'p1', source: 'WEB' });
+  assert.throws(() => serviceRequestBody(readyDraft()), /Not a request/);
+});
+
+test('a saved request draft comes back as a request', () => {
+  const d = requestDraft();
+  const back = restoreDraft(JSON.parse(JSON.stringify(persistableDraft(d))));
+  assert.equal(back.kind, 'request');
+  assert.equal(back.requestText, d.requestText);
+  assert.equal(back.requestWhen, 'ASAP');
+  assert.equal(emptyDraft().kind, 'job');
 });

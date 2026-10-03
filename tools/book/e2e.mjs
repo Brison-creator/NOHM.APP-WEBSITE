@@ -329,5 +329,56 @@ async function addHome(page) {
   await ctx.close();
 }
 
+// ── Run 5: a by-request trade, brand new person ───────────────────
+// Locksmith isn't booked online: the page takes a request, signs the
+// person up, takes the home, and sends it to the people at NOHM. No
+// card, no speed, no schedule, and the words say a person finds the pro.
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(PAGE);
+  await page.waitForSelector('[data-ask=LOCKSMITH]');
+  await page.click('[data-ask=LOCKSMITH]');
+  await page.waitForSelector('#f-request');
+  await snap(page, 'request');
+  assert.match(await page.textContent('body'), /isn’t booked online yet/);
+  await page.fill('#f-request', 'Locked out of the back door; the deadbolt is stuck.');
+  await page.click('[data-when=ASAP]');
+  await page.click('[data-key=next]');
+  await signUp(page);
+  await addHome(page);
+  await page.waitForSelector('[data-key=send]');
+  await snap(page, 'request-review');
+  const review = await page.textContent('.b-card');
+  assert.match(review, /Locksmith · As soon as possible/);
+  assert.match(review, /deadbolt is stuck/);
+  assert.ok(!(await page.textContent('body')).includes('4242'), 'no card on a request');
+  await page.click('[data-key=send]');
+  await page.waitForFunction(() => document.body.textContent.includes('We’ve got it.'));
+  await snap(page, 'request-done');
+  assert.match(await page.textContent('body'), /A real person at NOHM is lining up a local locksmith pro/);
+  const calls = await log();
+  const sent = calls.find((c) => c.method === 'POST' && c.path === '/service-requests');
+  assert.ok(sent, 'the request reached the server');
+  assert.deepEqual(sent.body, { trade: 'LOCKSMITH', tradeLabel: 'Locksmith', description: 'Locked out of the back door; the deadbolt is stuck.', preferredWhen: 'ASAP', propertyId: 'p-1', source: 'WEB' });
+  assert.ok(!calls.some((c) => c.path === '/jobs' && c.method === 'POST'), 'no job was booked');
+  // The account load reads whether a card is on file; nothing is set up or charged.
+  assert.ok(!calls.some((c) => c.method === 'POST' && /stripe/.test(c.path)), 'no card set-up or charge on a request');
+  // Sending the same need again is answered, not duplicated.
+  await page.click('.b-inline');
+  await page.waitForSelector('[data-ask=LOCKSMITH]');
+  await page.click('[data-ask=LOCKSMITH]');
+  await page.fill('#f-request', 'Still locked out, same door as before.');
+  await page.click('[data-when=ASAP]');
+  await page.click('[data-key=next]');
+  // Signed in already: straight to the home step, which lists the home from before.
+  await page.waitForSelector('[data-property=p-1]');
+  await page.click('[data-property=p-1]');
+  await page.waitForSelector('[data-key=send]');
+  await page.click('[data-key=send]');
+  await page.waitForFunction(() => document.body.textContent.includes('We already have this one.'));
+  await ctx.close();
+}
+
 await browser.close();
 console.log('all e2e runs passed');

@@ -28,7 +28,7 @@ let PRICING = {
   NOHM_NOW_FEE: { key: 'NOHM_NOW_FEE', baseAmountCents: 6000, currentAmountCents: 3000, hasLiveDiscount: true, savingsCents: 3000, promoLabel: 'Launch pricing' },
 };
 const USER = { id: 'u1', firstName: 'Ava', lastName: 'Ng', email: 'ava@example.com', phone: '+15125550123', role: 'HOMEOWNER' };
-const world = { properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {} };
+const world = { requests: [], properties: [], jobs: {}, hasCard: process.env.STUB_HAS_CARD !== 'false', seq: 1041, offers: {}, role: 'HOMEOWNER', pro: freshPro(), stripeDone: false, tenant: { linked: false }, otpSent: {} };
 function freshPro() {
   return { contractorId: 'C-000042', applicationStatus: 'DRAFT', dispatchEligible: false, shiftStatus: 'OFF_SHIFT', profile: { businessName: 'Not Provided', baseZip: null, serviceRadius: null, attestedAt: null, attestedName: null, stripeComplete: false, videoCompleted: false }, trades: [], documents: [] };
 }
@@ -165,6 +165,15 @@ function api(method, url, body, req) {
   if (p === '/properties/p-1/confirm') { const prop = { id: 'p-1', hin: '4K7-M2Q-9XC', structureStatus: 'CONFIRMED_SINGLE', formattedAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', city: 'Bauxite', state: 'AR', zipCode: '72011' }; world.properties = [prop]; return [201, prop]; }
   if (p === '/jobs/cancellation-terms' && url.searchParams.has('scheduledDate') && !LOCAL_MIDNIGHT.test(url.searchParams.get('scheduledDate'))) return [400, { message: 'scheduledDate must be local midnight with its offset' }];
   if (p === '/jobs/cancellation-terms') return [200, { tier: 'SCHEDULED', version: 1, feeCents: 7500, disclosure: 'Free to cancel up to 24 hours before your arrival window. After that, a $75 service call fee applies. Always free if your pro misses the window.' }];
+  if (p === '/service-requests' && method === 'POST') {
+    if (!/^[A-Z][A-Z0-9_]{1,40}$/.test(body.trade || '') || !body.tradeLabel || !(body.description || '').trim() || body.description.length < 10) return [400, { message: 'Bad request' }];
+    const open = world.requests.find((r) => r.trade === body.trade && ['NEW', 'CONTACTED', 'MATCHED'].includes(r.status));
+    if (open) return [409, { code: 'OPEN_REQUEST_EXISTS', message: `You already have an open ${body.tradeLabel} request.`, requestId: open.id }];
+    const r = { id: `sr-${++world.seq}`, status: 'NEW', createdAt: new Date().toISOString(), ...body };
+    world.requests.push(r);
+    return [201, r];
+  }
+  if (p === '/service-requests' && method === 'GET') return [200, world.requests];
   if (p === '/jobs' && method === 'POST') {
     if (!world.hasCard) return [400, { code: 'PAYMENT_METHOD_REQUIRED', message: 'Add a card to book.', action: 'ADD_CARD' }];
     if (world.conflicts > 0) { world.conflicts--; return [409, { message: 'This request was already used. Try again.' }]; }
@@ -203,7 +212,7 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.requests = []; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__stripe-done') { world.stripeDone = true; return json(res, 200, { ok: true }); }

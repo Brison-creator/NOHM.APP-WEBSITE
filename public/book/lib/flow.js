@@ -13,6 +13,16 @@ import { scheduledDateIso, windowByKey, bookableDays, windowOpenOn } from '../..
 /** The steps in order. "schedule" is Standard-only; "account" and "card" are skipped when already done. */
 export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'account', 'home', 'card', 'review', 'done'];
 
+/**
+ * A "by request" service (a trade NOHM doesn't dispatch online yet): the
+ * person says what they need and when; a person at NOHM lines up a local
+ * pro and texts them. No card, no speed, no schedule: nothing is promised
+ * until a real pro has agreed to a time.
+ */
+export const REQUEST_STEPS = ['service', 'request', 'account', 'home', 'request-review', 'request-done'];
+export const REQUEST_WHEN = { ASAP: 'As soon as possible', THIS_WEEK: 'This week', FLEXIBLE: 'I’m flexible' };
+export const REQUEST_LIMITS = { min: 10, max: 2000 };
+
 export const TIERS = {
   STANDARD: { key: 'STANDARD', name: 'Standard', line: 'A pro in a day or two.', feeKey: null },
   EXPRESS: { key: 'EXPRESS', name: 'NOHM Express', line: 'Same day. Goes straight to the closest pro.', feeKey: 'EXPRESS_PRIORITY_FEE' },
@@ -32,6 +42,9 @@ export function emptyDraft() {
     window: null, // WINDOWS key
     propertyId: null,
     idempotencyKey: null, // set once per draft, reused on retry
+    kind: 'job', // 'job' (booked online) or 'request' (a person at NOHM finds the pro)
+    requestText: '',
+    requestWhen: null, // REQUEST_WHEN key
   };
 }
 
@@ -138,6 +151,13 @@ export function stepProblem(step, draft, now = new Date()) {
   switch (step) {
     case 'service':
       return draft.trade ? null : 'Pick a service.';
+    case 'request': {
+      const text = (draft.requestText || '').trim();
+      if (text.length < REQUEST_LIMITS.min) return 'A sentence or two so we can find the right pro.';
+      if (text.length > REQUEST_LIMITS.max) return `Keep it under ${REQUEST_LIMITS.max} characters.`;
+      if (!REQUEST_WHEN[draft.requestWhen]) return 'Pick when you need it.';
+      return null;
+    }
     case 'issue':
       return draft.issue ? null : "Pick what's going on.";
     case 'details': {
@@ -170,23 +190,25 @@ export function stepProblem(step, draft, now = new Date()) {
  * NOW skip the schedule.
  */
 export function nextStep(step, draft, ctx) {
-  const i = STEPS.indexOf(step);
-  for (let j = i + 1; j < STEPS.length; j++) {
-    const s = STEPS[j];
+  const steps = draft.kind === 'request' ? REQUEST_STEPS : STEPS;
+  const i = steps.indexOf(step);
+  for (let j = i + 1; j < steps.length; j++) {
+    const s = steps[j];
     if (s === 'schedule' && draft.tier !== 'STANDARD') continue;
     if (s === 'account' && ctx.signedIn) continue;
     if (s === 'home' && draft.propertyId) continue; // already chosen; Review's Edit reopens it
     if (s === 'card' && ctx.hasCard) continue;
     return s;
   }
-  return 'done';
+  return steps[steps.length - 1];
 }
 
 export function prevStep(step, draft, ctx) {
   if (step === 'now') return 'review';
-  const i = STEPS.indexOf(step);
+  const steps = draft.kind === 'request' ? REQUEST_STEPS : STEPS;
+  const i = steps.indexOf(step);
   for (let j = i - 1; j >= 0; j--) {
-    const s = STEPS[j];
+    const s = steps[j];
     if (s === 'schedule' && draft.tier !== 'STANDARD') continue;
     if (s === 'account' && ctx.signedIn) continue;
     if (s === 'card' && ctx.hasCard) continue;
@@ -317,4 +339,21 @@ export function bookingErrorAction(err, call = 'job') {
   if (code === 'PRO_UNAVAILABLE' || code === 'PRO_JUST_BOOKED') return { kind: 'pick_again', message: err.message };
   if (err && err.status === 409) return { kind: 'retry_same_key' };
   return { kind: 'show', message: (err && err.message) || 'Something went wrong. Try again.' };
+}
+
+/** The body for POST /service-requests: what the person needs, when, and which home. */
+export function serviceRequestBody(draft) {
+  if (draft.kind !== 'request') throw new Error('Not a request');
+  for (const s of ['service', 'request', 'home']) {
+    const p = stepProblem(s, draft);
+    if (p) throw new Error(p);
+  }
+  return {
+    trade: draft.trade.name,
+    tradeLabel: draft.trade.label,
+    description: draft.requestText.trim(),
+    preferredWhen: draft.requestWhen,
+    propertyId: draft.propertyId,
+    source: 'WEB',
+  };
 }

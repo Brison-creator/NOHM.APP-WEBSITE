@@ -9,7 +9,7 @@
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
-import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction } from './lib/flow.js';
+import { STEPS, REQUEST_STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, serviceRequestBody, bookingErrorAction } from './lib/flow.js';
 import { randomId } from '../nohm/format.js';
 import { h, clear } from '../nohm/dom.js';
 import * as screens from './ui/screens.js';
@@ -26,14 +26,14 @@ const apiBase = apiBaseFor(location.hostname, location.search, config.apiBase);
 const http = createHttp({ baseUrl: apiBase, session });
 const api = createApi(http, session);
 
-const PROGRESS = { service: 1, issue: 1, details: 2, speed: 3, schedule: 3, account: 4, home: 4, card: 5, review: 6, now: 6, done: 7 };
+const PROGRESS = { service: 1, issue: 1, details: 2, speed: 3, schedule: 3, account: 4, home: 4, card: 5, review: 6, now: 6, done: 7, request: 2, 'request-review': 6, 'request-done': 7 };
 
 const a = {
   config,
   api,
   session,
   draft: emptyDraft(),
-  state: { trades: [], pricing: null, user: null, properties: null, property: null, hasCard: false, card: null, job: null, wrongRole: false },
+  state: { trades: [], pricing: null, user: null, properties: null, property: null, hasCard: false, card: null, job: null, request: null, wrongRole: false },
   step: 'service',
   leave: [],
   /** A one-line notice for the next screen (a price change, a pro that was just taken). */
@@ -80,6 +80,7 @@ const a = {
     this.draft = emptyDraft();
     session.clearDraft();
     this.state.job = null;
+    this.state.request = null;
     this.go('service');
   },
   toast(msg) {
@@ -152,6 +153,27 @@ const a = {
       await this.afterJob(job);
     } catch (ex) {
       await this.handleBookingError(ex, errEl, attempt < 1 ? () => this.submit(btn, errEl, attempt + 1) : null);
+    } finally {
+      btn.busy(false);
+    }
+  },
+  /** A "by request" trade: send it to the people at NOHM, no card, no match. */
+  async submitRequest(btn, errEl) {
+    errEl.textContent = '';
+    btn.busy(true, 'Sending…');
+    try {
+      const r = await api.serviceRequests.create(serviceRequestBody(this.draft));
+      this.state.request = r;
+      session.clearDraft();
+      this.go('request-done');
+    } catch (ex) {
+      if (ex && ex.status === 409 && ex.code === 'OPEN_REQUEST_EXISTS') {
+        this.state.request = { id: ex.body && ex.body.requestId, duplicate: true };
+        session.clearDraft();
+        this.go('request-done');
+        return;
+      }
+      await this.handleBookingError(ex, errEl, null, 'request');
     } finally {
       btn.busy(false);
     }
@@ -265,6 +287,7 @@ function render() {
     account: (app) => screens.accountScreen(app, { role: 'HOMEOWNER', signupSub: 'Takes a minute. Your request is saved while you do.', signinSub: 'Your request is saved. Sign in to send it.' }),
     home: screens.homeScreen, card: screens.cardScreen,
     review: screens.reviewScreen, now: screens.nowScreen, done: screens.doneScreen, 'wrong-role': wrongRoleScreen,
+    request: screens.requestScreen, 'request-review': screens.requestReviewScreen, 'request-done': screens.requestDoneScreen,
   }[a.step] || screens.serviceScreen;
   root.append(fn(a));
   if (a.notice) {
@@ -283,7 +306,7 @@ function render() {
   }
   // One history entry per step so the browser's Back works; the done
   // screen replaces its entry, since there is nothing to go back to.
-  if (a.step === 'done') history.replaceState({ step: 'done' }, '', '#done');
+  if (a.step === 'done' || a.step === 'request-done') history.replaceState({ step: a.step }, '', `#${a.step}`);
   else if (!history.state || history.state.step !== a.step) history.pushState({ step: a.step }, '', `#${a.step}`);
 }
 
@@ -291,8 +314,8 @@ function render() {
 // draft can still show; never back into a sent job.
 window.addEventListener('popstate', (e) => {
   const target = e.state && e.state.step;
-  if (a.step === 'done' || !target || target === 'done' || target === a.step) return;
-  const known = [...STEPS, 'now', 'wrong-role'];
+  if (a.step === 'done' || a.step === 'request-done' || !target || target === 'done' || target === 'request-done' || target === a.step) return;
+  const known = [...STEPS, ...REQUEST_STEPS, 'now', 'wrong-role'];
   if (!known.includes(target)) return;
   a.leave.splice(0).forEach((fn) => fn());
   a.step = target;
