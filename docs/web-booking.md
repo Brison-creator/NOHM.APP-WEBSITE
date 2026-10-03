@@ -42,7 +42,7 @@ public/book/
   ui/card.js        Stripe.js, loaded only on the card step
 public/nohm/        shared with /join
   api.js            every endpoint by name, no logic
-  http.js           bearer, one refresh on 401 then retry, ApiError{status, code, body}
+  http.js           bearer; one refresh then retry only on a 401 SESSION_EXPIRED (or a 401 with no code); ACCOUNT_* signs out with the server's message; ApiError{status, code, body}
   session.js        tokens, device id, named drafts (storage injected)
   format.js         phone → E.164, money, windows, local ISO dates, ids
   dom.js            h(), field(), button(): no innerHTML anywhere
@@ -70,6 +70,7 @@ Also changed: `customHttp.yml` (Amplify headers: `X-Frame-Options: DENY` and `fr
 - **Nothing is innerHTML.** `ui/dom.js` builds elements; text the person or the server supplies is always a text node.
 - **Public routes send no token** (`auth: false`), so a stale token can't 401 the catalog.
 - **Idempotency**: one key per draft, kept across retries, so a double tap or a 409 never makes two jobs.
+- **401s**: only `SESSION_EXPIRED` (or a 401 without a code, from an older server) refreshes the token and resends; any other 401, such as a wrong text code, is the answer and is never sent twice (a resend would spend another of the code's attempts). A code starting `ACCOUNT_` (paused, blocked, deleted), on the 401 or on a 403 from `/auth/refresh`, signs the browser out and shows the server's message on a "You've been signed out" screen.
 - **Server errors route like the app**: `PAYMENT_METHOD_REQUIRED` → card step, `PRICE_CHANGED` → reload pricing and ask again, `DUPLICATE_TRADE_REQUEST` → show the open job, `PRO_UNAVAILABLE`/`PRO_JUST_BOOKED` → pick again, 401 → sign in.
 
 ## Owner actions before it works on nohm.app

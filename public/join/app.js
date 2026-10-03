@@ -12,7 +12,7 @@ import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
 import { createWebConfig } from '../nohm/web-config.js';
 import { h, clear } from '../nohm/dom.js';
-import { accountScreen, clearPending, signingUp } from '../nohm/account.js';
+import { accountScreen, clearPending, signingUp, accountStoppedScreen } from '../nohm/account.js';
 import { proStepFor } from './lib/pro-flow.js';
 import { renterStepFor } from './lib/renter-flow.js';
 import * as pro from './ui/pro-screens.js';
@@ -26,7 +26,7 @@ const toastEl = document.getElementById('join-toast');
 
 const apiBase = apiBaseFor(location.hostname, location.search, config.apiBase);
 const session = createSession(window.localStorage, { deviceName: navigator.userAgent.slice(0, 80) });
-const http = createHttp({ baseUrl: apiBase, session });
+const http = createHttp({ baseUrl: apiBase, session, onAccountStop: (err) => a.accountStopped(err) });
 const api = createApi(http, session);
 
 const COPY = {
@@ -87,7 +87,7 @@ const a = {
     if (MODE === 'pro') this.state.dashboard = await api.contractors.dashboard();
     else
       this.state.myProperty = await api.tenants.myProperty().catch((ex) => {
-        if (ex && ex.status === 403) throw ex;
+        if (ex && ex.status === 403 && !ex.accountStop) throw ex;
         return { hasProperty: false };
       });
   },
@@ -120,6 +120,12 @@ const a = {
       await a.account.signedIn(res);
     },
   },
+  /** Signed out by the server because of the account: its message until acknowledged. */
+  accountStopped(err) {
+    clearPending(this.state);
+    this.state = { user: null, trades: this.state.trades, dashboard: null, myProperty: null, invite: null, stopMessage: err.message };
+    render();
+  },
   async signOut() {
     try { await api.auth.logout(); } catch { /* fine */ }
     session.clear();
@@ -137,7 +143,7 @@ async function loadAccount() {
   try {
     await a.refresh();
   } catch (ex) {
-    if (ex && ex.status === 403) a.state.wrongRole = true;
+    if (ex && ex.status === 403 && !ex.accountStop) a.state.wrongRole = true;
     else throw ex;
   }
 }
@@ -160,6 +166,12 @@ function wrongRoleScreen() {
 
 function render() {
   clear(root);
+  if (a.state.stopMessage) {
+    a.leave.splice(0).forEach((fn) => fn());
+    root.append(accountStoppedScreen(a.state.stopMessage, { label: 'Sign in', onOk: () => { a.state.stopMessage = null; a.go('account'); } }));
+    root.dataset.step = 'signed-out';
+    return;
+  }
   const screens = MODE === 'pro'
     ? { account: (app) => accountScreen(app, { role: ROLE, ...COPY.pro }), invite: pro.inviteScreen, profile: pro.profileScreen, documents: pro.documentsScreen, payouts: pro.payoutsScreen, agreement: pro.agreementScreen, review: pro.reviewScreen, status: pro.statusScreen, 'wrong-role': wrongRoleScreen }
     : { account: (app) => accountScreen(app, { role: ROLE, ...COPY.renter }), invite: renter.inviteScreen, confirm: renter.confirmScreen, done: renter.doneScreen, 'wrong-role': wrongRoleScreen };

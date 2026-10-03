@@ -29,6 +29,11 @@ let PRICING = {
 };
 // A made-up test key: the page must use whatever the server publishes.
 const STUB_STRIPE_KEY = 'pk_test_stubFromServer123';
+const ACCOUNT_MESSAGES = {
+  ACCOUNT_PAUSED: 'Your NOHM account is paused. Email support@nohm.app to turn it back on.',
+  ACCOUNT_BLOCKED: 'This NOHM account has been blocked. Email support@nohm.app if you think that’s a mistake.',
+  ACCOUNT_DELETED: 'This NOHM account was deleted.',
+};
 const SIGNUP_ROLES = ['HOMEOWNER', 'PROPERTY_MANAGER', 'TENANT', 'CONTRACTOR'];
 const TAKEN_PHONE = '+15125550100';
 const USER = { id: 'u1', firstName: 'Ava', lastName: 'Ng', email: 'ava@example.com', phone: '+15125550123', role: 'HOMEOWNER' };
@@ -186,9 +191,16 @@ function api(method, url, body, req) {
     return [200, { accessToken: 'acc-1', refreshToken: 'ref-1', user: world.user }];
   }
   if (p === '/auth/login/email-password') return body.password === 'password1' ? [200, { status: 'authenticated', accessToken: 'acc-1', refreshToken: 'ref-1', user: USER }] : [401, { message: 'Invalid credentials' }];
-  if (p === '/auth/refresh') return body.refreshToken === 'ref-1' ? [200, { accessToken: 'acc-1', refreshToken: 'ref-1' }] : [401, { message: 'bad refresh' }];
+  // The accounts batch's codes: a paused/blocked/deleted account is refused at refresh with 403 ACCOUNT_*.
+  if (p === '/auth/refresh') {
+    if (world.accountStop && world.accountStop.at === 'refresh') return [403, { code: world.accountStop.code, message: ACCOUNT_MESSAGES[world.accountStop.code] }];
+    return body.refreshToken === 'ref-1' ? [200, { accessToken: 'acc-1', refreshToken: 'ref-1' }] : [401, { code: 'SESSION_EXPIRED', message: 'Your session has ended. Please sign in again.' }];
+  }
   if (p === '/auth/logout') return [200, { success: true }];
-  if (auth !== 'Bearer acc-1') return [401, { message: 'Unauthorized' }];
+  if (auth !== 'Bearer acc-1') return [401, { code: 'SESSION_EXPIRED', message: 'Unauthorized' }];
+  // A token that just expired (/__expire-once), or an account stopped on every signed-in call.
+  if (world.accountStop && world.accountStop.at === 'request') return [401, { code: world.accountStop.code, message: ACCOUNT_MESSAGES[world.accountStop.code] }];
+  if (world.expireOnce) { world.expireOnce = false; return [401, { code: 'SESSION_EXPIRED', message: 'Your session has ended. Please sign in again.' }]; }
   // The server's role guards (RolesGuard on the account's caps).
   const guard = [
     [/^\/contractors\//, ['CONTRACTOR']],
@@ -258,7 +270,7 @@ function api(method, url, body, req) {
   im = /^\/tenants\/invite\/(\d+)\/send-otp$/.exec(p);
   if (im) { if (im[1] !== INVITE.inviteCode) return [404, { message: 'Invite not found' }]; world.otpSent[im[1]] = true; return [201, { success: true, expiresIn: 300 }]; }
   im = /^\/tenants\/invite\/(\d+)\/accept$/.exec(p);
-  if (im) { if (!world.otpSent[im[1]]) return [400, { message: 'Request a code first' }]; if (body.otpCode !== '123456') return [400, { message: 'Invalid or expired code' }]; world.tenant.linked = true; return [201, { success: true, leaseId: 'lease-1', property: { id: 'p-9', address: INVITE.propertyAddress, city: INVITE.propertyCity, state: INVITE.propertyState } }]; }
+  if (im) { if (!world.otpSent[im[1]]) return [400, { message: 'Request a code first' }]; if (body.otpCode !== '123456') return [401, { code: 'INVALID_CODE', message: 'Invalid code. 4 attempts remaining' }]; world.tenant.linked = true; return [201, { success: true, leaseId: 'lease-1', property: { id: 'p-9', address: INVITE.propertyAddress, city: INVITE.propertyCity, state: INVITE.propertyState } }]; }
   if (p === '/tenants/my-property') return [200, world.tenant.linked ? { hasProperty: true, property: { id: 'p-9', hin: '7QW-3HN-2KD', address: INVITE.propertyAddress, city: INVITE.propertyCity, state: INVITE.propertyState, zipCode: '72011' }, lease: { id: 'lease-1', rentAmount: 1250, startDate: '2026-11-01', endDate: null, dueDay: 1 }, landlord: { name: 'Kristi M.', phone: '+15015550100' } } : { hasProperty: false }];
   // GET /nohmcredit/balance (nohmcredit.service.ts getBalance): whole credits.
   if (p === '/nohmcredit/balance') return [200, { balance: world.credits || 0, pendingBalance: 0, totalBalance: world.credits || 0 }];
@@ -327,10 +339,12 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__expire-once') { world.expireOnce = true; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__account-stop') { world.accountStop = { code: url.searchParams.get('code'), at: url.searchParams.get('at') || 'request' }; if (url.searchParams.get('expire')) world.expireOnce = true; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__role') { world.role = url.searchParams.get('r') || 'HOMEOWNER'; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__credits') { world.credits = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__webconfig') { world.webConfig = url.searchParams.get('mode') || 'ok'; return json(res, 200, { ok: true }); }

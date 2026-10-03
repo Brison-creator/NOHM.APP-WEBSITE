@@ -10,6 +10,7 @@ import { signupProblems, signupBody, phoneSignupProblems, phoneSignupStart, phon
 import { prettyPhone, toE164US } from './format.js';
 import { mountGoogleButton } from './google.js';
 import { GOOGLE_UNAVAILABLE } from './web-config.js';
+import { isAccountStop } from './http.js';
 
 /**
  * Under every phone field where a number is given for texts: the same
@@ -34,6 +35,18 @@ export function clearPending(state) {
 /** Whether a sign-up (not a sign-in) is what's being finished. */
 export function signingUp(state) {
   return Boolean(state.pendingSignup || state.pendingPhoneSignup || (state.pendingGoogle && state.pendingGoogle.phone));
+}
+
+/**
+ * The screen after the server signed this browser out because of the
+ * account itself (paused, blocked, deleted): its message, and one way on.
+ */
+export function accountStoppedScreen(message, { label, onOk }) {
+  return h('section.b-screen', [
+    head('You’ve been signed out.', message),
+    h('div.b-foot', [button(label, { key: 'stopped-ok', onClick: onOk })]),
+    h('p.b-small', ['Questions: ', h('a', { href: 'mailto:support@nohm.app' }, 'support@nohm.app'), '.']),
+  ]);
 }
 
 /** The Terms / Privacy / SMS line under every sign-up form. */
@@ -196,7 +209,8 @@ export function accountScreen(a, opts = {}) {
         }
         await a.account.signedIn(res);
       } catch (ex) {
-        err.textContent = ex.status === 401 || ex.status === 400 ? 'That email and password don’t match.' : ex.message;
+        // A paused or blocked account gets the server's words, not "don't match".
+        err.textContent = (ex.status === 401 || ex.status === 400) && !isAccountStop(ex.body) ? 'That email and password don’t match.' : ex.message;
       } finally {
         btn.busy(false);
       }

@@ -7,7 +7,7 @@
 // (shrunk, one per request), and the server's web settings missing.
 //
 // The runs live in tools/book/e2e/ (booking.mjs: runs 1–5, extras.mjs:
-// runs 6–8, lib.mjs: the shared browser and steps); they run in that order.
+// runs 6–9, lib.mjs: the shared browser and steps); they run in that order.
 
 // One after the other: sibling modules with top-level await would run
 // at the same time against the one stub.

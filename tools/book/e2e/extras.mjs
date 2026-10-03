@@ -1,5 +1,7 @@
-// /book runs 6–8: photos (shrunk, one per request, past 5 counted),
-// the server's web settings missing, and phone sign-up.
+// /book runs 6–9: photos (shrunk, one per request, past 5 counted),
+// the server's web settings missing, phone sign-up, and the server's
+// 401 codes (refresh only when the session expired; a stopped account
+// is signed out with the server's message).
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -177,5 +179,74 @@ for (const mode of ['fail', 'empty']) {
   await page.waitForSelector('#f-phone');
   await consentUnderEveryPhone(page, 'text-code sign-in');
   console.log('✓ Phone sign-up: name + phone → code → account (server’s DTO exactly, taken phone shows the server’s message); SMS consent under every phone field');
+  await ctx.close();
+}
+
+// ── Run 9: the server's 401 codes ──
+{
+  // SESSION_EXPIRED: one refresh, then the same call again, and the flow carries on.
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(`${PAGE}&trade=plumbing`);
+  await page.waitForSelector('.b-choice');
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'Drip under the bathroom sink, slow but steady.');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=EXPRESS]');
+  await page.waitForSelector('.b-tab');
+  await page.click('.b-tab:nth-child(2)');
+  await page.fill('#f-email', 'ava@example.com');
+  await page.fill('#f-password', 'password1');
+  await page.click('[data-key=signin]');
+  await page.waitForSelector('#f-address');
+  await fetch(`${BASE}/__expire-once`);
+  await addHome(page);
+  await page.waitForSelector('[data-key=confirm]');
+  let calls = await log();
+  const around = calls.map((c) => `${c.method} ${c.path.split('?')[0]} ${c.status}`).filter((x) => /autocomplete|refresh/.test(x));
+  assert.deepEqual(around.slice(0, 3), ['GET /places/autocomplete 401', 'POST /auth/refresh 200', 'GET /places/autocomplete 200']);
+
+  // ACCOUNT_BLOCKED on the 401 itself, on send: signed out with the server's words, sent once, no refresh.
+  await fetch(`${BASE}/__account-stop?code=ACCOUNT_BLOCKED&at=request`);
+  const before = (await log()).length;
+  await page.click('[data-key=confirm]');
+  await page.waitForSelector('[data-key=stopped-ok]');
+  await snap(page, 'account-blocked');
+  assert.match(await page.textContent('.b-h1'), /You’ve been signed out/);
+  assert.match(await page.textContent('.b-sub'), /has been blocked\. Email support@nohm\.app/);
+  calls = (await log()).slice(before);
+  assert.equal(calls.filter((c) => c.path === '/jobs' && c.method === 'POST').length, 1, 'the job was sent once');
+  assert.ok(!calls.some((c) => c.path === '/auth/refresh'), 'no refresh for a stopped account');
+  assert.equal(await page.evaluate(() => localStorage.getItem('nohm.book.tokens')), null, 'the browser is signed out');
+  await page.click('[data-key=stopped-ok]');
+  await page.waitForSelector('[data-trade=PLUMBING]');
+  console.log('✓ 401 codes: SESSION_EXPIRED refreshes once and retries; ACCOUNT_BLOCKED on send signs out with the server’s message, sent once');
+  await ctx.close();
+}
+{
+  // ACCOUNT_PAUSED as a 403 from the refresh, on a reload: the message, not a silent sign-out.
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(PAGE);
+  await page.waitForSelector('[data-trade=PLUMBING]');
+  await page.click('[data-trade=PLUMBING]');
+  await page.click('.b-choice');
+  await page.fill('#f-description', 'Garbage disposal hums but doesn’t spin.');
+  await page.click('[data-key=next]');
+  await page.click('[data-tier=EXPRESS]');
+  await page.waitForSelector('.b-tab');
+  await page.click('.b-tab:nth-child(2)');
+  await page.fill('#f-email', 'ava@example.com');
+  await page.fill('#f-password', 'password1');
+  await page.click('[data-key=signin]');
+  await page.waitForSelector('#f-address');
+  await fetch(`${BASE}/__account-stop?code=ACCOUNT_PAUSED&at=refresh&expire=1`);
+  await page.reload();
+  await page.waitForSelector('[data-key=stopped-ok]');
+  assert.match(await page.textContent('.b-sub'), /account is paused/);
+  const calls = await log();
+  assert.ok(calls.some((c) => c.path === '/auth/refresh' && c.status === 403));
+  assert.equal(await page.evaluate(() => localStorage.getItem('nohm.book.tokens')), null);
+  console.log('✓ 401 codes: ACCOUNT_PAUSED from the refresh signs out with the server’s message');
   await ctx.close();
 }

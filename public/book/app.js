@@ -16,7 +16,7 @@ import { randomId } from '../nohm/format.js';
 import { uploadEach } from './lib/photos.js';
 import { h, clear } from '../nohm/dom.js';
 import * as screens from './ui/screens.js';
-import { clearPending } from '../nohm/account.js';
+import { clearPending, accountStoppedScreen } from '../nohm/account.js';
 
 const config = window.NOHM_BOOK;
 const root = document.getElementById('book');
@@ -27,7 +27,7 @@ const toastEl = document.getElementById('book-toast');
 // next visitor's), the sign-in in localStorage.
 const session = createSession(window.localStorage, { deviceName: navigator.userAgent.slice(0, 80), draftStore: window.sessionStorage });
 const apiBase = apiBaseFor(location.hostname, location.search, config.apiBase);
-const http = createHttp({ baseUrl: apiBase, session });
+const http = createHttp({ baseUrl: apiBase, session, onAccountStop: (err) => a.accountStopped(err) });
 const api = createApi(http, session);
 
 const PROGRESS = { service: 1, issue: 1, details: 2, speed: 3, schedule: 3, account: 4, home: 4, card: 5, review: 6, now: 6, done: 7 };
@@ -134,6 +134,17 @@ const a = {
       await a.account.signedIn(res);
     },
   },
+  /**
+   * The server signed this browser out because of the account (paused,
+   * blocked, deleted). The session is already cleared; drop what the
+   * page holds and show the server's message until it's acknowledged.
+   */
+  accountStopped(err) {
+    clearPending(this.state);
+    Object.assign(this.state, { user: null, properties: null, property: null, hasCard: false, card: null, wrongRole: false, stopMessage: err.message });
+    this.draft = emptyDraft();
+    render();
+  },
   async signOut() {
     try { await api.auth.logout(); } catch { /* the token may already be dead */ }
     // The request in progress goes with the account: the next person on
@@ -185,6 +196,8 @@ const a = {
   async handleBookingError(ex, errEl, retry, call = 'job') {
     const action = bookingErrorAction(ex, call);
     switch (action.kind) {
+      case 'stopped':
+        return; // accountStopped() has the screen
       case 'sign_in':
         session.clear();
         this.state.user = null;
@@ -229,7 +242,7 @@ async function loadAccount() {
   a.state.wrongRole = false;
   const [props, pm] = await Promise.all([
     api.properties.list().catch((ex) => {
-      if (ex && ex.status === 403) a.state.wrongRole = true;
+      if (ex && ex.status === 403 && !ex.accountStop) a.state.wrongRole = true;
       return { properties: [] };
     }),
     api.stripe.paymentMethod().catch(() => ({ hasCard: false })),
@@ -259,6 +272,11 @@ function render() {
   // poll), including a re-render of the same step.
   a.leave.splice(0).forEach((fn) => fn());
   clear(root);
+  if (a.state.stopMessage) {
+    root.append(accountStoppedScreen(a.state.stopMessage, { label: 'OK', onOk: () => { a.state.stopMessage = null; a.go('service'); } }));
+    root.dataset.step = 'signed-out';
+    return;
+  }
   const fn = {
     service: screens.serviceScreen, issue: screens.issueScreen, details: screens.detailsScreen, speed: screens.speedScreen,
     schedule: screens.scheduleScreen,

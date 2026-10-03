@@ -240,6 +240,8 @@ export function nowDispatchBody(draft, availabilityId, pricing) {
  */
 export function bookingErrorAction(err, call = 'job') {
   const code = err && err.code;
+  // Already signed out by the http client, with the server's message on screen.
+  if (err && err.accountStop) return { kind: 'stopped' };
   if (err && err.status === 401) return { kind: 'sign_in' };
   // A rental the booker manages is paid with the rental card, which is
   // set up in the app; the web card step would save the wrong one.

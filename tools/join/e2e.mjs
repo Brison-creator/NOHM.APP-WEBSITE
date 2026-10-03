@@ -209,6 +209,24 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await ctx.close();
 }
 
+// ── A pro whose account was deleted, on a reload: signed out with the server's message ──
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(`${BASE}/join/${api}`);
+  await phoneSignUp(page);
+  await page.waitForSelector('[data-key=invite-skip]');
+  await fetch(`${BASE}/__account-stop?code=ACCOUNT_DELETED&at=request`);
+  await page.reload();
+  await page.waitForSelector('[data-key=stopped-ok]');
+  assert.match(await page.textContent('.b-sub'), /account was deleted/);
+  assert.equal(await page.evaluate(() => localStorage.getItem('nohm.book.tokens')), null);
+  await page.click('[data-key=stopped-ok]');
+  await page.waitForSelector('[data-key=signup]');
+  console.log('✓ Pro: ACCOUNT_DELETED signs out with the server’s message, then the sign-in screen');
+  await ctx.close();
+}
+
 // ── Renter ────────────────────────────────────────────────────────
 {
   await reset();
@@ -240,6 +258,9 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   const seq = calls.map((c) => `${c.method} ${c.path}`).filter((x) => x.includes('/tenants/'));
   assert.deepEqual(seq.slice(0, 5), ['GET /tenants/my-property', 'GET /tenants/my-invites', 'GET /tenants/invite/482913', 'POST /tenants/invite/482913/send-otp', 'POST /tenants/invite/482913/accept']);
   assert.equal(calls.filter((c) => c.path.endsWith('/accept')).length, 2, 'the wrong code was sent once and refused');
+  const wrong = calls.find((c) => c.path.endsWith('/accept'));
+  assert.equal(wrong.status, 401, 'the server answers a wrong code with a 401 (INVALID_CODE)');
+  assert.ok(!calls.some((c) => c.path === '/auth/refresh'), 'a wrong code is not a reason to refresh and send it again');
   assert.deepEqual(calls.find((c) => c.path === '/auth/phone-signup/send-otp').body, { phone: '+15015550199', role: 'TENANT' });
   const pv = calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body;
   assert.deepEqual([pv.role, pv.email, pv.phone], ['TENANT', 'ray@example.com', '+15015550199']);
