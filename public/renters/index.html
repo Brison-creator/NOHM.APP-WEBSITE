@@ -6,12 +6,17 @@
   <title>Renters | NOHM</title>
   <meta name="description" content="Renting, made easy. Pay rent, send repairs and sign your lease from your phone. Free for renters." />
   <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <link rel="stylesheet" href="/features.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -62,7 +67,6 @@
 
     .end { text-align: center; padding: 56px 24px 48px; }
     .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
     .btn {
       display: flex; align-items: center; justify-content: center;
       height: 44px; padding: 0 12px; border-radius: 4px;
@@ -70,8 +74,6 @@
     }
     .btn.main { background: #356CA3; color: #fff; }
     .btn.main:hover { background: #2b5885; }
-    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
-    .btn.plain:hover { background: #eeeeee; }
 
 
     /* The standard as a short spec list, like Tesla's specs. */
@@ -127,7 +129,6 @@
     .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 40% 20%; border-radius: 12px; }
     .now h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .now .words p:not(.eyebrow) { margin: 0 0 22px; font-size: 17px; line-height: 1.55; color: #393c41; }
-    .now .btn { display: inline-flex; min-width: 200px; }
     .area { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
     .area p { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #393c41; }
     .area-btns { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -141,7 +142,6 @@
     .faq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform 0.2s ease; }
     .faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
     .faq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
-    .btn.black { background: #356CA3; color: #fff; }
     .btn.soft { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
     @media (min-width: 900px) {
       .tiles { grid-template-columns: repeat(4, 1fr); }
@@ -217,7 +217,12 @@
         <p class="eyebrow">Rent</p>
         <h2>Pay rent in<br />a couple of taps.</h2>
         <p>Link your bank once and pay rent in the app, all at once or in parts. Turn on autopay and never think about the 1st again. Your history is always there.</p>
-        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+        <div class="store-cta">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -253,7 +258,12 @@
         <p class="eyebrow">Move-In &amp; Move-Out</p>
         <h2>Your deposit,<br />protected.</h2>
         <p>Every room is rated and photographed when you move in, and you sign it too. At move-out, the same rooms sit side by side with day one. Any deductions are itemized, and if you don&rsquo;t agree, you can dispute them right in the app.</p>
-        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+        <div class="store-cta">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -280,9 +290,12 @@
 
     <section class="end">
       <h2>It&rsquo;s always something. NOHM it.</h2>
-      <div class="pair">
-        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
-        <a class="btn plain" href="/landlords">For Landlords</a>
+      <div class="store-cta store-cta--center">
+        <ul class="store-cta__badges">
+          <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+          <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+        </ul>
+        <a class="store-cta__more" href="/landlords">For Landlords</a>
       </div>
     </section>
   </main>
@@ -299,7 +312,6 @@
     <a href="tel:+18882306646">888-230-NOHM</a>
   </footer>
   <script src="/pricing.js"></script>
-  <script src="/download.js" defer></script>
   <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>

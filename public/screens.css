@@ -20,19 +20,6 @@
   font-size: clamp(18px, 1.7vw, 26px);
   color: #393c41; font-weight: var(--weight-body-strong); letter-spacing: var(--tracking-body);
 }
-.cta {
-  display: inline-block;
-  min-width: 220px;
-  padding: 15px 28px;
-  border-radius: 4px;
-  background: #356CA3;
-  color: #fff;
-  font-size: 17px;
-  text-decoration: none; font-weight: var(--weight-ui);
-}
-.cta:hover { background: #2b5885; }
-.stores { margin: 14px 0 0; font-size: 14px; color: #6e6e73; }
-.stores a { color: #5c5e62; text-decoration: none; font-weight: var(--weight-ui); }
 .screen picture, .screen img { display: block; width: 100%; }
 .screen img { height: 62svh; object-fit: cover; }
 .screen img.washer-shot { object-position: 48% 50%; }

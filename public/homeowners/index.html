@@ -6,12 +6,17 @@
   <title>Homeowners | NOHM</title>
   <meta name="description" content="Home is for living. NOHM handles the rest. Local pros, clear fees, every repair saved." />
   <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <link rel="stylesheet" href="/features.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -30,6 +35,7 @@
     .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
     .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+    .top .store-cta { margin-top: 10px; }
 
     /* The long read: one column, generous space, Tesla's quiet type. */
     .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
@@ -62,16 +68,11 @@
 
     .end { text-align: center; padding: 56px 24px 48px; }
     .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
     .btn {
       display: flex; align-items: center; justify-content: center;
       height: 44px; padding: 0 12px; border-radius: 4px;
       font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
     }
-    .btn.main { background: #356CA3; color: #fff; }
-    .btn.main:hover { background: #2b5885; }
-    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
-    .btn.plain:hover { background: #eeeeee; }
 
 
     /* The standard as a short spec list, like Tesla's specs. */
@@ -127,7 +128,6 @@
     .now img { display: block; width: 100%; height: auto; max-height: 72svh; object-fit: cover; object-position: 40% 20%; border-radius: 12px; }
     .now h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .now .words p:not(.eyebrow) { margin: 0 0 22px; font-size: 17px; line-height: 1.55; color: #393c41; }
-    .now .btn { display: inline-flex; min-width: 200px; }
     .area { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
     .area p { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #393c41; }
     .area-btns { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -172,7 +172,12 @@
       <div class="copy">
         <h1>Home is for living.</h1>
         <p>NOHM handles the rest.</p>
-        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513" style="display:inline-flex;margin-top:22px;min-width:220px;border:0;">Get NOHM</a>
+        <div class="store-cta store-cta--center store-cta--on-dark">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -252,7 +257,12 @@
         <p class="eyebrow">NOHM NOW</p>
         <h2>60 minutes.<br />Or the fee is waived.</h2>
         <p>Contractors choose Ready Now and go live for four hours&mdash;ready to leave immediately. No calls, no waiting, just a local pro arriving within 60 minutes to get it fixed now. Miss 60, and the NOHM NOW fee is waived.</p>
-        <a class="btn black" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
+        <div class="store-cta">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -317,9 +327,12 @@
 
     <section class="end">
       <h2>It&rsquo;s always something. NOHM it.</h2>
-      <div class="pair">
-        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
-        <a class="btn plain" href="/local-pros">Our Pros</a>
+      <div class="store-cta store-cta--center">
+        <ul class="store-cta__badges">
+          <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+          <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+        </ul>
+        <a class="store-cta__more" href="/local-pros">Our Pros</a>
       </div>
     </section>
   </main>
@@ -334,7 +347,6 @@
     <a href="tel:+18882306646">888-230-NOHM</a>
   </footer>
   <script src="/pricing.js"></script>
-  <script src="/download.js" defer></script>
   <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>

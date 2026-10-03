@@ -1,0 +1,145 @@
+/* The download call to action, used everywhere the site sends someone to
+   the app: Apple's "Download on the App Store" and Google's "Get it on
+   Google Play" badges side by side, and an optional quiet text link.
+
+     <div class="store-cta">                        add --center to centre it,
+       <ul class="store-cta__badges">                --on-dark over a photo or
+         <li><a class="store-badge store-badge--app-store"       a dark panel
+                href="https://apps.apple.com/us/app/nohm-app/id6761128513"
+                aria-label="Download NOHM on the App Store">
+           <img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+         <li><a class="store-badge store-badge--google-play"
+                href="https://play.google.com/store/apps/details?id=com.nohm.app"
+                aria-label="Get NOHM on Google Play">
+           <img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+       </ul>
+       <a class="store-cta__more" href="/homeowners">Learn More</a>
+     </div>
+
+   The badges are the official artwork, untouched: Apple's black SVG and
+   Google's PNG with only its transparent padding cropped off, so both fill
+   their box edge to edge and share one exact visible height. Never recolor,
+   outline or filter them; effects stay outside the artwork.
+
+   Clear space (Apple and Google: at least a quarter of the badge height
+   around each badge, nothing else inside it):
+     badge height 48px desktop, 44px phones  ->  clear space 12px / 11px
+     between the badges   --store-gap 16px (more than a quarter at either size)
+     above and below      --store-clear, padding on the wrapper (height / 4)
+     badge to text link   --store-more-gap 32px in a row; stacked on phones,
+                          a 2px row gap plus the link's own empty 13px
+                          padding (15px, over the 11px needed)
+     left and right       the host section's gutter (16px or more on every
+                          page) and, in a row, the gaps above. */
+
+:root {
+  --store-badge-h: 48px;
+  --store-clear: calc(var(--store-badge-h) / 4);
+  --store-gap: 16px;
+  --store-more-gap: 32px;
+  --store-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --store-focus: #004990;          /* NOHM brand blue for the focus ring */
+  --store-halo: transparent;       /* a light ring outside it on dark ground */
+  --store-link: #393c41;           /* 11.1:1 on white, 10.1:1 on #f4f4f4 */
+  --store-link-hover: #171a20;
+  --store-line: rgba(57, 60, 65, 0.4);
+  --store-lift-shadow: 0 10px 22px -12px rgba(23, 26, 32, 0.45);
+}
+@media (max-width: 600px) {
+  :root { --store-badge-h: 44px; } /* still a 44px tap target */
+}
+
+.store-cta {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start;
+  gap: var(--store-clear) var(--store-more-gap);
+  padding: var(--store-clear) 0;
+  font-family: var(--font-text);
+}
+.store-cta--center { justify-content: center; }
+/* Over a photo or a dark panel: the black badges keep their own grey
+   edge; the link turns white with the same soft shadow as the headlines
+   (the photos are shaded behind the words), and the focus ring gets a
+   white halo so it reads on black. */
+.store-cta--on-dark {
+  --store-link: rgba(255, 255, 255, 0.92);
+  --store-link-hover: #fff;
+  --store-line: rgba(255, 255, 255, 0.5);
+  --store-halo: #fff;
+  --store-lift-shadow: none;
+}
+
+.store-cta__badges {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--store-gap);
+  margin: 0; padding: 0; list-style: none;
+}
+.store-cta--center .store-cta__badges { justify-content: center; }
+.store-cta__badges li { display: flex; margin: 0; }
+
+.store-badge {
+  display: block; flex: none;
+  line-height: 0;
+  border-radius: calc(var(--store-badge-h) * 0.2);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.3s var(--store-ease), opacity 0.3s, box-shadow 0.3s;
+}
+/* Each badge's own corner, so the hover shadow and focus ring follow it. */
+.store-badge--google-play { border-radius: calc(var(--store-badge-h) * 0.12); }
+/* a.store-badge > img outranks the pages' own ".top img", ".slide img",
+   ".screen img" photo rules, and resets everything they set. */
+a.store-badge > img {
+  display: block; position: static;
+  width: auto; height: var(--store-badge-h);
+  max-width: none; max-height: none; margin: 0;
+  aspect-ratio: auto; object-fit: fill; border-radius: 0;
+}
+@media (hover: hover) {
+  .store-badge:hover { transform: translateY(-2px); box-shadow: var(--store-lift-shadow); }
+}
+.store-badge:active { transform: translateY(0); box-shadow: none; transition-duration: 0.1s; }
+.store-badge:focus-visible {
+  outline: 2px solid var(--store-focus); outline-offset: 3px;
+  box-shadow: 0 0 0 7px var(--store-halo);
+}
+
+.store-cta__more {
+  display: inline-block;
+  padding: 13px 2px;                 /* a 44px tall tap target */
+  font-size: 15px; line-height: 18px; font-weight: var(--weight-ui);
+  color: var(--store-link);
+  text-decoration: underline;
+  text-decoration-color: var(--store-line);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  border-radius: 4px;
+  transition: color 0.3s, text-decoration-color 0.3s, text-decoration-thickness 0.3s;
+}
+.store-cta--on-dark .store-cta__more { text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3); }
+.store-cta__more:hover {
+  color: var(--store-link-hover);
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
+}
+.store-cta__more:focus-visible {
+  outline: 2px solid var(--store-focus); outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--store-halo);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-badge { transition: opacity 0.3s; }
+  .store-badge:hover, .store-badge:active { transform: none; box-shadow: none; opacity: 0.86; }
+}
+
+/* Phones: the link drops under the badges. The badges stay side by side
+   when both fit at 44px and stack when they don't (a 320px screen). */
+@media (max-width: 600px) {
+  .store-cta { flex-direction: column; align-items: flex-start; row-gap: 2px; }
+  .store-cta--center { align-items: center; }
+}
+
+/* Room for one badge only (the phone dock): show the visitor's store.
+   /menu.js marks Android phones with <html data-platform="android">;
+   everyone else, and anyone without JavaScript, gets the App Store. */
+.store-pick .store-badge--google-play { display: none; }
+[data-platform="android"] .store-pick .store-badge--google-play { display: block; }
+[data-platform="android"] .store-pick .store-badge--app-store { display: none; }

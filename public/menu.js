@@ -1,5 +1,12 @@
 // Adds the Menu button to the top bar and the full-screen menu it opens.
+// Also the check of which store fits the phone in hand: Android
+// gets Google Play, everyone else the App Store. It marks Android phones
+// with <html data-platform="android"> for /store-cta.css, which shows the
+// matching badge where only one fits (the homepage's phone dock).
 (function () {
+  var android = /android/i.test(navigator.userAgent);
+  if (android) document.documentElement.setAttribute('data-platform', 'android');
+
   var bar = document.querySelector('.bar');
   if (!bar) return;
 
@@ -11,7 +18,7 @@
   btn.setAttribute('aria-expanded', 'false');
   bar.appendChild(btn);
 
-  var store = /android/i.test(navigator.userAgent)
+  var store = android
     ? 'https://play.google.com/store/apps/details?id=com.nohm.app'
     : 'https://apps.apple.com/us/app/nohm-app/id6761128513';
   var menu = document.createElement('nav');

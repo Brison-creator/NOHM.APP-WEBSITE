@@ -6,12 +6,17 @@
   <title>Local Pros. One Standard. | NOHM</title>
   <meta name="description" content="NOHM connects you with independent, owner-operated local businesses, all held to one standard: the NOHM Standard." />
   <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
   <link rel="stylesheet" href="/features.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -62,16 +67,6 @@
 
     .end { text-align: center; padding: 56px 24px 48px; }
     .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
-    .btn {
-      display: flex; align-items: center; justify-content: center;
-      height: 44px; padding: 0 12px; border-radius: 4px;
-      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
-    }
-    .btn.main { background: #356CA3; color: #fff; }
-    .btn.main:hover { background: #2b5885; }
-    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
-    .btn.plain:hover { background: #eeeeee; }
 
 
     /* The standard as a short spec list, like Tesla's specs. */
@@ -167,9 +162,12 @@
 
     <section class="end">
       <h2>It&rsquo;s always something. NOHM it.</h2>
-      <div class="pair">
-        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get NOHM</a>
-        <a class="btn plain" href="/support">Get Support</a>
+      <div class="store-cta store-cta--center">
+        <ul class="store-cta__badges">
+          <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+          <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+        </ul>
+        <a class="store-cta__more" href="/support">Get Support</a>
       </div>
     </section>
   </main>
@@ -183,7 +181,6 @@
     <a href="/support">Support</a>
     <a href="tel:+18882306646">888-230-NOHM</a>
   </footer>
-  <script src="/download.js" defer></script>
   <script src="/features.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>

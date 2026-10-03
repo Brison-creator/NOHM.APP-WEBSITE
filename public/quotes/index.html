@@ -6,11 +6,16 @@
   <title>Three Quotes | NOHM</title>
   <meta name="description" content="Replacing your HVAC, water heater, electrical panel or generator? Show the job once and get up to three written quotes from verified local pros. The price you see is your total." />
   <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -29,7 +34,7 @@
     .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
     .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
-    .top .pair { margin-top: 22px; }
+    .top .store-cta { margin-top: 10px; }
 
     /* Tesla-style panels: one picture or video, one headline, one line. */
     .panel { position: relative; height: calc(100svh - 110px); min-height: 480px; margin: 24px 12px 0; border-radius: 12px; overflow: hidden; background: #16171a; }
@@ -91,16 +96,6 @@
 
     .end { text-align: center; padding: 56px 24px 48px; }
     .end h2 { margin: 0 0 22px; font-size: clamp(26px, 3vw, 36px); font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
-    .btn {
-      display: flex; align-items: center; justify-content: center;
-      height: 44px; padding: 0 12px; border-radius: 4px;
-      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
-    }
-    .btn.main { background: #356CA3; color: #fff; }
-    .btn.main:hover { background: #2b5885; }
-    .btn.plain { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
-    .btn.plain:hover { background: #eeeeee; }
 
 
     /* The standard as a short spec list, like Tesla's specs. */
@@ -148,9 +143,12 @@
       <div class="copy">
         <h1>Get Three Quotes.</h1>
         <p>Replacing something big? Up to three local pros quote it, side by side. And the best part: you stay private. No high-pressure sales visits.</p>
-        <div class="pair">
-          <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Three Quotes</a>
-          <a class="btn plain" href="#how">How It Works</a>
+        <div class="store-cta store-cta--center store-cta--on-dark">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+          </ul>
+          <a class="store-cta__more" href="#how">How It Works</a>
         </div>
       </div>
     </section>
@@ -239,9 +237,12 @@
 
     <section class="end">
       <h2>It&rsquo;s always something. NOHM it.</h2>
-      <div class="pair">
-        <a class="btn main" data-download href="https://apps.apple.com/us/app/nohm-app/id6761128513">Get Three Quotes</a>
-        <a class="btn plain" href="/services">All Services</a>
+      <div class="store-cta store-cta--center">
+        <ul class="store-cta__badges">
+          <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+          <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+        </ul>
+        <a class="store-cta__more" href="/services">All Services</a>
       </div>
     </section>
   </main>
@@ -261,7 +262,6 @@
       document.querySelectorAll('.panel video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
     }
   </script>
-  <script src="/download.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
 </html>

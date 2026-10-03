@@ -4,12 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Stripe Link Expired | NOHM</title>
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #000; }
@@ -18,9 +23,8 @@
     h1 { font-size: clamp(30px, 7vw, 40px); line-height: 1.05; margin: 0; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     p.body { font-size: 16px; line-height: 1.6; color: #6e6e73; margin: 14px 0 0; }
     a.btn { display: block; margin-top: 28px; padding: 14px 20px; border-radius: 4px; background: #356CA3; color: #fff; text-decoration: none; font-weight: var(--weight-ui-strong); }
-    .stores { display: flex; gap: 12px; margin-top: 28px; }
-    .stores a { flex: 1; padding: 11px; border: 1px solid rgba(0,0,0,.12); border-radius: 4px; color: #000; font-size: 14px; text-decoration: none; font-weight: var(--weight-ui); }
-    p.small { font-size: 14px; color: #6e6e73; margin-top: 28px; }
+    .store-cta { margin-top: 16px; }
+    p.small { font-size: 14px; color: #6e6e73; margin-top: 16px; }
     p.small a { color: #356CA3; text-decoration: none; font-weight: var(--weight-ui); }
   </style>
 </head>
@@ -30,9 +34,11 @@
     <p class="eyebrow">LINK EXPIRED</p>
     <h1>That Stripe link timed out.</h1>
     <p class="body">Nothing you entered was lost. Open the NOHM app and start the Stripe setup again for a fresh link. Started on nohm.app? Go back to that tab and open Stripe from there.</p>
-    <div class="stores">
-      <a href="https://apps.apple.com/us/app/nohm-app/id6761128513">iPhone</a>
-      <a href="https://play.google.com/store/apps/details?id=com.nohm.app">Android</a>
+    <div class="store-cta store-cta--center">
+      <ul class="store-cta__badges">
+        <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+        <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+      </ul>
     </div>
     <p class="small">Need help? <a href="mailto:support@nohm.app">support@nohm.app</a></p>
   </main>
