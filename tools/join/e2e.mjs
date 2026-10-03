@@ -227,6 +227,24 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await ctx.close();
 }
 
+// ── The old live server (stub legacy mode): no phone sign-up offered; email sign-up works ──
+{
+  await reset();
+  await fetch(`${BASE}/__legacy/on`);
+  const { ctx, page } = await fresh();
+  await page.goto(`${BASE}/join/${api}`);
+  await page.waitForSelector('.b-google-off');
+  await page.waitForTimeout(200);
+  assert.equal(await page.isVisible('[data-key=phone-signup]'), false);
+  await signUp(page);
+  await page.waitForSelector('[data-key=invite-lookup]');
+  const calls = await log();
+  assert.equal(calls.find((c) => c.path === '/config/web').status, 404);
+  assert.ok(!calls.some((c) => c.path.startsWith('/auth/phone-signup')));
+  console.log('✓ Pro on the old server: no phone sign-up button, email sign-up works');
+  await ctx.close();
+}
+
 // ── Renter ────────────────────────────────────────────────────────
 {
   await reset();

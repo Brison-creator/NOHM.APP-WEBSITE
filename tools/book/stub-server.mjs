@@ -158,6 +158,8 @@ const LOCAL_MIDNIGHT = /^\d{4}-\d{2}-\d{2}T00:00:00[+-]\d{2}:\d{2}$/;
 function api(method, url, body, req) {
   const auth = req.headers.authorization || null;
   const p = url.pathname.replace('/api/v1', '');
+  // Legacy mode: the server live before 3b5f675 has no /config/web and no phone sign-up.
+  if (world.legacy && (p === '/config/web' || p.startsWith('/auth/phone-signup/'))) return [404, { message: `Cannot ${method} /api/v1${p}`, error: 'Not Found', statusCode: 404 }];
   const bad = bodyProblem(method, p, body);
   if (bad) return [400, { message: [bad] }];
   const needAuth = () => (auth === 'Bearer acc-1' ? null : json);
@@ -339,10 +341,12 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; world.legacy = false; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }
+  // /__legacy/on, /__legacy/off (or ?on=on|off)
+  if (url.pathname === '/__legacy' || url.pathname.startsWith('/__legacy/')) { const v = url.pathname.split('/')[2] || url.searchParams.get('on') || 'on'; world.legacy = v === 'on' || v === '1'; return json(res, 200, { ok: true, legacy: world.legacy }); }
   if (url.pathname === '/__expire-once') { world.expireOnce = true; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__account-stop') { world.accountStop = { code: url.searchParams.get('code'), at: url.searchParams.get('at') || 'request' }; if (url.searchParams.get('expire')) world.expireOnce = true; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__role') { world.role = url.searchParams.get('r') || 'HOMEOWNER'; return json(res, 200, { ok: true }); }
@@ -359,7 +363,9 @@ http.createServer(async (req, res) => {
     const body = await readBody(req);
     const entry = { method: req.method, path: url.pathname.replace('/api/v1', '') + url.search, auth: req.headers.authorization || null, body };
     log.push(entry);
-    const [status, out] = api(req.method, url, body, req);
+    let [status, out] = api(req.method, url, body, req);
+    // Legacy mode: the old server's 401s carry no code (Nest's plain UnauthorizedException).
+    if (world.legacy && status === 401 && out && out.code) out = { message: out.message, statusCode: 401 };
     entry.status = status;
     if (status === 400) {
       entry.error = out;

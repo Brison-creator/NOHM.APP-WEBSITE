@@ -38,9 +38,14 @@ export async function snap(page, name) {
   if (shots) await page.screenshot({ path: path.join(shots, `${String(++n).padStart(2, '0')}-${name}.png`), fullPage: true });
 }
 
+// window.__cardChange({ complete: true }) plays the person finishing the
+// card fields; confirmCardSetup succeeds, recording the client secret.
 const FAKE_STRIPE = `window.Stripe = function (key) {
   window.__stripeKey = key;
-  return { elements: function () { return { create: function () { return { mount: function (el) { el.dataset.stripeMounted = '1'; }, on: function () {}, destroy: function () {} }; } }; } };
+  return {
+    elements: function () { return { create: function () { return { mount: function (el) { el.dataset.stripeMounted = '1'; }, on: function (ev, fn) { if (ev === 'change') window.__cardChange = fn; }, destroy: function () {} }; } }; },
+    confirmCardSetup: function (secret) { window.__confirmedSecret = secret; return Promise.resolve({ setupIntent: { status: 'succeeded' } }); },
+  };
 };`;
 
 /** A PNG of random pixels (it doesn't compress, so it's as big as it looks). */

@@ -7,13 +7,14 @@
 // (shrunk, one per request), and the server's web settings missing.
 //
 // The runs live in tools/book/e2e/ (booking.mjs: runs 1–5, extras.mjs:
-// runs 6–9, lib.mjs: the shared browser and steps); they run in that order.
+// runs 6–9, legacy.mjs: runs 10–11 against the old live server, lib.mjs: the shared browser and steps); they run in that order.
 
 // One after the other: sibling modules with top-level await would run
 // at the same time against the one stub.
 const { browser } = await import('./e2e/lib.mjs');
 await import('./e2e/booking.mjs');
 await import('./e2e/extras.mjs');
+await import('./e2e/legacy.mjs');
 
 await browser.close();
 console.log('all e2e runs passed');

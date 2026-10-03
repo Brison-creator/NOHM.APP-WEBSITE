@@ -8,11 +8,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { normalizeWebConfig, createWebConfig } from '../../public/nohm/web-config.js';
+import { normalizeWebConfig, createWebConfig, LEGACY_WEB_CONFIG } from '../../public/nohm/web-config.js';
 
 const PUBLIC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../public');
 
-test('the site carries no Stripe key or Google client of its own', () => {
+test('the only built-in key is LEGACY_WEB_CONFIG, for a server without /config/web', () => {
   const cfg = fs.readFileSync(path.join(PUBLIC, 'book/config.js'), 'utf8');
   assert.doesNotMatch(cfg, /pk_(live|test)_/, 'no publishable key in config.js');
   assert.doesNotMatch(cfg, /stripePublishableKey\s*:/);
@@ -22,6 +22,11 @@ test('the site carries no Stripe key or Google client of its own', () => {
     assert.doesNotMatch(src, /config\.(stripePublishableKey|googleClientId)/, `${f} reads the keys from the server, not config.js`);
     assert.doesNotMatch(src, /pk_(live|test)_/, `${f} has no key`);
   }
+  const wc = fs.readFileSync(path.join(PUBLIC, 'nohm/web-config.js'), 'utf8');
+  assert.equal((wc.match(/pk_live_/g) || []).length, 1, 'one key, in LEGACY_WEB_CONFIG');
+  assert.match(wc, /DELETE THIS once api\.nohm\.app serves GET \/config\/web/);
+  assert.match(LEGACY_WEB_CONFIG.stripePublishableKey, /^pk_live_51Ssr6TGRifyQNvis/, 'the key 9819e15 shipped');
+  assert.equal(LEGACY_WEB_CONFIG.googleClientId, '', 'no Google client was set then');
 });
 
 test('only well-formed public values are used', () => {
@@ -40,13 +45,40 @@ test('only well-formed public values are used', () => {
 test('asked once and shared; a failed call means both features off, and is asked again later', async () => {
   let calls = 0;
   let fail = true;
-  const api = { webConfig: async () => { calls++; if (fail) throw new Error('503'); return { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com' }; } };
+  const api = { webConfig: async () => { calls++; if (fail) throw Object.assign(new Error('503'), { status: 503 }); return { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com' }; } };
   const webConfig = createWebConfig(api);
-  assert.deepEqual(await webConfig(), { stripePublishableKey: null, googleClientId: null });
+  assert.deepEqual(await webConfig(), { stripePublishableKey: null, googleClientId: null, legacy: false, phoneSignup: true });
   fail = false;
   const [a, b] = await Promise.all([webConfig(), webConfig()]);
-  assert.deepEqual(a, { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com' });
+  assert.deepEqual(a, { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com', legacy: false, phoneSignup: true });
   assert.equal(a, b);
   await webConfig();
   assert.equal(calls, 2, 'one failed call, then one shared answer');
+});
+
+const failWith = (status) => ({ webConfig: async () => { throw Object.assign(new Error(`HTTP ${status}`), { status }); } });
+
+test('a 404 (a server from before /config/web) uses LEGACY_WEB_CONFIG, still checked, and no phone sign-up', async () => {
+  const cfg = await createWebConfig(failWith(404))();
+  assert.deepEqual(cfg, { ...normalizeWebConfig(LEGACY_WEB_CONFIG), legacy: true, phoneSignup: false });
+  assert.equal(cfg.stripePublishableKey, LEGACY_WEB_CONFIG.stripePublishableKey, 'the legacy key passes the pk_ check');
+  assert.equal(cfg.googleClientId, null, 'an empty legacy client id means no Google, as before');
+});
+
+test('only a 404 falls back: a network error, a 5xx, or a 200 with empty values stay fail closed', async () => {
+  for (const status of [0, 500, 502, 503, 401, 403]) {
+    const cfg = await createWebConfig(failWith(status))();
+    assert.equal(cfg.stripePublishableKey, null, `status ${status}: no key`);
+    assert.equal(cfg.legacy, false);
+  }
+  const empty = await createWebConfig({ webConfig: async () => ({ stripePublishableKey: null, googleClientId: null }) })();
+  assert.deepEqual(empty, { stripePublishableKey: null, googleClientId: null, legacy: false, phoneSignup: true });
+  const thrown = await createWebConfig({ webConfig: async () => { throw new TypeError('Failed to fetch'); } })();
+  assert.equal(thrown.stripePublishableKey, null);
+});
+
+test('the phone sign-up button waits for the server’s answer and a send-otp 404 says so plainly', () => {
+  const src = fs.readFileSync(path.join(PUBLIC, 'nohm/account.js'), 'utf8');
+  assert.match(src, /cfg\.phoneSignup/);
+  assert.match(src, /Phone sign-up isn’t available yet\. Use email\./);
 });

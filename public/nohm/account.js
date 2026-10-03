@@ -37,6 +37,9 @@ export function signingUp(state) {
   return Boolean(state.pendingSignup || state.pendingPhoneSignup || (state.pendingGoogle && state.pendingGoogle.phone));
 }
 
+/** Said when the server turns out not to have phone sign-up (a 404). */
+export const PHONE_SIGNUP_UNAVAILABLE = 'Phone sign-up isn’t available yet. Use email.';
+
 /**
  * The screen after the server signed this browser out because of the
  * account itself (paused, blocked, deleted): its message, and one way on.
@@ -164,6 +167,14 @@ export function accountScreen(a, opts = {}) {
         mode = 'signup-phone-code';
         draw();
       } catch (ex) {
+        if (ex.status === 404) {
+          // A server without phone sign-up: back to email, with plain words.
+          a.state.phoneSignupOff = true;
+          mode = 'signup';
+          draw();
+          err.textContent = PHONE_SIGNUP_UNAVAILABLE;
+          return;
+        }
         err.textContent = ex.message;
       } finally {
         btn.busy(false);
@@ -172,8 +183,14 @@ export function accountScreen(a, opts = {}) {
     return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.phone.el, f.email.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Use email and a password instead'), legalLine()]);
   }
 
+  // Offered only when the server has phone sign-up: not on a server from
+  // before /config/web (it 404s that too), nor after a send-otp 404.
   function phoneSignupButton() {
-    return h('div', [button('Sign up with your phone', { kind: 'sec', key: 'phone-signup', onClick: () => { mode = 'signup-phone'; draw(); } }), h('p.b-or', 'or with email')]);
+    const row = h('div.b-phonesignup', { hidden: true }, [button('Sign up with your phone', { kind: 'sec', key: 'phone-signup', onClick: () => { mode = 'signup-phone'; draw(); } }), h('p.b-or', 'or with email')]);
+    if (!a.state.phoneSignupOff) {
+      a.webConfig().then((cfg) => { if (cfg.phoneSignup && !a.state.phoneSignupOff) row.hidden = false; }).catch(() => {});
+    }
+    return row;
   }
 
   function codeForm({ phone, onCode, onResend, back = 'signup' }) {
