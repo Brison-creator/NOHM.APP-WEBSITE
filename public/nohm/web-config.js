@@ -11,7 +11,8 @@ export const GOOGLE_UNAVAILABLE = 'Continue with Google isn’t available right 
 
 /**
  * Only well-formed public values get through: a publishable key
- * (pk_…), never anything else, and a non-empty client id.
+ * (pk_…), never anything else, and a Google OAuth web client id
+ * (…apps.googleusercontent.com).
  */
 export function normalizeWebConfig(raw) {
   const r = raw && typeof raw === 'object' ? raw : {};
@@ -19,7 +20,7 @@ export function normalizeWebConfig(raw) {
   const gid = typeof r.googleClientId === 'string' ? r.googleClientId.trim() : '';
   return {
     stripePublishableKey: /^pk_(live|test)_[A-Za-z0-9]+$/.test(pk) ? pk : null,
-    googleClientId: gid || null,
+    googleClientId: /^[A-Za-z0-9-]+\.apps\.googleusercontent\.com$/.test(gid) ? gid : null,
   };
 }
 

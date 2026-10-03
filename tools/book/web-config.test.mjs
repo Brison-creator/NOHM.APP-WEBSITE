@@ -30,6 +30,9 @@ test('only well-formed public values are used', () => {
   assert.deepEqual(normalizeWebConfig({ stripePublishableKey: '', googleClientId: '  ' }), { stripePublishableKey: null, googleClientId: null });
   assert.equal(normalizeWebConfig({ stripePublishableKey: 'sk_live_secret' }).stripePublishableKey, null, 'never a secret key');
   assert.equal(normalizeWebConfig({ stripePublishableKey: 'rk_live_x' }).stripePublishableKey, null);
+  assert.equal(normalizeWebConfig({ googleClientId: 'g1' }).googleClientId, null, 'not a Google client id');
+  assert.equal(normalizeWebConfig({ googleClientId: 'x.apps.googleusercontent.com.evil.example' }).googleClientId, null);
+  assert.equal(normalizeWebConfig({ googleClientId: ' 832397285346-abc.apps.googleusercontent.com ' }).googleClientId, '832397285346-abc.apps.googleusercontent.com');
   assert.deepEqual(normalizeWebConfig(null), { stripePublishableKey: null, googleClientId: null });
   assert.deepEqual(normalizeWebConfig('nope'), { stripePublishableKey: null, googleClientId: null });
 });
@@ -37,12 +40,12 @@ test('only well-formed public values are used', () => {
 test('asked once and shared; a failed call means both features off, and is asked again later', async () => {
   let calls = 0;
   let fail = true;
-  const api = { webConfig: async () => { calls++; if (fail) throw new Error('503'); return { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1' }; } };
+  const api = { webConfig: async () => { calls++; if (fail) throw new Error('503'); return { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com' }; } };
   const webConfig = createWebConfig(api);
   assert.deepEqual(await webConfig(), { stripePublishableKey: null, googleClientId: null });
   fail = false;
   const [a, b] = await Promise.all([webConfig(), webConfig()]);
-  assert.deepEqual(a, { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1' });
+  assert.deepEqual(a, { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com' });
   assert.equal(a, b);
   await webConfig();
   assert.equal(calls, 2, 'one failed call, then one shared answer');
