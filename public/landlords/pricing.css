@@ -1,0 +1,126 @@
+/* Landlord pricing + comparison only. Keep this out of the shared site CSS. */
+.landlord-pricing-note {
+  margin: 10px 0 0;
+  max-width: 860px;
+  color: #5c5e62;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.compare {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 24px 8px;
+}
+
+.compare h2 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-headline);
+  word-spacing: var(--word-spacing-headline);
+}
+
+.compare-lede {
+  max-width: 760px;
+  margin: 0 0 20px;
+  color: #393c41;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.compare-scroll {
+  overflow-x: auto;
+  border: 1px solid #e2e3e4;
+  border-radius: 12px;
+  background: #fff;
+  -webkit-overflow-scrolling: touch;
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 16px 18px;
+  border-bottom: 1px solid #e6e7e9;
+  vertical-align: top;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.compare-table th {
+  background: #f4f4f4;
+  color: #171a20;
+  font-weight: var(--weight-ui);
+}
+
+.compare-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.compare-table td:first-child {
+  color: #171a20;
+  font-weight: var(--weight-ui);
+}
+
+.compare-table .nohm-row td {
+  background: #f8fafc;
+}
+
+.compare small,
+.compare-sources {
+  color: #6e6e73;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.compare-sources {
+  margin: 12px 0 0;
+}
+
+.compare-sources a {
+  color: #393c41;
+  text-underline-offset: 3px;
+}
+
+.screening-tiers {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.screening-tier {
+  padding: 14px 16px;
+  border: 1px solid #e2e3e4;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.screening-tier b {
+  display: block;
+  margin-bottom: 3px;
+  color: #171a20;
+  font-size: 15px;
+}
+
+.screening-tier span {
+  color: #393c41;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+@media (min-width: 900px) {
+  .fees .fee-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .screening-tiers {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
