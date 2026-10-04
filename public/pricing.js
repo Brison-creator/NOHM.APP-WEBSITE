@@ -7,7 +7,18 @@ var NOHM_PRICING = {
   express: { launch: 20, regular: 40 },
   now: { launch: 30, regular: 60 },
   // Rentals (set in the NOHM admin; keep these in step with it).
-  rentals: { plan: 7, manager: 29, walkthrough: 79, application: 45 }
+  // "plan" is the per-rental line; membership is once per landlord account.
+  rentals: {
+    membership: 9,
+    plan: 7,
+    manager: 29,
+    walkthrough: 79,
+    application: 40,
+    applicationIncome: 50,
+    applicationPremium: 65,
+    achRatePercent: 0.8,
+    achCap: 7
+  }
 };
 
 (function (p) {
