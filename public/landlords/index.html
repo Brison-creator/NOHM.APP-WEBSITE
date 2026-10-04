@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Landlords | NOHM</title>
-  <meta name="description" content="Rentals, handled. Rent by bank, repairs, leases, walkthroughs, per-unit profit and hands-off NOHM Manager, from $7 per rental a month." />
+  <meta name="description" content="Rentals, handled. NOHM Rentals is $9 a month plus $7 per rental, with rent collection, leases, screening, repairs, records and optional NOHM Manager." />
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
   <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="/screens.css" />
   <link rel="stylesheet" href="/features.css" />
   <link rel="stylesheet" href="/store-cta.css" />
+  <link rel="stylesheet" href="/landlords/pricing.css" />
   <style>
     html, body { margin: 0; background: #fff; }
     body {
@@ -211,7 +212,7 @@
                  width="1448" height="1086" loading="lazy" style="object-position:50% 30%" alt="A renter on his couch paying rent and sending a repair request from his phone" />
           </picture>
           <h3>Rent Comes In</h3>
-          <p>Tenants pay by bank straight to your account. Autopay, reminders and late fees run themselves.</p>
+          <p>Tenants pay by bank straight to your account. Autopay, reminders and late fees run themselves. You choose who covers the ACH collection fee.</p>
         </article>
         <article class="f-item">
           <picture>
@@ -269,13 +270,14 @@
     <section class="partner" aria-labelledby="screen-title">
       <div class="p-card">
         <a class="p-logo" href="https://certn.co/property-management/" target="_blank" rel="noopener"><img src="/img/partners/certn.svg" width="167" height="48" alt="Certn" /></a>
-        <h2 id="screen-title">Screening by Certn.<br />We handle the work.</h2>
-        <p>When an applicant applies, NOHM orders their checks through Certn automatically. No accounts to set up, no forms to chase. The report lands right on the application. You choose how in-depth the screening goes. The applicant pays the application fee, which starts at <span data-rental="application">$45</span> and goes up with deeper checks.</p>
-        <ul>
-          <li>Background checks</li>
-          <li>Identity verification</li>
-          <li>Income verification</li>
-        </ul>
+        <h2 id="screen-title">Choose the screening.<br />NOHM runs the workflow.</h2>
+        <p>Standard identity, credit and criminal screening runs through Certn. For stronger income verification, choose source-verified employment through Certn or bank-connected income verification through Plaid. The applicant pays where local law allows; NOHM applies jurisdiction limits before checkout.</p>
+        <div class="screening-tiers" aria-label="Applicant screening choices">
+          <div class="screening-tier"><b>Standard · <span data-rental="application">$40</span></b><span>Soft credit, core criminal and identity verification.</span></div>
+          <div class="screening-tier"><b>Instant Income · <span data-rental="applicationIncome">$50</span></b><span>Standard screening plus bank-connected income verification.</span></div>
+          <div class="screening-tier"><b>Premium · <span data-rental="applicationPremium">$65</span></b><span>Standard screening plus source-verified employment.</span></div>
+        </div>
+        <p class="landlord-pricing-note">Screening prices can be reduced or restricted where state or local law requires it. The landlord does not pay the applicant screening fee.</p>
         <a class="p-more" href="https://certn.co/property-management/" target="_blank" rel="noopener">Learn more about Certn</a>
       </div>
     </section>
@@ -339,9 +341,11 @@
           <li>Listing comes down when a lease is signed</li>
           <li>Next listing drafted after move-out</li>
           <li>Applications sent by text</li>
-          <li>Applicant pays the fee, from $45</li>
-          <li>Background, identity &amp; income checks by Certn</li>
-          <li>You choose how deep the check goes</li>
+          <li>Applicant screening from $40, where allowed</li>
+          <li>Certn identity, credit, criminal &amp; employment checks</li>
+          <li>Plaid bank-connected income verification</li>
+          <li>You choose the screening tier</li>
+          <li>Local fee limits applied before checkout</li>
           <li>Approve with lease terms</li>
           <li>Deposit &amp; first month paid by bank</li>
           <li>Adverse-action notices sent for you</li>
@@ -395,17 +399,22 @@
 
 
     <section class="fees">
-      <h2>Simple pricing.<br />Per rental.</h2>
+      <h2>Simple pricing.<br />Know the whole bill.</h2>
       <div class="fee-grid">
         <div class="fee">
-          <h3>NOHM for Rentals</h3>
+          <h3>NOHM Rentals</h3>
+          <div class="price"><b data-rental="membership">$9</b></div>
+          <p>Per landlord account, per month while you have rentals on NOHM.</p>
+        </div>
+        <div class="fee">
+          <h3>Each Rental</h3>
           <div class="price"><b data-rental="plan">$7</b></div>
           <p>Per rental, per month. Rent, leases, listings, repairs, records and the books.</p>
         </div>
         <div class="fee">
           <h3>NOHM Manager</h3>
           <div class="price"><b data-rental="manager">$29</b></div>
-          <p>Per rental, per month, added to your plan. Hands-off management for the units you choose.</p>
+          <p>Per managed rental, per month. Turn it on only for the units you want handled.</p>
         </div>
         <div class="fee">
           <h3>NOHM Walkthrough</h3>
@@ -413,7 +422,57 @@
           <p>Per walkthrough. A trained specialist does the condition report. Charged only when it&rsquo;s in.</p>
         </div>
       </div>
-      <p class="fine">NOHM takes no cut of rent; bank transfers carry only Stripe&rsquo;s fee of 0.8%, capped at $5. Applicants pay the application fee, from <span data-rental="application">$45</span> depending on how in-depth the screening is. Repairs you approve are billed like any NOHM job: Standard has no NOHM fee, Express is <span data-fee="express">$20</span> and NOHM NOW is <span data-fee="now">$30</span>, plus the pro&rsquo;s charges, which you approve first.</p>
+      <p class="fine">Rent goes straight to your connected payout account. ACH collection is 0.8% of the payment, capped at $7. You choose whether the tenant pays that fee on top or you absorb it from the rent proceeds. NOHM takes no percentage of rent. Applicant screening is paid by the applicant where allowed, with local legal limits applied before checkout. Repairs you approve are billed like any NOHM job: Standard has no NOHM fee, Express is <span data-fee="express">$20</span> and NOHM NOW is <span data-fee="now">$30</span>, plus the pro&rsquo;s charges, which you approve first.</p>
+    </section>
+
+    <section class="compare" aria-labelledby="compare-title">
+      <h2 id="compare-title">Landlord cost comparison.</h2>
+      <p class="compare-lede">Published landlord-facing prices, checked October 2026. Feature sets differ, so this compares cost structure rather than pretending every platform does the same thing.</p>
+      <div class="compare-scroll">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>Landlord software</th>
+              <th>Screening cost to landlord</th>
+              <th>ACH rent cost to landlord</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="nohm-row">
+              <td>NOHM</td>
+              <td><span data-rental="membership">$9</span>/mo + <span data-rental="plan">$7</span>/rental/mo</td>
+              <td>$0 when applicant-paid; local law controls the applicant charge</td>
+              <td>$0 if passed to tenant; otherwise 0.8%, max $7/payment</td>
+            </tr>
+            <tr>
+              <td>RentRedi</td>
+              <td>About $12/mo on its annual plan; unlimited units</td>
+              <td>$0 by default; landlord may cover $39.99 standard or $49.99 with income/assets</td>
+              <td>$0 by default; $1/payment if landlord covers the tenant ACH fee</td>
+            </tr>
+            <tr>
+              <td>TurboTenant</td>
+              <td>Free plan; paid plans start at $149/year</td>
+              <td>$0 by default; landlord-paid screening is $55 on Free or $45 on paid plans</td>
+              <td>Plan-dependent</td>
+            </tr>
+            <tr>
+              <td>Zillow Rental Manager</td>
+              <td>$0 for core rental applications and screening tools</td>
+              <td>$0; applicant pays Zillow&rsquo;s published $35 application fee</td>
+              <td>$0 for landlord ACH rent collection</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="compare-sources">Sources:
+        <a href="https://rentredi.com/pricing" target="_blank" rel="noopener">RentRedi pricing</a>,
+        <a href="https://help.rentredi.com/en/articles/4474091-convenience-fees-for-rent-payments" target="_blank" rel="noopener">RentRedi payment fees</a>,
+        <a href="https://www.turbotenant.com/pricing/" target="_blank" rel="noopener">TurboTenant pricing</a>,
+        <a href="https://www.zillow.com/rental-manager/rental-applications-faq/" target="_blank" rel="noopener">Zillow applications</a> and
+        <a href="https://www.zillow.com/rental-manager/online-payments-faq/" target="_blank" rel="noopener">Zillow payments</a>.
+      </p>
     </section>
 
     <section class="area">
@@ -430,11 +489,11 @@
 
     <section class="faq">
       <h2>Questions.</h2>
-      <details><summary>How much does NOHM cost for landlords?</summary><p><span data-rental="plan">$7</span> per rental a month. Add NOHM Manager for <span data-rental="manager">$29</span> per rental a month on the units you want handled. Walkthroughs are <span data-rental="walkthrough">$79</span> each.</p></details>
-      <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Tenants pay by bank transfer straight into your own account. The only fee is Stripe&rsquo;s 0.8%, capped at $5 per payment.</p></details>
+      <details><summary>How much does NOHM cost for landlords?</summary><p>NOHM Rentals is <span data-rental="membership">$9</span> per month for the landlord account, plus <span data-rental="plan">$7</span> per rental a month. Add NOHM Manager for <span data-rental="manager">$29</span> per managed rental a month on the units you want handled. Walkthroughs are <span data-rental="walkthrough">$79</span> each.</p></details>
+      <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Rent goes straight to your connected payout account. ACH collection is 0.8%, capped at $7 per payment. You decide whether the tenant pays that fee on top or you absorb it from the rent proceeds.</p></details>
       <details><summary>What does NOHM Manager actually do?</summary><p>It answers tenant messages from your house notes, books repairs, reviews estimates, relists the unit after move-out and sends you a weekly summary. Emergencies always come straight to you.</p></details>
       <details><summary>What is a NOHM Walkthrough?</summary><p>A move-in or move-out condition report done in person by a trained local specialist. Every room is rated and photographed, both sides sign it, and it&rsquo;s saved as a signed PDF. You can also do it yourself in the app for free.</p></details>
-      <details><summary>Who screens my applicants?</summary><p>Certn. When an applicant submits, NOHM orders their background check, identity verification and income verification through Certn for you, and the report is attached to the application. You pick how in-depth it goes; the applicant&rsquo;s fee starts at <span data-rental="application">$45</span> and rises with deeper checks. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
+      <details><summary>Who screens my applicants?</summary><p>Certn handles the core identity, credit, criminal and source-verified employment checks. Plaid handles bank-connected income verification for the Instant Income tier. You choose the tier before sending the application. Standard is <span data-rental="application">$40</span>, Instant Income is <span data-rental="applicationIncome">$50</span> and Premium is <span data-rental="applicationPremium">$65</span> where local law permits those amounts; NOHM applies local limits before checkout. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
       <details><summary>Can I use my own lease?</summary><p>Yes. Upload your lease as a PDF and you and your tenant e-sign it in the app. NOHM keeps a signing certificate with it.</p></details>
       <details><summary>How do deposits work at move-out?</summary><p>Set the move-out date and NOHM tracks the deposit deadline. Itemize any deductions next to the move-in report, send the statement and mark the refund paid. Reminders go out before the deadline.</p></details>
       <details><summary>Can I see profit for each unit?</summary><p>Yes. Money &amp; Taxes shows income, costs and profit per rental, sorted into IRS Schedule E categories, with a year-end report you can email to your accountant.</p></details>
