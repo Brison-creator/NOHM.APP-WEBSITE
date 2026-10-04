@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Certified Home Records | NOHM</title>
+  <meta name="description" content="Keep proof of the work you put into your home. Repairs, service, receipts and warranties in one private NOHM home history." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html,body { margin:0; background:#fff; color:#171a20; }
+    body { font-family:var(--font-text); -webkit-font-smoothing:antialiased; }
+    main { overflow:hidden; }
+    h1,h2 { font-family:var(--font-display); letter-spacing:var(--tracking-headline); word-spacing:var(--word-spacing-headline); }
+    .wrap { max-width:1160px; margin:0 auto; padding-left:24px; padding-right:24px; }
+    .eyebrow { margin:0 0 12px; color:#356CA3; font-size:12px; font-weight:var(--weight-ui-strong); letter-spacing:.10em; text-transform:uppercase; }
+    .hero { padding-top:72px; padding-bottom:48px; text-align:center; }
+    .hero h1 { margin:0 auto; max-width:900px; font-size:clamp(42px,6vw,76px); line-height:1.02; font-weight:var(--weight-hero); }
+    .hero .lede { max-width:710px; margin:18px auto 20px; color:#393c41; font-size:clamp(17px,1.8vw,21px); line-height:1.55; }
+    .hero-media { max-width:1160px; margin:38px auto 0; overflow:hidden; border-radius:12px; background:#f4f4f4; }
+    .hero-media img { display:block; width:100%; height:auto; }
+    .stat { padding:70px 24px; text-align:center; border-top:1px solid #e6e7e9; border-bottom:1px solid #e6e7e9; }
+    .stat strong { display:block; font-family:var(--font-display); font-size:clamp(58px,9vw,104px); line-height:.95; letter-spacing:var(--tracking-headline); }
+    .stat h2 { max-width:820px; margin:14px auto 12px; font-size:clamp(28px,4vw,44px); line-height:1.08; }
+    .stat p { max-width:720px; margin:0 auto; color:#393c41; font-size:16px; line-height:1.6; }
+    .source { margin-top:12px !important; color:#6e6e73 !important; font-size:12px !important; }
+    .source a { color:inherit; }
+    .section { padding-top:88px; padding-bottom:88px; text-align:center; }
+    .section h2 { max-width:850px; margin:0 auto 14px; font-size:clamp(34px,5vw,58px); line-height:1.05; font-weight:var(--weight-heading); }
+    .section p { max-width:720px; margin:0 auto; color:#393c41; font-size:18px; line-height:1.6; }
+    .divider { width:56px; height:1px; margin:42px auto; background:#d0d1d2; }
+    .proof { background:#f4f4f4; }
+    .certificate { max-width:760px; margin:36px auto 0; padding:28px; background:#fff; border:1px solid #e0e1e2; border-radius:12px; text-align:left; box-shadow:0 12px 30px rgba(23,26,32,.06); }
+    .cert-head { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; padding-bottom:20px; border-bottom:1px solid #e6e7e9; }
+    .cert-head b { display:block; font-family:var(--font-display); font-size:24px; letter-spacing:var(--tracking-title); }
+    .hin { margin-top:6px; color:#393c41; font-size:14px; }
+    .qr { flex:0 0 86px; width:86px; height:86px; border:8px solid #fff; outline:1px solid #d0d1d2; background:
+      linear-gradient(90deg,#171a20 8px,transparent 8px) 0 0/24px 24px,
+      linear-gradient(#171a20 8px,transparent 8px) 0 0/24px 24px,#fff; }
+    .cert-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; margin-top:20px; background:#e6e7e9; border:1px solid #e6e7e9; border-radius:8px; overflow:hidden; }
+    .cert-item { background:#fff; padding:16px; }
+    .cert-item b { display:block; font-size:14px; font-weight:var(--weight-ui); }
+    .cert-item span { color:#6e6e73; font-size:13px; }
+    .fine { max-width:760px !important; margin:14px auto 0 !important; color:#6e6e73 !important; font-size:12px !important; line-height:1.5 !important; }
+    .final { padding-top:86px; padding-bottom:96px; text-align:center; }
+    .final h2 { margin:0 auto 12px; font-size:clamp(36px,5vw,62px); line-height:1.05; }
+    .final p { max-width:650px; margin:0 auto 20px; color:#393c41; font-size:18px; line-height:1.55; }
+    .privacy { margin-top:12px !important; color:#6e6e73 !important; font-size:13px !important; }
+    @media (max-width:700px) {
+      .hero { padding-top:54px; }
+      .hero-media { margin-left:-12px; margin-right:-12px; border-radius:12px; }
+      .stat { padding-top:56px; padding-bottom:56px; }
+      .section { padding-top:64px; padding-bottom:64px; }
+      .certificate { padding:20px; }
+      .cert-grid { grid-template-columns:1fr; }
+      .qr { flex-basis:72px; width:72px; height:72px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+
+  <main>
+    <section class="hero wrap">
+      <p class="eyebrow">Certified Home Records</p>
+      <h1>Your home has a history. Keep the proof.</h1>
+      <p class="lede">Repairs, service, receipts and warranties — organized in one private record tied to your home.</p>
+      <div class="store-cta store-cta--center">
+        <ul class="store-cta__badges">
+          <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+          <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+        </ul>
+      </div>
+      <div class="hero-media">
+        <img src="/img/home-history/hero.webp" width="1400" height="788" alt="A relatable Arkansas home with its repair, warranty and service records organized around it" />
+      </div>
+    </section>
+
+    <section class="stat">
+      <strong>$3,000+</strong>
+      <h2>You put real money into your home. Keep the record.</h2>
+      <p>Without proof, years of repairs and maintenance can disappear into old emails, paper folders and forgotten contractors.</p>
+      <p class="source">Angi reports homeowners spent an average of $2,041 on maintenance and $1,143 on emergency repairs in 2025. <a href="https://ir.angi.com/news-releases/news-release-details/millennials-are-driving-future-home-spending-according-angis" target="_blank" rel="noopener">Source</a></p>
+    </section>
+
+    <section class="section wrap">
+      <p class="eyebrow">Think about it</p>
+      <h2>Would you buy a car without knowing its history?</h2>
+      <p>Probably not. So why buy a house that way? NOHM gives your home one clear history of the work that has gone into it.</p>
+      <div class="divider"></div>
+      <p class="eyebrow">Be the organized homeowner</p>
+      <h2>Done is good. Documented is better.</h2>
+      <p>Know what was done, who did it and when — with the receipts and warranties to back it up.</p>
+    </section>
+
+    <section class="proof">
+      <div class="section wrap">
+        <p class="eyebrow">When you sell</p>
+        <h2>Don't just say it was cared for. Show it.</h2>
+        <p>A NOHM Home History Certificate can bring the home's HIN and documented records together in one simple, scannable handoff.</p>
+
+        <div class="certificate" aria-label="Example NOHM Home History Certificate">
+          <div class="cert-head">
+            <div>
+              <b>NOHM Home History Certificate</b>
+              <div class="hin">HIN: AR-SAL-2026-01842</div>
+            </div>
+            <div class="qr" aria-hidden="true"></div>
+          </div>
+          <div class="cert-grid">
+            <div class="cert-item"><b>Certified repairs</b><span>Documented work</span></div>
+            <div class="cert-item"><b>Service history</b><span>Dates and providers</span></div>
+            <div class="cert-item"><b>Receipts</b><span>Proof of spend</span></div>
+            <div class="cert-item"><b>Warranties</b><span>Coverage on file</span></div>
+          </div>
+        </div>
+        <p class="fine">NOHM certification means a record is supported by documentation or service data inside NOHM. It is not a government certification, appraisal or home inspection.</p>
+      </div>
+    </section>
+
+    <section class="final wrap">
+      <p class="eyebrow">Private. Free. Yours.</p>
+      <h2>Start the history now.</h2>
+      <p>Your home record is not a public profile. Keep it organized, then share it when you choose.</p>
+      <div class="store-cta store-cta--center">
+        <ul class="store-cta__badges">
+          <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+          <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+        </ul>
+      </div>
+      <p class="privacy">Free to download. Private by default.</p>
+    </section>
+  </main>
+
+  <script src="/menu.js"></script>
+</body>
+</html>
