@@ -1,4 +1,5 @@
 # Amplify response headers (served with public/ as-is; no build step).
+# Every response is HTTPS-only for a year, subdomains included.
 # /book and /join take passwords and show a card form, so they refuse
 # to be framed. The fonts are fetched by Stripe's card iframe too, so
 # they allow that origin.
@@ -9,6 +10,8 @@ customHeaders:
         value: nosniff
       - key: Referrer-Policy
         value: strict-origin-when-cross-origin
+      - key: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
   - pattern: '/book/*'
     headers:
       - key: X-Frame-Options
