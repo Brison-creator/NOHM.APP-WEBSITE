@@ -14,7 +14,7 @@
   var P = window.NOHM_PRICING || { launch: true, express: { launch: 20, regular: 40 }, now: { launch: 30, regular: 60 } };
   function fee(k) { return P.launch ? P[k].launch : P[k].regular; }
 
-  var HOME = { address: '123 Maple Street', hin: 'HIN 0418-3391-7720' };
+  var HOME = { address: '123 Maple Street', hin: 'Home ID MV7-K4M-QXG' };
   var BUILDING = { name: 'Maple Court', units: ['1A', '1B', '2A', '2B'] };
   var TENANT = { name: 'Taylor Brooks', phone: '(555) 010-2244', rent: 950, due: 1 };
   var PROS = [

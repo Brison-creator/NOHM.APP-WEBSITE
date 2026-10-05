@@ -3,6 +3,7 @@
 // on file (Stripe, with the key the server publishes).
 
 import { h, append, button, money, clear } from '../../nohm/dom.js';
+import { homeId } from '../../nohm/format.js';
 import { feeFor } from '../lib/flow.js';
 import { mountCardForm } from './card.js';
 import { CARD_UNAVAILABLE } from '../../nohm/web-config.js';
@@ -18,7 +19,7 @@ export function homeScreen(a) {
   function pickList() {
     const list = h('div.b-list');
     for (const p of a.state.properties) {
-      list.append(h('button.b-choice', { type: 'button', class: a.draft.propertyId === p.id ? 'on' : '', dataset: { property: p.id }, onClick: () => { a.setDraft({ propertyId: p.id }); a.state.property = p; a.next(); } }, [h('span', [h('b', p.formattedAddress), h('small', p.hin ? `HIN ${p.hin}` : 'Home record pending')]), h('span.b-chev', '›')]));
+      list.append(h('button.b-choice', { type: 'button', class: a.draft.propertyId === p.id ? 'on' : '', dataset: { property: p.id }, onClick: () => { a.setDraft({ propertyId: p.id }); a.state.property = p; a.next(); } }, [h('span', [h('b', p.formattedAddress), h('small', p.hin ? `Home ID ${homeId(p.hin)}` : 'Home record pending')]), h('span.b-chev', '›')]));
     }
     return h('div', [list, h('button.b-link', { type: 'button', onClick: () => { mode = 'add'; draw(); } }, '+ Add another home')]);
   }
@@ -107,7 +108,7 @@ export function homeScreen(a) {
     else if (mode === 'add') append(wrap, [head('Where is the pro coming?', 'Start typing the street address.'), addForm(), err, footer(a, null, { back: true }), a.state.properties && a.state.properties.length ? h('button.b-link', { type: 'button', onClick: () => { mode = 'pick'; draw(); } }, 'Choose a home I already added') : null]);
     else if (mode === 'added') {
       const p = a.state.property;
-      append(wrap, [head('Your home is on NOHM.', p.hin ? `HIN ${p.hin}` : ''), h('div.b-card', [h('b', p.formattedAddress), h('p', 'Every repair from here on lands in this home’s record.')]), footer(a, () => a.next())]);
+      append(wrap, [head('Your home is on NOHM.', p.hin ? `Home ID ${homeId(p.hin)}` : ''), h('div.b-card', [h('b', p.formattedAddress), h('p', 'Every repair from here on lands in this home’s record.')]), footer(a, () => a.next())]);
     } else if (mode === 'in-app') {
       append(wrap, [head('Finish this one in the app', a.state.homeNote), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM'), h('button.b-link', { type: 'button', onClick: () => { mode = 'add'; draw(); } }, 'Try a different address'), footer(a, null)]);
     }

@@ -336,7 +336,7 @@
         c.fillText('[!!] EMERGENCY DISPATCH', lx, p.y - 7);
         c.font = '600 10px ' + MONO;
         c.fillStyle = rgba(RGB.white, 0.9 * ta);
-        c.fillText('1428 ELM ST. · HIN-8902-X', lx, p.y + 7);
+        c.fillText('1428 ELM ST. · DX9-PK3-RNH', lx, p.y + 7);
         c.fillStyle = rgba(RGB.green, 0.9 * ta);
         c.fillText('ASSIGNED · HVAC_04 · VERIFIED', lx, p.y + 20);
       }
@@ -598,7 +598,7 @@
           drawChrome(ctx, a, [
             ['NOHM · VERIFIED DISPATCH ENGINE', RGB.white, true],
             ['ORBITAL SCAN · ' + count.toLocaleString('en-US') + ' VERIFIED PROS ONLINE', RGB.green, false],
-            ...(time >= EMERGENCY_AT ? [['PRIORITY 1 · NO HEAT · HIN-8902-X', RGB.amber, false]] : []),
+            ...(time >= EMERGENCY_AT ? [['PRIORITY 1 · NO HEAT · DX9-PK3-RNH', RGB.amber, false]] : []),
           ]);
         }
       }
@@ -853,7 +853,7 @@
         c.beginPath(); c.moveTo(px, sy(peak, z)); c.lineTo(px, py); c.stroke();
         c.fillStyle = C.green;
         c.save(); c.translate(px, py); c.rotate(Math.PI / 4); c.fillRect(-4, -4, 8, 8); c.restore();
-        const sub = 'HIN-8902-X · ' + Math.max(0, (z - 24) / 1609).toFixed(2) + ' MI';
+        const sub = 'DX9-PK3-RNH · ' + Math.max(0, (z - 24) / 1609).toFixed(2) + ' MI';
         c.font = '600 9px ' + MONO;
         const lw = c.measureText(sub).width;
         const lx = px + 10 + lw < W - 10 ? px + 10 : px - 10 - lw;   // flip left when there is no room
@@ -890,7 +890,7 @@
         c.fillStyle = rgba(RGB.green, 0.55 + 0.45 * Math.sin(this.t * 5));
         c.beginPath(); c.arc(x0 + 4, top - 4, 3.5, 0, Math.PI * 2); c.fill();
         c.fillStyle = C.text;
-        c.fillText(ww < 330 ? 'LIVE VOICE · HIN-8902-X' : 'LIVE VOICE · HOMEOWNER · HIN-8902-X', x0 + 14, top);
+        c.fillText(ww < 330 ? 'LIVE VOICE · DX9-PK3-RNH' : 'LIVE VOICE · HOMEOWNER · DX9-PK3-RNH', x0 + 14, top);
         const secs = Math.floor(this.t * 20);                // time-lapse, like the ETA
         const timer = pad(Math.floor(secs / 60)) + ':' + pad(secs % 60);
         c.fillStyle = C.muted; c.fillText(timer, x0 + ww - c.measureText(timer).width, top);
@@ -937,7 +937,7 @@
         [0.8, 0.4, 0.15].forEach((al, i) => { c.strokeStyle = rgba(RGB.green, al); c.beginPath(); c.arc(cx, cy, R + 5, spin - (i + 1) * 0.45, spin - i * 0.45); c.stroke(); });
         c.font = '600 8.5px ' + MONO; c.fillStyle = rgba(RGB.green, 0.6);
         c.textAlign = 'center'; c.textBaseline = 'middle';
-        const ring = 'GPS-VERIFIED · EN ROUTE · HIN-8902-X · ';
+        const ring = 'GPS-VERIFIED · EN ROUTE · DX9-PK3-RNH · ';
         const rr = R + 15, cw = c.measureText('M').width + 0.6;
         const count = Math.max(1, Math.floor((Math.PI * 2 * rr) / (cw * ring.length))) * ring.length;
         for (let i = 0; i < count; i++) {

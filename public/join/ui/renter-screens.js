@@ -3,7 +3,7 @@
 
 import { h, field, button, clear } from '../../nohm/dom.js';
 import { inviteCodeProblem, otpProblem, inviteLine } from '../lib/renter-flow.js';
-import { prettyPhone } from '../../nohm/format.js';
+import { prettyPhone, homeId } from '../../nohm/format.js';
 
 function head(title, sub) {
   return h('header.b-head', [h('h1.b-h1', title), sub ? h('p.b-sub', sub) : null]);
@@ -81,7 +81,7 @@ export function doneScreen(a) {
   const landlord = a.state.myProperty && a.state.myProperty.landlord;
   return h('section.b-screen', [
     head('You’re in.', 'Your lease is on NOHM.'),
-    h('div.b-card', [h('b', prop.address || ''), lease.rentAmount ? h('p', inviteLine({ rentAmount: lease.rentAmount, leaseDueDay: lease.dueDay, leaseStartDate: lease.startDate })) : null, landlord ? h('p.b-small', `Landlord: ${landlord.name}`) : null, prop.hin ? h('p.b-small', `HIN ${prop.hin}`) : null]),
+    h('div.b-card', [h('b', prop.address || ''), lease.rentAmount ? h('p', inviteLine({ rentAmount: lease.rentAmount, leaseDueDay: lease.dueDay, leaseStartDate: lease.startDate })) : null, landlord ? h('p.b-small', `Landlord: ${landlord.name}`) : null, prop.hin ? h('p.b-small', `Home ID ${homeId(prop.hin)}`) : null]),
     h('div.b-card.blue', [h('b', 'Rent, repairs and your lease live in the app.'), h('p', 'Pay rent by bank transfer straight to your landlord, turn on autopay, send a repair request with photos, and keep every notice and document in one place.'), h('a.b-btn', { href: a.storeUrl() }, 'Get the NOHM app')]),
     h('p.b-small', ['Signed in as ', h('b', a.state.user ? a.state.user.email || prettyPhone(a.state.user.phone) : ''), ' · ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]),
   ]);
