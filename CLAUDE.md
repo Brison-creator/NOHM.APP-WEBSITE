@@ -39,6 +39,7 @@ Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no bui
   - `h1`–`h4` pick up Sora by default; for anything else use `.t-hero`, `.t-heading`, `.t-title`, `.t-body`, `.t-lede`, `.t-ui`.
   - The fonts are self-hosted WOFF2 in `public/fonts/` (official google/fonts builds, cut to the weights above and Latin), with their SIL OFL licenses beside them. A new weight means rebuilding the file, not adding a CDN link.
   - The bar's "NOHM" is Sora 800, -0.04em, `#171a20` on the white bar (white only while the homepage bar is clear over its photo). It is the same wordmark as the app's sign-in screen and the admin panel; don't restyle it on one without the others.
+  - **NOHM™**: every wordmark carries a small raised ™ (the owner's trademark notice). On the bar it comes from `bar.css` (`.bar > a:first-child::after`), in the app demos from `.d-mark` / `.k-mark`; never type it into the markup, and keep it out of screen readers (the CSS alt text does). Footers read `NOHM&trade; &copy; 2026`. Running text says plain "NOHM".
 - **"NOHM it." is a protected brand treatment**: the homepage's `h1.mark`, in **Panchang** 600 with its own size and spacing. Don't change it, and don't use Panchang for anything else. Panchang loads from Fontshare on the homepage only
   (`https://api.fontshare.com/v2/css?f[]=panchang@600&display=swap`); never commit its files, since the ITF Free Font License forbids redistributing them and this repo is public.
 - Palette is white, black and NOHM blue, nothing else:

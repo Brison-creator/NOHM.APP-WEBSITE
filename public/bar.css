@@ -1,6 +1,6 @@
 /* The top bar every page carries: slim, white, the NOHM wordmark on the
    left (set exactly like the app's sign-in screen and the admin panel),
-   tall enough to hold nav buttons on the right. Pages link this file and
+   with a small raised ™, tall enough to hold nav buttons on the right. Pages link this file and
    open <body> with <header class="bar"><a href="/">NOHM</a></header>.
    The homepage's bar is clear over its photo (.bar.clear) until you
    scroll. */
@@ -15,6 +15,15 @@
   font-family: var(--font-display);
   font-weight: var(--weight-hero); font-size: 19px; line-height: 1; letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
   color: #171a20; text-decoration: none;
+}
+/* The owner's trademark notice: a small raised ™ after the wordmark, as
+   in the app and the admin panel. The empty alt text keeps it out of what
+   screen readers say ("NOHM"). */
+.bar > a:first-child::after {
+  content: "\2122"; content: "\2122" / "";
+  font-family: var(--font-text); font-weight: var(--weight-ui-strong);
+  font-size: 0.42em; letter-spacing: 0; word-spacing: 0;
+  vertical-align: top; margin-left: 0.08em;
 }
 .bar { justify-content: space-between; }
 

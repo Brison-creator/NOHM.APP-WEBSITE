@@ -139,6 +139,13 @@ a.d-btn { text-decoration: none; }
   margin: 36px 0 4px; text-align: center; font-family: var(--font-display); font-weight: var(--weight-hero);
   font-size: 56px; line-height: 1; letter-spacing: -0.04em;
 }
+/* The owner's trademark notice, as on the site's bar (bar.css). */
+.d-mark::after {
+  content: "\2122"; content: "\2122" / "";
+  font-family: var(--font-text); font-weight: var(--weight-ui-strong);
+  font-size: 0.42em; letter-spacing: 0; word-spacing: 0;
+  vertical-align: top; margin-left: 0.08em;
+}
 .d-tagline { margin: 0 0 32px; text-align: center; color: #356ca3; font-weight: var(--weight-ui); }
 .d-demo-login { background: #f4f4f4; border-radius: 12px; padding: 12px 14px; margin: 0 0 16px; font-size: 14px; }
 .d-demo-login b { font-weight: var(--weight-ui); }
