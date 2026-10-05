@@ -27,6 +27,19 @@ export function prettyPhone(e164) {
   return m ? `(${m[1]}) ${m[2]}-${m[3]}` : e164 || '';
 }
 
+/**
+ * A Home ID (HIN) as the app shows it (formatHin in hin_plate.dart):
+ * v1 "ACD4F7HJK" → "ACD-4F7-HJK"; v2 "H27KQM4XRT9WPD3NC8" →
+ * "H2-7KQM-4XRT-9WPD-3NC8". Anything else is shown as stored.
+ */
+export function homeId(hin) {
+  const raw = String(hin || '');
+  const s = raw.replace(/[\s-]/g, '').toUpperCase();
+  if (s.length === 18 && s.startsWith('H2')) return ['H2', ...s.slice(2).match(/.{4}/g)].join('-');
+  if (s.length === 9) return `${s.slice(0, 3)}-${s.slice(3, 6)}-${s.slice(6)}`;
+  return raw;
+}
+
 export function isEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(s || '').trim());
 }

@@ -724,8 +724,8 @@
       for (const nIdx of nodes) route.push({ x: city.x(nIdx), y: city.y(nIdx) });
       route.push({ x: city.target.x, y: city.targetRow * S }, { x: city.target.x, y: city.target.y });
       setText(el.pros, 'HVAC_04 DISPATCHED', 'warn');
-      pinRecord('#HIN-8902-X', 'HVAC_DISPATCH · EMERGENCY', 'd');
-      log('[!!] EMERGENCY DISPATCH · HIN-8902-X', 'a');
+      pinRecord('#DX9-PK3-RNH', 'HVAC_DISPATCH · EMERGENCY', 'd');
+      log('[!!] EMERGENCY DISPATCH · DX9-PK3-RNH', 'a');
       log('TARGET 1428 ELM ST. · HVAC_04 ASSIGNED', 'a');
     }
 
@@ -739,7 +739,7 @@
       city = null; pros = []; pings = []; route = null; hero = null;
       cabin = new Cabin();
       setText(el.pros, 'HVAC_04 EN ROUTE', 'ok');
-      pinRecord('#HIN-8902-X', 'HVAC_EN_ROUTE · ETA 04:12', 'g');
+      pinRecord('#DX9-PK3-RNH', 'HVAC_EN_ROUTE · ETA 04:12', 'g');
       log('CABIN HUD ONLINE · VOICE LINE OPEN', 'g');
     }
 
@@ -952,7 +952,7 @@
       c.fillText(alertMode ? 'LOCK · MasterPro_HVAC_04' : 'LIVE GRID · SECTOR 07', 26, 32);
       c.font = '600 10px ' + MONO;
       c.fillStyle = alertMode ? rgba(RGB.amber, 0.75) : rgba(RGB.green, 0.85);
-      c.fillText(alertMode ? 'PRIORITY 1 · NO HEAT · HIN-8902-X' : '6 MASTER PROS · GPS-VERIFIED', 26, 47);
+      c.fillText(alertMode ? 'PRIORITY 1 · NO HEAT · DX9-PK3-RNH' : '6 MASTER PROS · GPS-VERIFIED', 26, 47);
 
       // Scale bar: one block.
       const block = S * cam.zoom;
@@ -1086,7 +1086,7 @@
       // The lines type themselves in.
       const typed = (text, start) => text.slice(0, Math.max(0, Math.floor((t - start) * 42)));
       c.font = '600 12px ' + MONO;
-      const lines = [['TARGET: ', '1428 ELM ST.', 0.8], ['IDENTITY: ', 'HIN-8902-X', 1.05]];
+      const lines = [['TARGET: ', '1428 ELM ST.', 0.8], ['IDENTITY: ', 'DX9-PK3-RNH', 1.05]];
       for (const [key, value, start] of lines) {
         const shown = typed(key + value, start);
         const k = shown.slice(0, key.length), v = shown.slice(key.length);
@@ -1434,7 +1434,7 @@
         c.fillText('1428 ELM ST.', dx + 10, top - 4);
         c.font = '600 10px ' + MONO;
         c.fillStyle = rgba(RGB.green, 0.9);
-        c.fillText('HIN-8902-X · ' + miles + ' MI', dx + 10, top + 10);
+        c.fillText('DX9-PK3-RNH · ' + miles + ' MI', dx + 10, top + 10);
 
         c.drawImage(cachedLayer('cabinFrame', (g) => this.drawFrame(g)), 0, 0, W, H);
 
@@ -1497,7 +1497,7 @@
         c.fillStyle = rgba(RGB.green, dot);
         c.beginPath(); c.arc(x0 + 4, top - 4, 3.5, 0, Math.PI * 2); c.fill();
         c.fillStyle = C.text;
-        c.fillText(ww < 330 ? 'LIVE VOICE · HIN-8902-X' : 'LIVE VOICE · HOMEOWNER · HIN-8902-X', x0 + 14, top);
+        c.fillText(ww < 330 ? 'LIVE VOICE · DX9-PK3-RNH' : 'LIVE VOICE · HOMEOWNER · DX9-PK3-RNH', x0 + 14, top);
         const secs = Math.floor(this.t);
         const timer = pad(Math.floor(secs / 60)) + ':' + pad(secs % 60);
         c.fillStyle = C.muted;
@@ -1575,7 +1575,7 @@
         c.fillStyle = rgba(RGB.green, 0.6);
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        const ring = 'GPS-VERIFIED · EN ROUTE · HIN-8902-X · ';
+        const ring = 'GPS-VERIFIED · EN ROUTE · DX9-PK3-RNH · ';
         const rr = R + 15, cw = c.measureText('M').width + 0.6;
         const reps = Math.max(1, Math.floor((Math.PI * 2 * rr) / (cw * ring.length)));
         const count = reps * ring.length;
@@ -1715,7 +1715,9 @@
     const STATUSES = [['DISPATCH', 'd'], ['EN_ROUTE', 'w'], ['ON_SITE', 'w'], ['RESOLVED', 'g'], ['VERIFIED', 'g']];
     let recordCount = 1284;
     let pinned = null;
-    const hinId = () => '#HIN-' + pad((Math.random() * 10000) | 0, 4) + '-' + 'XYKMRTZ'[(Math.random() * 7) | 0];
+    // Same alphabet as the server's HIN generator (no 0/O, 1/I/L, 2/Z, 5/S, 8/B).
+    const hinGroup = () => Array.from({ length: 3 }, () => 'ACDEFGHJKMNPQRTVWXY34679'[(Math.random() * 24) | 0]).join('');
+    const hinId = () => '#' + hinGroup() + '-' + hinGroup() + '-' + hinGroup();
 
     function recordRow(id, status, cls) {
       const li = document.createElement('li');
@@ -1795,7 +1797,7 @@
 
     // Seed the feed.
     [
-      ['#HIN-3317-K', 'ELECTRICAL_VERIFIED', 'g'],
+      ['#QT6-WH7-CME', 'ELECTRICAL_VERIFIED', 'g'],
       ['#HIN-7720-M', 'APPLIANCE_ON_SITE', 'w'],
       ['#HIN-0458-T', 'LOCKSMITH_EN_ROUTE', 'w'],
       ['#HIN-5096-R', 'ROOFING_DISPATCH', 'd'],

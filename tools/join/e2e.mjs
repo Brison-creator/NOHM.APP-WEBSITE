@@ -268,7 +268,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.click('[data-key=accept]');
   await page.waitForFunction(() => document.body.textContent.includes('Your lease is on NOHM'));
   await snap(page, 'renter-done');
-  assert.match(await page.textContent('.b-card'), /HIN 7QW-3HN-2KD/);
+  assert.match(await page.textContent('.b-card'), /Home ID 7QW-E3H-NKY/);
   await page.reload();
   await page.waitForFunction(() => document.body.textContent.includes('Your lease is on NOHM'));
 

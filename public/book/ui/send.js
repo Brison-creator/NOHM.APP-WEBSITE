@@ -3,7 +3,7 @@
 
 import { h, append, button, money, clear } from '../../nohm/dom.js';
 import { TIERS, feeFor, cancellationTermsQuery } from '../lib/flow.js';
-import { WINDOWS, bookableDays } from '../../nohm/format.js';
+import { WINDOWS, bookableDays, homeId } from '../../nohm/format.js';
 import { photoFailureText } from '../lib/photos.js';
 import { head, footer, HOLD, premiumText } from './parts.js';
 
@@ -171,7 +171,7 @@ export function doneScreen(a) {
 
   wrap.append(
     head(d.tier === 'NOW' ? 'A pro is on the way.' : 'Request sent.', job.jobNumber ? `Job ${job.jobNumber}` : ''),
-    h('div.b-card', [h('b', `${d.trade.label} · ${d.issue.title}`), h('p', a.state.property ? a.state.property.formattedAddress : ''), a.state.property && a.state.property.hin ? h('p.b-small', `HIN ${a.state.property.hin}`) : null]),
+    h('div.b-card', [h('b', `${d.trade.label} · ${d.issue.title}`), h('p', a.state.property ? a.state.property.formattedAddress : ''), a.state.property && a.state.property.hin ? h('p.b-small', `Home ID ${homeId(a.state.property.hin)}`) : null]),
     status,
     photoFailureText(a.state.photoFailures) ? h('p.b-err.b-photofail', { role: 'alert' }, photoFailureText(a.state.photoFailures)) : null,
     pros,
