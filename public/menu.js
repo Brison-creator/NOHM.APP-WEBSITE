@@ -42,6 +42,7 @@
     '<li><a href="' + store + '">Download the App</a></li>' +
     '<li><a href="/step-in">When NOHM Steps In</a></li>' +
     '<li><a href="/support">Support</a></li>' +
+    '<li><a href="/delete-account">Delete Your Account</a></li>' +
     '<li><a href="/privacy">Privacy</a></li>' +
     '<li><a href="/terms">Terms</a></li>' +
     '</ul>';
