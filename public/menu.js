@@ -36,6 +36,7 @@
     '<li><a href="/services">All Services</a></li>' +
     '<li><a href="/local-pros">Local Pros</a></li>' +
     '<li><a href="/quotes">Three Quotes</a></li>' +
+    '<li><a href="/financing">Financing</a></li>' +
     '<li><a href="/pros">For Pros</a></li>' +
     '<li><a href="/join">Join as a Pro</a></li>' +
     '<li><a href="/join/renter">Renters: Accept Your Invite</a></li>' +
