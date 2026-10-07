@@ -35,9 +35,12 @@ export function normalizeWebConfig(raw) {
   const r = raw && typeof raw === 'object' ? raw : {};
   const pk = typeof r.stripePublishableKey === 'string' ? r.stripePublishableKey.trim() : '';
   const gid = typeof r.googleClientId === 'string' ? r.googleClientId.trim() : '';
+  const ts = typeof r.turnstileSiteKey === 'string' ? r.turnstileSiteKey.trim() : '';
   return {
     stripePublishableKey: /^pk_(live|test)_[A-Za-z0-9]+$/.test(pk) ? pk : null,
     googleClientId: /^[A-Za-z0-9-]+\.apps\.googleusercontent\.com$/.test(gid) ? gid : null,
+    // Cloudflare Turnstile's site key ("I'm human", nohm/human.js).
+    turnstileSiteKey: /^[0-9]x[A-Za-z0-9_-]{8,}$/.test(ts) ? ts : null,
   };
 }
 

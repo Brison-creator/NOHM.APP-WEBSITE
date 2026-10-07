@@ -21,23 +21,24 @@ export function createApi(http, session) {
     // ── Catalog (public) ────────────────────────────────────────
     trades: () => http.get('/trades', { auth: false }),
     pricing: () => http.get('/config/pricing', { auth: false }),
-    /** { stripePublishableKey, googleClientId }: the server's public settings for the site. */
+    /** { stripePublishableKey, googleClientId, turnstileSiteKey }: the server's public settings for the site. */
     webConfig: () => http.get('/config/web', { auth: false }),
 
     // ── Account ─────────────────────────────────────────────────
     auth: {
       checkExists: (email) => http.post('/auth/check-exists', { email }, { auth: false }),
       /** Email sign-up, step 1: texts a code to the phone. 409 when the email or phone is taken. */
-      emailSignupSendOtp: (body) => http.post('/auth/email-signup/send-otp', body, { auth: false }),
+      // `human`: the "I'm human" box's token (nohm/human.js), when the server asks for one.
+      emailSignupSendOtp: (body, human) => http.post('/auth/email-signup/send-otp', { ...body, ...(human ? { humanToken: human } : {}) }, { auth: false }),
       /** Step 2: the code plus the same fields again creates the account and signs in. */
       emailSignupVerify: (body, code) => http.post('/auth/email-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
       /** Phone sign-up, step 1: { phone, role } → a code to the phone. 409 when the phone is taken. */
-      phoneSignupSendOtp: ({ phone, role }) => http.post('/auth/phone-signup/send-otp', { phone, role }, { auth: false }),
+      phoneSignupSendOtp: ({ phone, role }, human) => http.post('/auth/phone-signup/send-otp', { phone, role, ...(human ? { humanToken: human } : {}) }, { auth: false }),
       /** Step 2: { phone, firstName, lastName, role, email? } plus the code creates the account and signs in. */
       phoneSignupVerify: (body, code) => http.post('/auth/phone-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
-      loginEmailPassword: async (email, password) => {
+      loginEmailPassword: async (email, password, human) => {
         const deviceSecret = session.deviceSecret(email);
-        const res = await http.post('/auth/login/email-password', { email, password, ...dev(), ...(deviceSecret ? { deviceSecret } : {}) }, { auth: false });
+        const res = await http.post('/auth/login/email-password', { email, password, ...dev(), ...(deviceSecret ? { deviceSecret } : {}), ...(human ? { humanToken: human } : {}) }, { auth: false });
         session.saveDeviceSecret(email, res && res.deviceSecret);
         return res;
       },
@@ -47,10 +48,10 @@ export function createApi(http, session) {
         session.saveDeviceSecret(email, res && res.deviceSecret);
         return res;
       },
-      loginSendOtp: (phone) => http.post('/auth/login/send-otp', { phone }, { auth: false }),
+      loginSendOtp: (phone, human) => http.post('/auth/login/send-otp', { phone, ...(human ? { humanToken: human } : {}) }, { auth: false }),
       loginVerifyOtp: (phone, code) => http.post('/auth/login/verify-otp', { phone, code, ...dev() }, { auth: false }),
       googleSignin: (idToken, role = 'HOMEOWNER') => http.post('/auth/google/signin', { idToken, role, ...dev() }, { auth: false }),
-      socialSignupSendOtp: (phone) => http.post('/auth/social-signup/send-otp', { phone }, { auth: false }),
+      socialSignupSendOtp: (phone, human) => http.post('/auth/social-signup/send-otp', { phone, ...(human ? { humanToken: human } : {}) }, { auth: false }),
       googleSignupWithPhone: (idToken, phone, code, role = 'HOMEOWNER') => http.post('/auth/google/signup-with-phone', { idToken, phone, code, role, ...dev() }, { auth: false }),
       me: () => http.get('/auth/me'),
       logout: () => http.post('/auth/logout'),

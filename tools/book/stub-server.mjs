@@ -160,6 +160,13 @@ function api(method, url, body, req) {
   const p = url.pathname.replace('/api/v1', '');
   // Legacy mode: the server live before 3b5f675 has no /config/web and no phone sign-up.
   if (world.legacy && (p === '/config/web' || p.startsWith('/auth/phone-signup/'))) return [404, { message: `Cannot ${method} /api/v1${p}`, error: 'Not Found', statusCode: 404 }];
+  // common/human-check runs before validation: it takes the token off the
+  // body, and with the box on a code is sent only with a passed check.
+  if (/^\/auth\/(email-signup|phone-signup|social-signup|login)\/send-otp$|^\/auth\/login\/email-password$/.test(p) && body && !body._contentType) {
+    const token = body.humanToken;
+    delete body.humanToken;
+    if (world.webConfig === 'human' && token !== 'tok-human') return [403, { code: 'HUMAN_CHECK', message: 'Please confirm you’re human, then try again.' }];
+  }
   const bad = bodyProblem(method, p, body);
   if (bad) return [400, { message: [bad] }];
   const needAuth = () => (auth === 'Bearer acc-1' ? null : json);
@@ -169,6 +176,8 @@ function api(method, url, body, req) {
   if (p === '/config/web' && method === 'GET') {
     if (world.webConfig === 'fail') return [503, { message: 'Service Unavailable' }];
     if (world.webConfig === 'empty') return [200, { stripePublishableKey: null, googleClientId: null }];
+    // "I'm human" on (server TURNSTILE_SITE_KEY): send-otp then needs the box's token.
+    if (world.webConfig === 'human') return [200, { stripePublishableKey: STUB_STRIPE_KEY, googleClientId: null, turnstileSiteKey: '0x4AAAAAAAstubSiteKey' }];
     return [200, { stripePublishableKey: STUB_STRIPE_KEY, googleClientId: null }];
   }
   if (p === '/auth/check-exists') return [200, { exists: body.email === 'taken@example.com' }];

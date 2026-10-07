@@ -15,6 +15,7 @@ const { browser } = await import('./e2e/lib.mjs');
 await import('./e2e/booking.mjs');
 await import('./e2e/extras.mjs');
 await import('./e2e/legacy.mjs');
+await import('./e2e/human.mjs');
 
 await browser.close();
 console.log('all e2e runs passed');

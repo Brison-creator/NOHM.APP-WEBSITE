@@ -49,7 +49,9 @@ public/nohm/        shared with /join
   signup.js         the sign-up form's rules and body, by role
   account.js        the account screen (sign up, sign in, Google), by role
   google.js         Google Identity Services, loaded only if the server publishes a client id
-  web-config.js     GET /config/web: the Stripe publishable key and Google client id; off (with a message) when missing
+  web-config.js     GET /config/web: the Stripe publishable key, Google client id and Turnstile site key; off (with a message) when missing
+  human.js          "I'm human" (Cloudflare Turnstile) on every form that sends a code; its token goes as humanToken
+  trust.js          the security marks under the account and card steps
 tools/book/
   flow.test.mjs     node --test: rules, bodies, error routing, session, http (15 tests)
   stub-server.mjs   serves public/ + a stand-in API with the real response shapes; logs every request
@@ -57,6 +59,7 @@ tools/book/
   e2e/lib.mjs       the shared browser, stub controls and steps
   e2e/booking.mjs   runs 1–5: Standard, Express, NOW, error paths
   e2e/extras.mjs    runs 6–8: photos, /config/web missing, phone sign-up
+  e2e/human.mjs     run 10: "I'm human" on: nothing sent until ticked, a token with each code
 docs/web-booking.md this file
 ```
 

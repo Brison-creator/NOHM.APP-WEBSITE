@@ -7,6 +7,7 @@ import { homeId } from '../../nohm/format.js';
 import { feeFor } from '../lib/flow.js';
 import { mountCardForm } from './card.js';
 import { CARD_UNAVAILABLE } from '../../nohm/web-config.js';
+import { trustMarks } from '../../nohm/trust.js';
 import { svg, head, footer } from './parts.js';
 
 // ── 7. Home ───────────────────────────────────────────────────────
@@ -157,5 +158,6 @@ export function cardScreen(a) {
     err,
     h('p.b-small', 'Handled by Stripe. NOHM never sees your card number.'),
     h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null, btn]),
+    trustMarks({ webConfig: a.webConfig, card: true }),
   ]);
 }
