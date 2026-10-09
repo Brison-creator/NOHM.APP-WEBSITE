@@ -57,15 +57,18 @@ export function windowByKey(key) {
 }
 
 /**
- * The next seven days a Standard job can be booked for (the server
- * allows today through +7). Each: { iso: 'YYYY-MM-DD', label }.
+ * The seven days a Standard job can be booked for: tomorrow through a
+ * week out. Standard is never same day (owner, 2026-10-09: "Standard
+ * service isn't allowed to be booked same day"); today is NOHM Express,
+ * and the server refuses a Standard job for today. Each:
+ * { iso: 'YYYY-MM-DD', label }.
  */
 export function bookableDays(now = new Date(), count = 7) {
   const out = [];
-  for (let i = 0; i < count; i++) {
+  for (let i = 1; i <= count; i++) {
     const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
     const iso = localDateIso(d);
-    const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const label = i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     out.push({ iso, label });
   }
   return out;

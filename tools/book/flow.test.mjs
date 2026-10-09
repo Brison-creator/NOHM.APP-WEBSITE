@@ -83,11 +83,12 @@ test('each step says what it still needs', () => {
   d.window = 'MIDDAY';
   assert.equal(stepProblem('schedule', d, now), null);
   d.day = '2026-10-01';
-  assert.match(stepProblem('schedule', d, now), /day has passed/);
+  assert.match(stepProblem('schedule', d, now), /Standard starts tomorrow/);
+  // Owner, 2026-10-09: "Standard service isn't allowed to be booked same
+  // day". Today is refused at any hour, every window still open.
   d.day = '2026-10-02';
-  d.window = 'MORNING';
-  assert.equal(stepProblem('schedule', d, new Date(2026, 9, 2, 10, 30)), null, 'offered until the window ends');
-  assert.match(stepProblem('schedule', d, new Date(2026, 9, 2, 11)), /window has closed/);
+  d.window = 'AFTERNOON';
+  assert.equal(stepProblem('schedule', d, now), 'Standard starts tomorrow. Pick another day.');
   d.day = '2026-10-03';
   d.window = 'MIDDAY';
   d.tier = 'EXPRESS';
@@ -183,10 +184,13 @@ test('format helpers', () => {
   assert.equal(scheduledDateIso('2026-10-03', () => 300), '2026-10-03T00:00:00-05:00');
   assert.equal(scheduledDateIso('2026-10-03', () => -330), '2026-10-03T00:00:00+05:30');
   assert.equal(scheduledDateIso('bad'), null);
+  // Standard is never same day: tomorrow through a week out.
   const days = bookableDays(new Date(2026, 9, 2, 9));
   assert.equal(days.length, 7);
-  assert.deepEqual(days[0], { iso: '2026-10-02', label: 'Today' });
-  assert.equal(days[1].label, 'Tomorrow');
+  assert.deepEqual(days[0], { iso: '2026-10-03', label: 'Tomorrow' });
+  assert.equal(days[6].iso, '2026-10-09');
+  assert.ok(!days.some((d) => d.iso === '2026-10-02' || d.label === 'Today'), 'no today');
+  assert.deepEqual(bookableDays(new Date(2026, 9, 31, 23, 59))[0], { iso: '2026-11-01', label: 'Tomorrow' });
   assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 9)), true);
   assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 10, 30)), true, 'offered until the window ends');
   assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 11)), false, 'not once it has ended');

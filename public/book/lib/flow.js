@@ -86,7 +86,7 @@ export function stepProblem(step, draft, now = new Date()) {
     case 'schedule':
       if (draft.tier !== 'STANDARD') return null;
       if (!draft.day) return 'Pick a day.';
-      if (!bookableDays(now).some((d) => d.iso === draft.day)) return 'That day has passed. Pick another.';
+      if (!bookableDays(now).some((d) => d.iso === draft.day)) return 'Standard starts tomorrow. Pick another day.';
       if (!windowByKey(draft.window)) return 'Pick an arrival window.';
       if (!windowOpenOn(draft.day, draft.window, now)) return 'That window has closed. Pick another.';
       return null;

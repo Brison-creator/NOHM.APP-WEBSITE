@@ -25,7 +25,10 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await describeAndSpeed(page, 'STANDARD', 'Kitchen sink drains slowly and gurgles.');
   await page.waitForSelector('[data-window]');
   await snap(page, 'schedule');
-  await page.click('[data-day]:nth-child(2)'); // tomorrow: every window open
+  // Standard is never same day: the first day offered is tomorrow.
+  assert.equal(await page.$eval('[data-day]:nth-child(1)', (b) => b.textContent), 'Tomorrow');
+  assert.equal(await page.$$eval('[data-day]', (bs) => bs.filter((b) => b.textContent === 'Today').length), 0);
+  await page.click('[data-day]:nth-child(1)'); // tomorrow: every window open
   await page.click('[data-window=MIDDAY]');
   await page.click('[data-key=next]');
 

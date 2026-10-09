@@ -245,5 +245,5 @@ export function scheduleScreen(a) {
     a.next();
   };
   const premium = lateAfternoonPremium(a.state.pricing);
-  return h('section.b-screen', [head('When should the pro come?', 'Pick a day and an arrival window. The cancellation terms are on the last step.'), dayRow, winList, h('p.b-small', premium ? `Late afternoon adds a ${money(premium)} premium, held when your pro accepts.` : 'Late afternoon adds a premium, held when your pro accepts.'), err, footer(a, go)]);
+  return h('section.b-screen', [head('When should the pro come?', `Pick a day from tomorrow on and an arrival window. Need a pro today? Go back and choose ${TIERS.EXPRESS.name}. The cancellation terms are on the last step.`), dayRow, winList, h('p.b-small', premium ? `Late afternoon adds a ${money(premium)} premium, held when your pro accepts.` : 'Late afternoon adds a premium, held when your pro accepts.'), err, footer(a, go)]);
 }
