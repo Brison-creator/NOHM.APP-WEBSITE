@@ -13,9 +13,11 @@ var NOHM_PRICING = {
     plan: 7,
     manager: 29,
     walkthrough: 79,
-    application: 40,
-    applicationIncome: 50,
-    applicationPremium: 65,
+    // Owner, 2026-10-09: one background check, paid by the applicant
+    // where the law allows; the NOHM Income Check, optional, paid by the
+    // landlord only if the applicant connects their bank.
+    application: 50,
+    incomeCheck: 20,
     achRatePercent: 0.8,
     achCap: 7
   }

@@ -281,14 +281,19 @@
     <section class="partner" aria-labelledby="screen-title">
       <div class="p-card">
         <a class="p-logo" href="https://certn.co/property-management/" target="_blank" rel="noopener"><img src="/img/partners/certn.svg" width="167" height="48" alt="Certn" /></a>
-        <h2 id="screen-title">Choose the screening.<br />NOHM runs the workflow.</h2>
-        <p>Standard identity, credit and criminal screening runs through Certn. For stronger income verification, choose source-verified employment through Certn or bank-connected income verification through Plaid. The applicant pays where local law allows; NOHM applies jurisdiction limits before checkout.</p>
-        <div class="screening-tiers" aria-label="Applicant screening choices">
-          <div class="screening-tier"><b>Standard · <span data-rental="application">$40</span></b><span>Soft credit, core criminal and identity verification.</span></div>
-          <div class="screening-tier"><b>Instant Income · <span data-rental="applicationIncome">$50</span></b><span>Standard screening plus bank-connected income verification.</span></div>
-          <div class="screening-tier"><b>Premium · <span data-rental="applicationPremium">$65</span></b><span>Standard screening plus source-verified employment.</span></div>
+        <h2 id="screen-title">W-2s and bank statements can be faked.<br />NOHM checks the bank.</h2>
+        <p>Edited pay stubs, W-2s and bank statements are sold online, and they look real. NOHM never asks applicants for paperwork: Certn runs the background check, and if you want proof of income, the NOHM Income Check reads it from the applicant&rsquo;s own bank through Plaid.</p>
+        <div class="screening-tiers" aria-label="Screening prices">
+          <div class="screening-tier"><b>Background check · <span data-rental="application">$50</span></b><span>Paid by the applicant. Credit, criminal and identity.</span></div>
+          <div class="screening-tier"><b>NOHM Income Check · <span data-rental="incomeCheck">$20</span></b><span>Optional. Paid by you, only if they connect their bank. Their income against the rent, never where it comes from.</span></div>
         </div>
-        <p class="landlord-pricing-note">Screening prices can be reduced or restricted where state or local law requires it. The landlord does not pay the applicant screening fee.</p>
+        <ol class="screening-steps" aria-label="How it works">
+          <li><b>Send the application.</b> They apply and pay for the background check.</li>
+          <li><b>See the background check</b> in the app.</li>
+          <li><b>Check their income</b> if you want: ask for the NOHM Income Check.</li>
+          <li><b>Approve.</b> They pay the deposit from their bank, straight to your account.</li>
+        </ol>
+        <p class="landlord-pricing-note">The $50 applies only where state and local law allow it. Where a state or city sets less, the applicant pays less (nothing in Massachusetts and Vermont); NOHM applies the limit before checkout.</p>
         <a class="p-more" href="https://certn.co/property-management/" target="_blank" rel="noopener">Learn more about Certn</a>
       </div>
     </section>
@@ -352,10 +357,10 @@
           <li>Listing comes down when a lease is signed</li>
           <li>Next listing drafted after move-out</li>
           <li>Applications sent by text</li>
-          <li>Applicant screening from $40, where allowed</li>
-          <li>Certn identity, credit, criminal &amp; employment checks</li>
-          <li>Plaid bank-connected income verification</li>
-          <li>You choose the screening tier</li>
+          <li>Background check <span data-rental="application">$50</span>, paid by the applicant where allowed</li>
+          <li>Certn identity, credit &amp; criminal checks</li>
+          <li>Optional NOHM Income Check from the applicant&rsquo;s bank, <span data-rental="incomeCheck">$20</span></li>
+          <li>No W-2s or bank statements to fake</li>
           <li>Local fee limits applied before checkout</li>
           <li>Approve with lease terms</li>
           <li>Deposit &amp; first month paid by bank</li>
@@ -433,7 +438,7 @@
           <p>Per walkthrough. A trained specialist does the condition report. Charged only when it&rsquo;s in.</p>
         </div>
       </div>
-      <p class="fine">Rent goes straight to your connected payout account. ACH collection is 0.8% of the payment, capped at $7. You choose whether the tenant pays that fee on top or you absorb it from the rent proceeds. NOHM takes no percentage of rent. Applicant screening is paid by the applicant where allowed, with local legal limits applied before checkout. Repairs you approve are billed like any NOHM job: Standard has no NOHM fee, Express is <span data-fee="express">$20</span> and NOHM NOW is <span data-fee="now">$30</span>, plus the pro&rsquo;s charges, which you approve first.</p>
+      <p class="fine">Rent goes straight to your connected payout account. ACH collection is 0.8% of the payment, capped at $7. You choose whether the tenant pays that fee on top or you absorb it from the rent proceeds. NOHM takes no percentage of rent. The background check is paid by the applicant where allowed, with local legal limits applied before checkout. The optional NOHM Income Check is <span data-rental="incomeCheck">$20</span> on your monthly bill, only if the applicant connects their bank. Repairs you approve are billed like any NOHM job: Standard has no NOHM fee, Express is <span data-fee="express">$20</span> and NOHM NOW is <span data-fee="now">$30</span>, plus the pro&rsquo;s charges, which you approve first.</p>
     </section>
 
     <section class="compare" aria-labelledby="compare-title">
@@ -453,7 +458,7 @@
             <tr class="nohm-row">
               <td>NOHM</td>
               <td><span data-rental="membership">$9</span>/mo + <span data-rental="plan">$7</span>/rental/mo</td>
-              <td>$0 when applicant-paid; local law controls the applicant charge</td>
+              <td>$0 for the background check (applicant-paid; local law controls the charge); optional Income Check <span data-rental="incomeCheck">$20</span></td>
               <td>$0 if passed to tenant; otherwise 0.8%, max $7/payment</td>
             </tr>
             <tr>
@@ -504,7 +509,7 @@
       <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Rent goes straight to your connected payout account. ACH collection is 0.8%, capped at $7 per payment. You decide whether the tenant pays that fee on top or you absorb it from the rent proceeds.</p></details>
       <details><summary>What does NOHM Manager actually do?</summary><p>It answers tenant messages from your house notes, books repairs, reviews estimates, relists the unit after move-out and sends you a weekly summary. Emergencies always come straight to you.</p></details>
       <details><summary>What is a NOHM Walkthrough?</summary><p>A move-in or move-out condition report done in person by a trained local specialist. Every room is rated and photographed, both sides sign it, and it&rsquo;s saved as a signed PDF. You can also do it yourself in the app for free.</p></details>
-      <details><summary>Who screens my applicants?</summary><p>Certn handles the core identity, credit, criminal and source-verified employment checks. Plaid handles bank-connected income verification for the Instant Income tier. You choose the tier before sending the application. Standard is <span data-rental="application">$40</span>, Instant Income is <span data-rental="applicationIncome">$50</span> and Premium is <span data-rental="applicationPremium">$65</span> where local law permits those amounts; NOHM applies local limits before checkout. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
+      <details><summary>Who screens my applicants?</summary><p>Certn runs the background check: identity, credit and criminal. It is <span data-rental="application">$50</span>, paid by the applicant, where local law permits; NOHM applies local limits before checkout. If you want proof of income, ask for the NOHM Income Check: the applicant connects their bank through Plaid and you see their income against the rent. It is <span data-rental="incomeCheck">$20</span> on your monthly bill, only if they connect. NOHM never asks for W-2s or bank statements, which can be faked. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
       <details><summary>Can I use my own lease?</summary><p>Yes. Upload your lease as a PDF and you and your tenant e-sign it in the app. NOHM keeps a signing certificate with it.</p></details>
       <details><summary>How do deposits work at move-out?</summary><p>Set the move-out date and NOHM tracks the deposit deadline. Itemize any deductions next to the move-in report, send the statement and mark the refund paid. Reminders go out before the deadline.</p></details>
       <details><summary>Can I see profit for each unit?</summary><p>Yes. Money &amp; Taxes shows income, costs and profit per rental, sorted into IRS Schedule E categories, with a year-end report you can email to your accountant.</p></details>

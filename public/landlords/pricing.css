@@ -115,6 +115,35 @@
   line-height: 1.45;
 }
 
+/* How it works: the order the app runs it in. */
+.screening-steps {
+  margin: 18px 0 14px;
+  padding-left: 22px;
+  color: #393c41;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* Numbered, not the card's checkmarks. */
+.p-card .screening-steps li {
+  position: static;
+  padding-left: 4px;
+  list-style: decimal;
+}
+
+.p-card .screening-steps li::before {
+  content: none;
+}
+
+.screening-steps li + li {
+  margin-top: 6px;
+}
+
+.screening-steps b {
+  color: #171a20;
+  font-weight: var(--weight-ui);
+}
+
 @media (min-width: 900px) {
   .fees .fee-grid {
     grid-template-columns: repeat(4, 1fr);
