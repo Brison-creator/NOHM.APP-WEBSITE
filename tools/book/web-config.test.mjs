@@ -30,16 +30,16 @@ test('the only built-in key is LEGACY_WEB_CONFIG, for a server without /config/w
 });
 
 test('only well-formed public values are used', () => {
-  assert.deepEqual(normalizeWebConfig({ stripePublishableKey: 'pk_live_abc123', googleClientId: '123-x.apps.googleusercontent.com' }), { stripePublishableKey: 'pk_live_abc123', googleClientId: '123-x.apps.googleusercontent.com', turnstileSiteKey: null });
-  assert.deepEqual(normalizeWebConfig({ stripePublishableKey: null, googleClientId: null }), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null });
-  assert.deepEqual(normalizeWebConfig({ stripePublishableKey: '', googleClientId: '  ' }), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null });
+  assert.deepEqual(normalizeWebConfig({ stripePublishableKey: 'pk_live_abc123', googleClientId: '123-x.apps.googleusercontent.com' }), { stripePublishableKey: 'pk_live_abc123', googleClientId: '123-x.apps.googleusercontent.com', turnstileSiteKey: null, signupRef: false });
+  assert.deepEqual(normalizeWebConfig({ stripePublishableKey: null, googleClientId: null }), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, signupRef: false });
+  assert.deepEqual(normalizeWebConfig({ stripePublishableKey: '', googleClientId: '  ' }), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, signupRef: false });
   assert.equal(normalizeWebConfig({ stripePublishableKey: 'sk_live_secret' }).stripePublishableKey, null, 'never a secret key');
   assert.equal(normalizeWebConfig({ stripePublishableKey: 'rk_live_x' }).stripePublishableKey, null);
   assert.equal(normalizeWebConfig({ googleClientId: 'g1' }).googleClientId, null, 'not a Google client id');
   assert.equal(normalizeWebConfig({ googleClientId: 'x.apps.googleusercontent.com.evil.example' }).googleClientId, null);
   assert.equal(normalizeWebConfig({ googleClientId: ' 832397285346-abc.apps.googleusercontent.com ' }).googleClientId, '832397285346-abc.apps.googleusercontent.com');
-  assert.deepEqual(normalizeWebConfig(null), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null });
-  assert.deepEqual(normalizeWebConfig('nope'), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null });
+  assert.deepEqual(normalizeWebConfig(null), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, signupRef: false });
+  assert.deepEqual(normalizeWebConfig('nope'), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, signupRef: false });
 });
 
 test('asked once and shared; a failed call means both features off, and is asked again later', async () => {
@@ -47,10 +47,10 @@ test('asked once and shared; a failed call means both features off, and is asked
   let fail = true;
   const api = { webConfig: async () => { calls++; if (fail) throw Object.assign(new Error('503'), { status: 503 }); return { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com' }; } };
   const webConfig = createWebConfig(api);
-  assert.deepEqual(await webConfig(), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, legacy: false, phoneSignup: true });
+  assert.deepEqual(await webConfig(), { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, signupRef: false, legacy: false, phoneSignup: true });
   fail = false;
   const [a, b] = await Promise.all([webConfig(), webConfig()]);
-  assert.deepEqual(a, { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com', turnstileSiteKey: null, legacy: false, phoneSignup: true });
+  assert.deepEqual(a, { stripePublishableKey: 'pk_test_ok1', googleClientId: 'g1.apps.googleusercontent.com', turnstileSiteKey: null, signupRef: false, legacy: false, phoneSignup: true });
   assert.equal(a, b);
   await webConfig();
   assert.equal(calls, 2, 'one failed call, then one shared answer');
@@ -72,7 +72,7 @@ test('only a 404 falls back: a network error, a 5xx, or a 200 with empty values 
     assert.equal(cfg.legacy, false);
   }
   const empty = await createWebConfig({ webConfig: async () => ({ stripePublishableKey: null, googleClientId: null }) })();
-  assert.deepEqual(empty, { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, legacy: false, phoneSignup: true });
+  assert.deepEqual(empty, { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: null, signupRef: false, legacy: false, phoneSignup: true });
   const thrown = await createWebConfig({ webConfig: async () => { throw new TypeError('Failed to fetch'); } })();
   assert.equal(thrown.stripePublishableKey, null);
 });

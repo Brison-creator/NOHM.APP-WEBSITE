@@ -10,6 +10,7 @@
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
+import { rememberSignupRef, signupRef } from '../nohm/ref.js';
 import { createWebConfig } from '../nohm/web-config.js';
 import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction } from './lib/flow.js';
 import { randomId } from '../nohm/format.js';
@@ -28,7 +29,15 @@ const toastEl = document.getElementById('book-toast');
 const session = createSession(window.localStorage, { deviceName: navigator.userAgent.slice(0, 80), draftStore: window.sessionStorage });
 const apiBase = apiBaseFor(location.hostname, location.search, config.apiBase);
 const http = createHttp({ baseUrl: apiBase, session, onAccountStop: (err) => a.accountStopped(err) });
-const api = createApi(http, session);
+// Came from a NOHM Reddit post (/book?ref=<its code>): the sign-up sends
+// it, when the server says it takes one (GET /config/web signupRef).
+rememberSignupRef(location.search, window.sessionStorage);
+const api = createApi(http, session, {
+  signupRef: async () => {
+    const ref = signupRef(window.sessionStorage);
+    return ref && (await a.webConfig()).signupRef ? ref : null;
+  },
+});
 
 const PROGRESS = { service: 1, issue: 1, details: 2, speed: 3, schedule: 3, account: 4, home: 4, card: 5, review: 6, now: 6, done: 7 };
 

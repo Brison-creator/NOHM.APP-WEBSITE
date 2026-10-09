@@ -14,8 +14,14 @@ export function apiBaseFor(hostname, search, configured) {
   return override || configured;
 }
 
-export function createApi(http, session) {
+export function createApi(http, session, { signupRef } = {}) {
   const dev = () => session.deviceFields();
+  // A Reddit post's code for the sign-up's last step (nohm/ref.js), when
+  // the page has one and the server takes it; otherwise nothing is added.
+  const ref = async () => {
+    const r = signupRef ? await Promise.resolve(signupRef()).catch(() => null) : null;
+    return r ? { ref: r } : {};
+  };
 
   return {
     // ── Catalog (public) ────────────────────────────────────────
@@ -31,11 +37,11 @@ export function createApi(http, session) {
       // `human`: the "I'm human" box's token (nohm/human.js), when the server asks for one.
       emailSignupSendOtp: (body, human) => http.post('/auth/email-signup/send-otp', { ...body, ...(human ? { humanToken: human } : {}) }, { auth: false }),
       /** Step 2: the code plus the same fields again creates the account and signs in. */
-      emailSignupVerify: (body, code) => http.post('/auth/email-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
+      emailSignupVerify: async (body, code) => http.post('/auth/email-signup/verify-otp', { ...body, code, ...dev(), ...(await ref()) }, { auth: false }),
       /** Phone sign-up, step 1: { phone, role } → a code to the phone. 409 when the phone is taken. */
       phoneSignupSendOtp: ({ phone, role }, human) => http.post('/auth/phone-signup/send-otp', { phone, role, ...(human ? { humanToken: human } : {}) }, { auth: false }),
       /** Step 2: { phone, firstName, lastName, role, email? } plus the code creates the account and signs in. */
-      phoneSignupVerify: (body, code) => http.post('/auth/phone-signup/verify-otp', { ...body, code, ...dev() }, { auth: false }),
+      phoneSignupVerify: async (body, code) => http.post('/auth/phone-signup/verify-otp', { ...body, code, ...dev(), ...(await ref()) }, { auth: false }),
       loginEmailPassword: async (email, password, human) => {
         const deviceSecret = session.deviceSecret(email);
         const res = await http.post('/auth/login/email-password', { email, password, ...dev(), ...(deviceSecret ? { deviceSecret } : {}), ...(human ? { humanToken: human } : {}) }, { auth: false });

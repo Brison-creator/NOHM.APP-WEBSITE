@@ -41,6 +41,9 @@ export function normalizeWebConfig(raw) {
     googleClientId: /^[A-Za-z0-9-]+\.apps\.googleusercontent\.com$/.test(gid) ? gid : null,
     // Cloudflare Turnstile's site key ("I'm human", nohm/human.js).
     turnstileSiteKey: /^[0-9]x[A-Za-z0-9_-]{8,}$/.test(ts) ? ts : null,
+    // The sign-up takes a Reddit post's code (`ref`, nohm/ref.js). Only
+    // an explicit true: an older server refuses fields it doesn't know.
+    signupRef: r.signupRef === true,
   };
 }
 
