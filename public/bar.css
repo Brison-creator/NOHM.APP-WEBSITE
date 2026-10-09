@@ -71,3 +71,7 @@
   transform: rotate(45deg);
 }
 body.menu-open { overflow: hidden; }
+
+/* Rentals on nohm.app links (menu.js shows them only while the server
+   has the search on): hidden means hidden, whatever a page's own styles. */
+[data-rentals][hidden] { display: none !important; }

@@ -1,8 +1,8 @@
 # Amplify response headers (served with public/ as-is; no build step).
 # Every response is HTTPS-only for a year (nohm.app itself; subdomains
 # such as api.nohm.app are left to set their own).
-# /book and /join take passwords and show a card form, so they refuse
-# to be framed. The fonts are fetched by Stripe's card iframe too, so
+# /book and /join take passwords and show a card form, and /rentals a
+# contact form, so they refuse to be framed. The fonts are fetched by Stripe's card iframe too, so
 # they allow that origin.
 customHeaders:
   - pattern: '**/*'
@@ -26,6 +26,12 @@ customHeaders:
       - key: Content-Security-Policy
         value: "frame-ancestors 'none'"
   - pattern: '/join/renter/*'
+    headers:
+      - key: X-Frame-Options
+        value: DENY
+      - key: Content-Security-Policy
+        value: "frame-ancestors 'none'"
+  - pattern: '/rentals/*'
     headers:
       - key: X-Frame-Options
         value: DENY
