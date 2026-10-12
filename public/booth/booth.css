@@ -24,13 +24,6 @@ body {
   -webkit-mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
           mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
 }
-/* The owner's trademark notice, as on the site's bar (bar.css). */
-.k-mark::after {
-  content: "\2122"; content: "\2122" / "";
-  font-family: var(--font-text); font-weight: var(--weight-ui-strong);
-  font-size: calc(var(--mark) * 0.58); line-height: 1; letter-spacing: 0; word-spacing: 0;
-  margin: -1px 0 0 calc(var(--mark) * 0.1);
-}
 .k-tag { margin: 6px 0 0; color: #356ca3; font-weight: var(--weight-ui); font-size: clamp(14px, 1.7vh, 20px); }
 .k-qr { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 10px 16px 10px 10px; }
 .k-qr img { width: clamp(72px, 10vh, 120px); height: auto; aspect-ratio: 1; display: block; }

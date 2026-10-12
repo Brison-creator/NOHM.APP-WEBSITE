@@ -33,15 +33,6 @@
   -webkit-mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
           mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
 }
-/* The owner's trademark notice: a small raised ™ after the logo, as in
-   the app and the admin panel. The empty alt text keeps it out of what
-   screen readers say ("NOHM"). */
-.bar > a:first-child::after {
-  content: "\2122"; content: "\2122" / "";
-  font-family: var(--font-text); font-weight: var(--weight-ui-strong);
-  font-size: 8px; line-height: 1; letter-spacing: 0; word-spacing: 0;
-  margin: -1px 0 0 2px;
-}
 .bar { justify-content: space-between; }
 
 /* Menu button on the right of the bar, and the full-screen menu it opens
