@@ -79,16 +79,17 @@
   transform: rotate(45deg);
 }
 body.menu-open { overflow: hidden; }
-/* The quiet sign-in under the menu's list (menu.js): small print, one
-   plain link to the PM Professional web portal. */
+/* The quiet sign-in under the menu's list (menu.js): small print, plain
+   links to the web portal for PM Professional companies and landlords. */
 .menu-signin {
   margin: 16px 24px 40px; padding-top: 20px;
   border-top: 1px solid #e6e7e9;
   font-size: 14px; line-height: 1.5; color: #6e6e73;
 }
-.menu-signin a { color: #171a20; font-weight: var(--weight-ui); text-decoration: none; }
+.menu-signin a { display: block; width: fit-content; color: #171a20; font-weight: var(--weight-ui); text-decoration: none; }
+.menu-signin a + a { margin-top: 8px; }
 .menu-signin a:hover { text-decoration: underline; }
-.menu-signin p { margin: 4px 0 0; }
+.menu-signin p { margin: 8px 0 0; }
 
 /* Rentals on nohm.app links (menu.js shows them only while the server
    has the search on): hidden means hidden, whatever a page's own styles. */

@@ -50,10 +50,12 @@
     '<li><a href="/terms">Terms</a></li>' +
     '</ul>' +
     // A quiet sign-in at the foot of the menu: property-management
-    // companies sign in on the web portal; everyone else in the app.
+    // companies and landlords sign in on the web portal (one sign-in that
+    // opens each account's own side); everyone else in the app.
     '<div class="menu-signin">' +
     '<a href="https://business.nohm.app/">PM Professional Sign In</a>' +
-    '<p>Homeowners, landlords, renters and pros sign in on the NOHM app.</p>' +
+    '<a href="https://business.nohm.app/">Landlord Sign In</a>' +
+    '<p>Homeowners, renters and pros sign in on the NOHM app.</p>' +
     '</div>';
   document.body.appendChild(menu);
   var close = menu.querySelector('.menu-close');
