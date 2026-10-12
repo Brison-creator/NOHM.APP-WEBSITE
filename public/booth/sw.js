@@ -2,13 +2,14 @@
 // needs is cached on first load; after that it tries the network first (so a
 // fix on the site reaches the booth) and falls back to the cache after three
 // seconds or when offline. Bump CACHE when the list changes.
-var CACHE = 'nohm-booth-v1';
+var CACHE = 'nohm-booth-v2';
 var FILES = [
   '/booth/',
   '/booth/booth.css',
   '/booth/booth.js',
   '/booth/manifest.webmanifest',
   '/booth/qr-try.svg',
+  '/img/nohm-mark.svg',
   '/booth/icon-192.png',
   '/booth/icon-512.png',
   '/booth/apple-touch-icon.png',

@@ -1,6 +1,6 @@
-/* The top bar every page carries: slim, white, the NOHM wordmark on the
-   left (set exactly like the app's sign-in screen and the admin panel),
-   with a small raised ™, tall enough to hold nav buttons on the right. Pages link this file and
+/* The top bar every page carries: slim, white, the NOHM logo on the left
+   (drawn exactly like the app's and the admin panel's), with a small
+   raised ™, tall enough to hold nav buttons on the right. Pages link this file and
    open <body> with <header class="bar"><a href="/">NOHM</a></header>.
    The homepage's bar is clear over its photo (.bar.clear) until you
    scroll. */
@@ -16,14 +16,31 @@
   font-weight: var(--weight-hero); font-size: 19px; line-height: 1; letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
   color: #171a20; text-decoration: none;
 }
-/* The owner's trademark notice: a small raised ™ after the wordmark, as
-   in the app and the admin panel. The empty alt text keeps it out of what
+/* The NOHM logo (owner, 2026-10-12: "that's the new logo everywhere"):
+   NOHM in thin, even lines, drawn (/img/nohm-mark.svg, the same shapes as
+   the app's and the admin panel's), in the link's color. The word stays in
+   the link, at size 0, for screen readers and search. --mark is the
+   letters' height: the capitals of 19px text, as the old mark's were. */
+.bar > a:first-child {
+  --mark: 14px;
+  display: inline-flex; align-items: flex-start;
+  font-size: 0; line-height: 1;
+}
+.bar > a:first-child::before {
+  content: ""; flex: none;
+  width: calc(var(--mark) * 5.25); height: var(--mark);
+  background: currentColor;
+  -webkit-mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
+          mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
+}
+/* The owner's trademark notice: a small raised ™ after the logo, as in
+   the app and the admin panel. The empty alt text keeps it out of what
    screen readers say ("NOHM"). */
 .bar > a:first-child::after {
   content: "\2122"; content: "\2122" / "";
   font-family: var(--font-text); font-weight: var(--weight-ui-strong);
-  font-size: 0.42em; letter-spacing: 0; word-spacing: 0;
-  vertical-align: top; margin-left: 0.08em;
+  font-size: 8px; line-height: 1; letter-spacing: 0; word-spacing: 0;
+  margin: -1px 0 0 2px;
 }
 .bar { justify-content: space-between; }
 

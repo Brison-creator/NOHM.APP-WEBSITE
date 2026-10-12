@@ -10,16 +10,26 @@ body {
   flex: none; display: flex; align-items: center; justify-content: space-between; gap: 24px;
   padding: max(16px, env(safe-area-inset-top)) 32px 12px;
 }
+/* The NOHM logo, drawn as on the site's bar (bar.css): the word stays for
+   screen readers, at size 0. */
 .k-mark {
-  font-family: var(--font-display); font-weight: var(--weight-hero); font-size: clamp(28px, 3.4vh, 44px);
-  letter-spacing: -0.04em; line-height: 1;
+  --mark: calc(clamp(28px, 3.4vh, 44px) * 0.73);
+  display: inline-flex; align-items: flex-start;
+  font-size: 0; line-height: 1;
+}
+.k-mark::before {
+  content: ""; flex: none;
+  width: calc(var(--mark) * 5.25); height: var(--mark);
+  background: currentColor;
+  -webkit-mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
+          mask: url(/img/nohm-mark.svg) center / 100% 100% no-repeat;
 }
 /* The owner's trademark notice, as on the site's bar (bar.css). */
 .k-mark::after {
   content: "\2122"; content: "\2122" / "";
   font-family: var(--font-text); font-weight: var(--weight-ui-strong);
-  font-size: 0.42em; letter-spacing: 0; word-spacing: 0;
-  vertical-align: top; margin-left: 0.08em;
+  font-size: calc(var(--mark) * 0.58); line-height: 1; letter-spacing: 0; word-spacing: 0;
+  margin: -1px 0 0 calc(var(--mark) * 0.1);
 }
 .k-tag { margin: 6px 0 0; color: #356ca3; font-weight: var(--weight-ui); font-size: clamp(14px, 1.7vh, 20px); }
 .k-qr { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 10px 16px 10px 10px; }
