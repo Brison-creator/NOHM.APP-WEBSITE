@@ -242,7 +242,7 @@ export function accountScreen(a, opts = {}) {
         const address = email.value.trim().toLowerCase();
         const res = await a.api.auth.loginEmailPassword(address, pw.value, hc.token());
         if (res.status === 'otp_required') {
-          a.state.pendingLogin = { email: email.value.trim().toLowerCase(), maskedPhone: res.maskedPhone };
+          a.state.pendingLogin = { email: email.value.trim().toLowerCase(), maskedPhone: res.maskedPhone, emailedTo: res.sentTo === 'email' ? (res.maskedEmail || res.maskedPhone) : null };
           mode = 'signin-code';
           draw();
           return;
@@ -304,7 +304,7 @@ export function accountScreen(a, opts = {}) {
       body.push(h('form.b-form', { onSubmit: (e) => e.preventDefault() }, [h('p.b-line', `Hi ${a.state.pendingGoogle.firstName || ''}, Google checked out.`), phone.el, hc.el, btn]));
     } else if (mode === 'google-code') body.push(codeForm({ phone: a.state.pendingGoogle.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.googleSignupWithPhone(a.state.pendingGoogle.idToken, a.state.pendingGoogle.phone, code, role)), onResend: (human) => a.api.auth.socialSignupSendOtp(a.state.pendingGoogle.phone, human) }));
     else if (mode === 'signin') body.push(googleRow(), signinForm());
-    else if (mode === 'signin-code') body.push(h('p.b-line', `New browser. We texted a code to ${a.state.pendingLogin.maskedPhone || 'your phone'}.`), codeForm({ phone: a.state.pendingLogin.maskedPhone || '', onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyDeviceOtp(a.state.pendingLogin.email, code)) }));
+    else if (mode === 'signin-code') body.push(h('p.b-line', a.state.pendingLogin.emailedTo ? `New browser. We emailed a code to ${a.state.pendingLogin.emailedTo}.` : `New browser. We texted a code to ${a.state.pendingLogin.maskedPhone || 'your phone'}.`), codeForm({ phone: a.state.pendingLogin.maskedPhone || '', onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyDeviceOtp(a.state.pendingLogin.email, code)) }));
     else if (mode === 'signin-phone') body.push(phoneSigninForm());
     else if (mode === 'signin-phone-code') body.push(codeForm({ phone: a.state.pendingLogin.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyOtp(a.state.pendingLogin.phone, code)), onResend: (human) => a.api.auth.loginSendOtp(a.state.pendingLogin.phone, human) }));
     append(wrap, [head(title, sub), mode === 'signup' || mode === 'signup-phone' || mode === 'signin' ? tabs() : null, ...body, err, footer(a), trustMarks({ webConfig: a.webConfig })]);
