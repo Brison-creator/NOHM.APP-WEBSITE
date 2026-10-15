@@ -58,6 +58,7 @@ export function homeScreen(a) {
         if (check.existingProperty && check.ownedBySelf && check.existingPropertyId) {
           a.setDraft({ propertyId: check.existingPropertyId });
           a.state.property = { id: check.existingPropertyId, formattedAddress: d.formattedAddress, hin: check.existingHin || null };
+          if (!(check.existingPropertyId in a.state.zones)) await a.refreshZones();
           return a.next();
         }
         if (check.existingProperty) {
@@ -82,6 +83,8 @@ export function homeScreen(a) {
       const home = await a.api.properties.confirm(shell.id, 'SINGLE');
       a.state.property = home;
       a.state.properties = [...(a.state.properties || []), home];
+      // Its time zone (the day and window count there) comes with the account's homes.
+      await a.refreshZones();
       a.setDraft({ propertyId: home.id });
       a.state.pendingPlace = null;
       mode = 'added';

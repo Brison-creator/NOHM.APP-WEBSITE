@@ -12,17 +12,17 @@ Branch: `web-booking`. Not merged. The lead engineer audits and integrates.
 | 2 | **Issue**: the trade's five issues, copied from the app (`lib/issues.js`). Feeds the job title `"<Trade> · <Issue>"`, as the app does. | — |
 | 3 | **Details**: free text (≤2000) + up to 5 photos (JPEG/PNG/WebP/HEIC). Each photo is shrunk in the browser as it's added (`lib/photos.js`: long edge 2048 px, JPEG 0.85, the camera's EXIF orientation baked in); a small one goes as it is, a HEIC the browser can't read goes as it is if it's within 10 MB. One that can't be used is named. | — |
 | 4 | **Speed**: Standard (free), NOHM Express, NOHM NOW, with the regular price struck through while `hasLiveDiscount`. | — |
-| 5 | **Schedule** (Standard only): today + 7 days, four arrival windows; windows that have closed today are disabled; late afternoon shows its +$20 premium. | — |
+| 5 | **Schedule** (Standard only): tomorrow through a week out, counted at the home (its time zone), four arrival windows; late afternoon shows its +$20 premium. Before the home is known the browser's clock stands in, and the day is checked again at the home before review (sent back here if it's today there). When the home keeps another clock than the browser, the screen says so ("the home's time (CDT)"). | — |
 | 6 | **Account** (skipped when signed in): sign-up with a phone (name + phone, email optional → text code → account, no password) or with email (email, phone, password → text code → account), sign-in (email + password, with the new-browser text code; or phone code), optional Google. | `POST /auth/phone-signup/send-otp`, `/auth/phone-signup/verify-otp`; `/auth/check-exists`, `/auth/email-signup/send-otp`, `/auth/email-signup/verify-otp`; `/auth/login/email-password`, `/auth/login/verify-device-otp`, `/auth/login/send-otp`, `/auth/login/verify-otp`; `/auth/google/signin`, `/auth/social-signup/send-otp`, `/auth/google/signup-with-phone`; then `GET /auth/me`, `GET /properties`, `GET /stripe/customer/payment-method` |
-| 7 | **Home**: pick one of the person's homes, or add one: address search → check → shell → confirm SINGLE, which issues the HIN. An address that already has a record (claimable, or owned by someone else) or is multi-unit is sent to the app; those flows (claim verification, unit pick, dispute) stay app-only. | `GET /places/autocomplete`, `GET /places/details`, `POST /properties/check-type`, `POST /properties/shell`, `POST /properties/:id/confirm` |
+| 7 | **Home**: pick one of the person's homes, or add one: address search → check → shell → confirm SINGLE, which issues the HIN. An address that already has a record (claimable, or owned by someone else) or is multi-unit is sent to the app; those flows (claim verification, unit pick, dispute) stay app-only. A new home's time zone is read with `GET /auth/me`. | `GET /places/autocomplete`, `GET /places/details`, `POST /properties/check-type`, `POST /properties/shell`, `POST /properties/:id/confirm`, `GET /auth/me` |
 | 8 | **Card** (skipped when one is on file): Stripe.js card element → `confirmCardSetup` → server records it. | `POST /stripe/customer/setup-intent`, `POST /stripe/customer/confirm-card` |
 | 9 | **Review**: every choice with an Edit link, the fee, the server's cancellation disclosure, and one button. On Express, if the server reports spendable NOHM Credits, an opt-in (off by default) to put them toward the fee; only `useCreditsForExpressFee: true` is sent, and the server decides how many apply when it holds the fee. | `GET /jobs/cancellation-terms`, `GET /nohmcredit/balance` (Express) |
 | 10 | **Send**: Standard/Express → `POST /jobs`, then photos. NOW → the live list, pick a pro → `POST /now/dispatch`, then photos. Photos go **one per request** (the server appends each; its 25 MB request cap could otherwise refuse five at once), and the done screen names any that failed. | `POST /jobs`, `POST /jobs/:id/photos` (once per photo); `GET /now/live`, `POST /now/demand`, `POST /now/dispatch` |
-| 11 | **Done**: Standard shows the matched pros and lets the person pick one; Express and NOW say what happens next. Everything after that (tracking, chat, PIN, estimate approval) points to the app. | `GET /jobs/:id`, `GET /jobs/:id/matched-contractors`, `POST /jobs/:id/select-contractor` |
+| 11 | **Done**: who has the request is the server's answer (`lib/flow.js` `offerState`). Offered to the home's Preferred Pro first (the job's selected pro holds the `PREFERRED` offer): "Sent to your Preferred Pro, Marcus.", nothing to pick. Already with one pro: "Your request is with Ray." (the app's words). Otherwise Standard shows the matched pros and lets the person pick one; Express and NOW say what happens next. Everything after that (tracking, chat, PIN, estimate approval) points to the app. | `GET /jobs/:id/matched-contractors` (Standard and Express), `POST /jobs/:id/select-contractor` |
 
 The draft (everything but the photo files) lives in `sessionStorage`, so a sign-in or a reload keeps the person's place, and signing out clears it. Tokens live in `localStorage` with one device id per browser (`deviceType: 'web'`). When the server trusts the browser for an email it hands back a `deviceSecret`; the browser keeps it per email and sends it with the next password sign-in, as the app does, so a known browser isn't texted a code each time.
 
-`scheduledDate` is the homeowner's **local midnight** of the chosen day with its offset (`2026-10-03T00:00:00-05:00`), exactly what the app sends; the server adds the window's start hour itself. The cancellation terms on the review step are asked for that same value.
+`scheduledDate` is **midnight at the home** on the chosen day, with the home's offset at that midnight (`2026-10-03T00:00:00-05:00` for a Chicago home), the shape the app sends; the server adds the window's start hour itself (`windowOpensAt`) and checks "never same day" in the home's time (`standard-day.ts`), so a browser on another clock (UTC, travelling) still books the home's day and hour. The home's zone is the server's: `GET /auth/me` lists the person's homes as stored, each with its `timezone` (`GET /properties` doesn't carry it; if it ever does, that is read first). With no zone from the server the browser's own stands in. The cancellation terms on the review step are asked for that same value.
 
 ## Files
 
@@ -53,13 +53,14 @@ public/nohm/        shared with /join
   human.js          "I'm human" (Cloudflare Turnstile) on every form that sends a code; its token goes as humanToken
   trust.js          the security marks under the account and card steps
 tools/book/
-  flow.test.mjs     node --test: rules, bodies, error routing, session, http (15 tests)
+  flow.test.mjs     node --test: rules, bodies, error routing, session, http, the home's time zone, who has the request
   stub-server.mjs   serves public/ + a stand-in API with the real response shapes; logs every request
   e2e.mjs           headless Chromium against the stub, all runs in order; asserts the bodies sent
   e2e/lib.mjs       the shared browser, stub controls and steps
   e2e/booking.mjs   runs 1–5: Standard, Express, NOW, error paths
   e2e/extras.mjs    runs 6–8: photos, /config/web missing, phone sign-up
   e2e/human.mjs     run 10: "I'm human" on: nothing sent until ticked, a token with each code
+  e2e/home.mjs      runs 12–13: the home's Preferred Pro gets it first (nothing to pick); a Honolulu browser books a Chicago home
 docs/web-booking.md this file
 ```
 
@@ -86,7 +87,7 @@ Also changed: `customHttp.yml` (Amplify headers: `X-Frame-Options: DENY` and `fr
 ## Tests
 
 ```
-node --test tools/book/*.test.mjs          # 15 unit tests, no browser
+node --test tools/book/*.test.mjs          # unit tests, no browser
 node tools/book/stub-server.mjs 8787 &     # then:
 node tools/book/e2e.mjs                    # Standard, Express (card missing, reload), NOW; checks every body sent
 SHOTS=/tmp/shots node tools/book/e2e.mjs   # the same, with a screenshot per screen

@@ -3,6 +3,7 @@
 
 import { h, button, money } from '../../nohm/dom.js';
 import { lateAfternoonPremium } from '../lib/flow.js';
+import { scheduledDateIso, zoneShortName, browserTimeZone } from '../../nohm/format.js';
 
 export const svg = (d) => {
   const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -22,6 +23,18 @@ export const HOLD = 'The fee is held on your card when you send the request, and
 export function premiumText(a) {
   const cents = lateAfternoonPremium(a.state.pricing);
   return cents ? `+${money(cents)}` : null;
+}
+
+/**
+ * " CDT" after a window when the home keeps another clock than this
+ * browser, so "11 AM" reads as the home's 11 AM; empty when they match
+ * or the home's zone isn't known.
+ */
+export function homeClock(tz, dayIso) {
+  if (!tz || tz === browserTimeZone()) return '';
+  const at = scheduledDateIso(dayIso, tz);
+  const name = zoneShortName(tz, at ? new Date(at) : new Date());
+  return name ? ` ${name}` : '';
 }
 
 export function head(title, sub) {

@@ -5,10 +5,11 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers } from '../../public/book/lib/flow.js';
+import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers, homeZones, homeTimeZone, offerState } from '../../public/book/lib/flow.js';
 import { signupProblems, signupBody } from '../../public/nohm/signup.js';
 import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib/issues.js';
-import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone } from '../../public/nohm/format.js';
+import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone, zoneShortName } from '../../public/nohm/format.js';
+import { execFileSync } from 'node:child_process';
 import { createSession } from '../../public/nohm/session.js';
 import { createHttp, ApiError } from '../../public/nohm/http.js';
 import { apiBaseFor } from '../../public/nohm/api.js';
@@ -181,8 +182,8 @@ test('format helpers', () => {
   assert.equal(money(2000), '$20');
   assert.equal(money(2050), '$20.50');
   assert.equal(money(-500), '−$5');
-  assert.equal(scheduledDateIso('2026-10-03', () => 300), '2026-10-03T00:00:00-05:00');
-  assert.equal(scheduledDateIso('2026-10-03', () => -330), '2026-10-03T00:00:00+05:30');
+  assert.equal(scheduledDateIso('2026-10-03', 'America/Chicago'), '2026-10-03T00:00:00-05:00');
+  assert.equal(scheduledDateIso('2026-10-03', 'Asia/Kolkata'), '2026-10-03T00:00:00+05:30');
   assert.equal(scheduledDateIso('bad'), null);
   // Standard is never same day: tomorrow through a week out.
   const days = bookableDays(new Date(2026, 9, 2, 9));
@@ -343,4 +344,105 @@ test('homeId groups a Home ID the way the app does', async () => {
   assert.equal(homeId('H27KQM4XRT9WPD3NC8'), 'H2-7KQM-4XRT-9WPD-3NC8');
   assert.equal(homeId('LEGACY-ID'), 'LEGACY-ID');
   assert.equal(homeId(null), '');
+});
+
+// ── The home's time zone (staging walkthrough, 2026-10-15: a browser on
+// UTC sent 2026-10-18T00:00:00.000Z for a home in Bentonville, AR) ──
+
+test('scheduledDate is midnight at the home with the home’s offset, whatever the browser’s zone', () => {
+  // Bentonville, AR is America/Chicago: CDT (−05:00) until Nov 1, CST (−06:00) after.
+  assert.equal(scheduledDateIso('2026-10-18', 'America/Chicago'), '2026-10-18T00:00:00-05:00');
+  assert.equal(scheduledDateIso('2026-11-01', 'America/Chicago'), '2026-11-01T00:00:00-05:00', 'DST ends at 2 AM: that midnight is still CDT');
+  assert.equal(scheduledDateIso('2026-11-02', 'America/Chicago'), '2026-11-02T00:00:00-06:00');
+  assert.equal(scheduledDateIso('2026-03-08', 'America/Chicago'), '2026-03-08T00:00:00-06:00', 'DST starts at 2 AM: that midnight is still CST');
+  assert.equal(scheduledDateIso('2026-10-18', 'America/Phoenix'), '2026-10-18T00:00:00-07:00');
+  assert.equal(scheduledDateIso('2026-10-18', 'Pacific/Honolulu'), '2026-10-18T00:00:00-10:00');
+  // The same call in browsers on UTC, Tokyo and Honolulu: one answer, the home's.
+  const code = "import('" + new URL('../../public/nohm/format.js', import.meta.url).href + "').then((f) => console.log(f.scheduledDateIso('2026-10-18', 'America/Chicago'), f.scheduledDateIso('2026-10-18')))";
+  for (const TZ of ['UTC', 'Asia/Tokyo', 'Pacific/Honolulu']) {
+    const [home, browser] = execFileSync(process.execPath, ['-e', code], { env: { ...process.env, TZ } }).toString().trim().split(' ');
+    assert.equal(home, '2026-10-18T00:00:00-05:00', `a browser on ${TZ}`);
+    assert.match(browser, /^2026-10-18T00:00:00[+-]\d\d:\d\d$/, 'with no zone known, the browser’s own still makes a valid date');
+  }
+});
+
+test('"Tomorrow" is the home’s tomorrow: the days and the same-day rule count at the home', () => {
+  // 06:30 UTC on Oct 16: still Oct 15 in Honolulu, already Oct 16 in Chicago.
+  const at = new Date('2026-10-16T06:30:00Z');
+  assert.deepEqual(bookableDays(at, 7, 'America/Chicago')[0], { iso: '2026-10-17', label: 'Tomorrow' });
+  assert.deepEqual(bookableDays(at, 7, 'Pacific/Honolulu')[0], { iso: '2026-10-16', label: 'Tomorrow' });
+  assert.equal(bookableDays(at, 7, 'America/Chicago')[1].label, 'Sun, Oct 18');
+  assert.equal(bookableDays(at, 7, 'America/Chicago')[6].iso, '2026-10-23');
+  // Oct 16 is today at a Chicago home: refused there, fine for a Honolulu one.
+  const d = { ...emptyDraft(), tier: 'STANDARD', day: '2026-10-16', window: 'MIDDAY' };
+  assert.equal(stepProblem('schedule', d, at, 'America/Chicago'), 'Standard starts tomorrow. Pick another day.');
+  assert.equal(stepProblem('schedule', d, at, 'Pacific/Honolulu'), null);
+  // A window closes on the home's clock: 10:30 AM in Chicago is 15:30 UTC.
+  assert.equal(windowOpenOn('2026-10-16', 'MORNING', new Date('2026-10-16T15:30:00Z'), 'America/Chicago'), true);
+  assert.equal(windowOpenOn('2026-10-16', 'MORNING', new Date('2026-10-16T16:00:00Z'), 'America/Chicago'), false);
+  assert.equal(zoneShortName('America/Chicago', at), 'CDT');
+});
+
+test('POST /jobs and the terms carry the home’s midnight', () => {
+  const tz = 'America/Chicago';
+  const d = readyDraft('STANDARD');
+  d.day = bookableDays(new Date(), 7, tz)[0].iso;
+  const body = jobBody(d, PRICING, tz);
+  assert.equal(body.scheduledDate, scheduledDateIso(d.day, tz));
+  assert.match(body.scheduledDate, new RegExp(`^${d.day}T00:00:00-0[56]:00$`));
+  assert.deepEqual(cancellationTermsQuery(d, tz), { scheduledDate: body.scheduledDate, scheduledTimeWindow: 'MORNING' });
+  // A day that's today at the home isn't sent.
+  d.day = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date());
+  assert.throws(() => jobBody(d, PRICING, tz), /Standard starts tomorrow/);
+});
+
+test('the home’s zone comes from the server: /auth/me’s homes, the chosen one first', () => {
+  // GET /auth/me as staging sent it (log.jsonl): the homes as stored, each with its zone.
+  const me = { user: { homeownerProfile: { properties: [{ id: 'cmv5k5f7t002x10akwa90vy0i', timezone: 'America/Chicago', timezoneSource: 'COORDINATES' }] }, propertyManagerProfile: null } };
+  const list = [{ id: 'cmv5k5f7t002x10akwa90vy0i', formattedAddress: '10 NOHM Test Lane, Bentonville, AR 72712, USA' }]; // GET /properties: no zone
+  const zones = homeZones(list, me);
+  assert.deepEqual(zones, { cmv5k5f7t002x10akwa90vy0i: 'America/Chicago' });
+  assert.equal(homeTimeZone({ propertyId: 'cmv5k5f7t002x10akwa90vy0i' }, zones), 'America/Chicago');
+  assert.equal(homeTimeZone({ propertyId: null }, zones), 'America/Chicago', 'one home: its zone before it is chosen');
+  assert.equal(homeTimeZone({ propertyId: 'p-new' }, zones), null, 'a home the server hasn’t described: not guessed');
+  const two = homeZones([{ id: 'a' }, { id: 'b' }], { user: { homeownerProfile: { properties: [{ id: 'a', timezone: 'America/Chicago' }, { id: 'b', timezone: 'America/Denver' }] } } });
+  assert.equal(homeTimeZone({ propertyId: null }, two), null, 'homes in two zones: wait for the choice');
+  assert.equal(homeTimeZone({ propertyId: 'b' }, two), 'America/Denver');
+  assert.deepEqual(homeZones([{ id: 'x', timezone: 'Not/AZone' }], null), { x: null }, 'a zone the browser can’t read isn’t used');
+  assert.deepEqual(homeZones([{ id: 'y', timezone: 'America/New_York' }], {}), { y: 'America/New_York' }, 'a zone on GET /properties itself is used');
+});
+
+test('STANDARD_NOT_SAME_DAY from the server sends the person back to pick a day', () => {
+  const msg = 'Standard service starts tomorrow. For a pro today, choose NOHM Express.';
+  assert.deepEqual(bookingErrorAction(new ApiError(400, { code: 'STANDARD_NOT_SAME_DAY', message: msg })), { kind: 'schedule', message: msg });
+});
+
+// ── After sending: who has it (staging JOB-00012, 2026-10-15: offered to
+// the home's Preferred Pro, yet the page said "Pick one") ──
+
+test('done screen: a job offered to the Preferred Pro asks nobody to pick', () => {
+  // GET /jobs/:id/matched-contractors for JOB-00012, the fields that matter.
+  const res = {
+    job: { id: 'cmv8u58r800ucm0bomoddsplq', status: 'AWAITING_ACCEPTANCE', priority: 'STANDARD', selectedContractorId: 'cmv5esae80003znsdh6edo76n', candidateContractorIds: ['cmv5esae80003znsdh6edo76n'], offerAttemptIndex: 1 },
+    offers: [{ contractorId: 'cmv5esae80003znsdh6edo76n', offerType: 'PREFERRED', response: null, contractor: { id: 'cmv5esae80003znsdh6edo76n', businessName: 'E2E Test Plumbing', user: { firstName: 'Pat', lastName: 'A.' } } }],
+  };
+  assert.deepEqual(offerState(res), { kind: 'preferred', firstName: 'Pat', name: 'E2E Test Plumbing' });
+  // Picked already (or Express's closest pro): with them, nothing to pick.
+  const picked = { job: { ...res.job, selectedContractorId: 'c-1' }, offers: [{ contractorId: 'c-1', offerType: 'STANDARD', response: null, contractor: { id: 'c-1', user: { firstName: 'Ray', lastName: 'D.' } } }] };
+  assert.deepEqual(offerState(picked), { kind: 'with_pro', firstName: 'Ray', name: 'Ray D.' });
+  // Waiting on the homeowner: the open offers only (the app drops pros who passed).
+  const choose = { job: { status: 'AWAITING_ACCEPTANCE', selectedContractorId: null }, offers: [
+    { contractorId: 'c-1', offerType: 'STANDARD', response: null, contractor: { id: 'c-1' } },
+    { contractorId: 'c-2', offerType: 'STANDARD', response: 'DECLINED', contractor: { id: 'c-2' } },
+    { contractorId: 'c-7', offerType: 'PREFERRED', response: 'TIMED_OUT', contractor: { id: 'c-7' } },
+  ] };
+  const s = offerState(choose);
+  assert.equal(s.kind, 'pick');
+  assert.deepEqual(s.offers.map((o) => o.contractorId), ['c-1']);
+  assert.deepEqual(offerState({ job: { status: 'AWAITING_ACCEPTANCE' }, offers: [] }), { kind: 'matching' });
+  assert.deepEqual(offerState({ job: { status: 'PENDING' } }), { kind: 'matching' });
+  assert.deepEqual(offerState({ job: { status: 'NO_CONTRACTOR_AVAILABLE' }, offers: choose.offers }), { kind: 'no_pro' });
+  assert.deepEqual(offerState(null), { kind: 'matching' });
+  // No names on the offer: still the Preferred Pro, just unnamed.
+  assert.deepEqual(offerState({ job: res.job, offers: [{ ...res.offers[0], contractor: { id: res.offers[0].contractorId } }] }), { kind: 'preferred', firstName: null, name: null });
 });

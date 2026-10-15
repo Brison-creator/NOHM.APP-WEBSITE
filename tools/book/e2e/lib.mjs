@@ -32,8 +32,14 @@ if (shots) fs.mkdirSync(shots, { recursive: true });
 export const browser = await chromium.launch();
 let n = 0;
 export async function snap(page, name) {
-  const text = await page.textContent('#book');
-  assert.ok(!/\bnull\b|\bundefined\b/.test(text), `stray null/undefined on ${name}: ${text.slice(0, 200)}`);
+  // Text node by text node: run together ("accept.nullDiaz Plumbing") a
+  // stray "null" has no word boundary after it and slipped past.
+  const stray = await page.$eval('#book', (root) => {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (/\bnull\b|\bundefined\b|NaN|\[object Object\]/.test(n.nodeValue)) return n.nodeValue;
+    return null;
+  });
+  assert.equal(stray, null, `stray null/undefined on ${name}`);
   if (shots) await page.waitForTimeout(350); // let the screen's fade-in finish
   if (shots) await page.screenshot({ path: path.join(shots, `${String(++n).padStart(2, '0')}-${name}.png`), fullPage: true });
 }
@@ -79,12 +85,16 @@ export async function consentUnderEveryPhone(page, where) {
   for (const hint of fields) assert.match(hint, /agree to get account texts from NOHM.*Reply STOP to opt out/, `SMS consent under the phone field on ${where}`);
 }
 
-export async function fresh() {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+// The browser's clock is the home's (the stub's homes are in Bauxite, AR:
+// Central time) unless a run sets another: { timezoneId }, and { now }
+// to fix the browser's clock at an instant.
+export async function fresh({ timezoneId = 'America/Chicago', now = null } = {}) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, timezoneId });
   // A stand-in Stripe.js that records the key the page hands it, so the
   // run never loads the real one and can check where the key came from.
   await ctx.route('https://js.stripe.com/v3/', (route) => route.fulfill({ contentType: 'text/javascript', body: FAKE_STRIPE }));
   const page = await ctx.newPage();
+  if (now) await page.clock.setFixedTime(new Date(now));
   page.on('pageerror', (e) => { throw new Error(`page error: ${e.message}`); });
   // A browser-side error fails the run; the browser's own log line for an expected 4xx response does not.
   page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) throw new Error(`console.error: ${m.text()}`); });

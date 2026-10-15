@@ -12,8 +12,8 @@ import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
 import { rememberSignupRef, signupRef } from '../nohm/ref.js';
 import { createWebConfig } from '../nohm/web-config.js';
-import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction } from './lib/flow.js';
-import { randomId } from '../nohm/format.js';
+import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction, homeZones, homeTimeZone } from './lib/flow.js';
+import { randomId, zoneShortName, browserTimeZone } from '../nohm/format.js';
 import { uploadEach } from './lib/photos.js';
 import { h, clear } from '../nohm/dom.js';
 import * as screens from './ui/screens.js';
@@ -48,7 +48,8 @@ const a = {
   /** The server's public settings (Stripe key, Google client), asked once when a screen needs them. */
   webConfig: createWebConfig(api),
   draft: emptyDraft(),
-  state: { trades: [], pricing: null, user: null, properties: null, property: null, hasCard: false, card: null, job: null, wrongRole: false },
+  // zones: each of the person's homes and its time zone, from the server (lib/flow.js homeZones).
+  state: { trades: [], pricing: null, user: null, properties: null, property: null, zones: {}, hasCard: false, card: null, job: null, wrongRole: false },
   step: 'service',
   leave: [],
   /** A one-line notice for the next screen (a price change, a pro that was just taken). */
@@ -56,6 +57,18 @@ const a = {
 
   ctx() {
     return { signedIn: Boolean(this.state.user), hasCard: this.state.hasCard };
+  },
+  /** The home's time zone for the draft (null: not known yet; the browser's stands in). */
+  timeZone() {
+    return homeTimeZone(this.draft, this.state.zones);
+  },
+  /** Read the homes' time zones again (after a home is added): GET /auth/me. */
+  async refreshZones() {
+    try {
+      this.state.zones = homeZones(this.state.properties, await api.auth.me());
+    } catch {
+      // Keep what we had; the server still checks the day at the home.
+    }
   },
   /**
    * Change the draft. Any change to what the job *is* retires the
@@ -76,11 +89,23 @@ const a = {
     this.leave.push(fn);
   },
   go(step) {
+    // A day picked before the home was known was counted on the browser's
+    // clock; at review it's checked again at the home (Standard is never
+    // same day there), and sent back to the schedule if it no longer fits.
+    if (step === 'review' && this.draft.tier === 'STANDARD') {
+      const tz = this.timeZone();
+      const p = stepProblem('schedule', this.draft, new Date(), tz);
+      if (p) {
+        step = 'schedule';
+        const clock = tz && tz !== browserTimeZone() ? zoneShortName(tz) : '';
+        this.notice = clock ? `${p} Days and arrival windows are the home’s time (${clock}).` : p;
+      }
+    }
     this.step = step;
     render();
   },
   next() {
-    const p = stepProblem(this.step, this.draft);
+    const p = stepProblem(this.step, this.draft, new Date(), this.timeZone());
     if (p) return this.toast(p);
     // After a detour (re-adding photos lost on reload), return to where the draft was.
     const target = this.resumeTo;
@@ -150,7 +175,7 @@ const a = {
    */
   accountStopped(err) {
     clearPending(this.state);
-    Object.assign(this.state, { user: null, properties: null, property: null, hasCard: false, card: null, wrongRole: false, stopMessage: err.message });
+    Object.assign(this.state, { user: null, properties: null, property: null, zones: {}, hasCard: false, card: null, wrongRole: false, stopMessage: err.message });
     this.draft = emptyDraft();
     render();
   },
@@ -160,7 +185,7 @@ const a = {
     // this computer starts clean.
     session.clear();
     clearPending(a.state);
-    Object.assign(this.state, { user: null, properties: null, property: null, hasCard: false, card: null, wrongRole: false });
+    Object.assign(this.state, { user: null, properties: null, property: null, zones: {}, hasCard: false, card: null, wrongRole: false });
     this.draft = emptyDraft();
     this.history = [];
     this.toast('Signed out.');
@@ -174,7 +199,7 @@ const a = {
     if (!this.draft.idempotencyKey) this.setDraft({ idempotencyKey: randomId() });
     btn.busy(true, 'Sending…');
     try {
-      const body = jobBody(this.draft, this.state.pricing);
+      const body = jobBody(this.draft, this.state.pricing, this.timeZone());
       const job = await api.jobs.create(body);
       await this.afterJob(job);
     } catch (ex) {
@@ -237,6 +262,11 @@ const a = {
       case 'pick_again':
         this.notice = action.message;
         return render();
+      case 'schedule':
+        // The server counts the day at the home and says it's too soon.
+        this.notice = action.message;
+        this.setDraft({ day: null, window: null });
+        return this.go('schedule');
       default:
         errEl.textContent = action.message;
     }
@@ -258,6 +288,7 @@ async function loadAccount() {
   ]);
   if (a.state.wrongRole) return;
   a.state.properties = (props && props.properties) || [];
+  a.state.zones = homeZones(a.state.properties, me);
   a.state.hasCard = Boolean(pm && pm.hasCard);
   a.state.card = pm && pm.hasCard ? { last4: pm.last4, brand: pm.brand } : null;
   if (a.draft.propertyId) {
@@ -360,7 +391,7 @@ async function boot() {
   }
   if (a.draft.trade && a.draft.trade.id && !a.state.trades.some((x) => x.id === a.draft.trade.id)) a.draft = emptyDraft();
   // A day that has passed, or a window that closed, can't be booked.
-  if (a.draft.tier === 'STANDARD' && a.draft.day && stepProblem('schedule', a.draft)) a.setDraft({ day: null, window: null });
+  if (a.draft.tier === 'STANDARD' && a.draft.day && stepProblem('schedule', a.draft, new Date(), a.timeZone())) a.setDraft({ day: null, window: null });
   if (a.state.wrongRole) a.step = 'wrong-role';
   else if (!a.draft.trade) a.step = 'service';
   else if (fresh) a.step = 'issue';
@@ -377,7 +408,7 @@ async function boot() {
 function firstUnfinished() {
   for (const s of STEPS.slice(0, STEPS.indexOf('account'))) {
     if (s === 'schedule' && a.draft.tier !== 'STANDARD') continue;
-    if (stepProblem(s, a.draft)) return s;
+    if (stepProblem(s, a.draft, new Date(), a.timeZone())) return s;
   }
   let s = nextStep('speed', a.draft, a.ctx());
   if (s === 'schedule') s = nextStep('schedule', a.draft, a.ctx());

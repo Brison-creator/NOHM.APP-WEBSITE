@@ -8,7 +8,7 @@
 // keeps the person from sending something the server would refuse.
 
 import { jobTitle } from './issues.js';
-import { scheduledDateIso, windowByKey, bookableDays, windowOpenOn } from '../../nohm/format.js';
+import { scheduledDateIso, windowByKey, bookableDays, windowOpenOn, isTimeZone } from '../../nohm/format.js';
 
 /** The steps in order. "schedule" is Standard-only; "account" and "card" are skipped when already done. */
 export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'account', 'home', 'card', 'review', 'done'];
@@ -65,9 +65,10 @@ export function bookableTrades(trades) {
 
 /**
  * Whether a step is done enough to leave. Returns null when it is, or
- * the first thing to fix (a short message) when it isn't.
+ * the first thing to fix (a short message) when it isn't. `tz` is the
+ * home's time zone (homeTimeZone): the schedule's days count there.
  */
-export function stepProblem(step, draft, now = new Date()) {
+export function stepProblem(step, draft, now = new Date(), tz = null) {
   switch (step) {
     case 'service':
       return draft.trade ? null : 'Pick a service.';
@@ -86,9 +87,9 @@ export function stepProblem(step, draft, now = new Date()) {
     case 'schedule':
       if (draft.tier !== 'STANDARD') return null;
       if (!draft.day) return 'Pick a day.';
-      if (!bookableDays(now).some((d) => d.iso === draft.day)) return 'Standard starts tomorrow. Pick another day.';
+      if (!bookableDays(now, 7, tz).some((d) => d.iso === draft.day)) return 'Standard starts tomorrow. Pick another day.';
       if (!windowByKey(draft.window)) return 'Pick an arrival window.';
-      if (!windowOpenOn(draft.day, draft.window, now)) return 'That window has closed. Pick another.';
+      if (!windowOpenOn(draft.day, draft.window, now, tz)) return 'That window has closed. Pick another.';
       return null;
     case 'home':
       return draft.propertyId ? null : 'Add the home the pro is coming to.';
@@ -126,6 +127,41 @@ export function prevStep(step, draft, ctx) {
     return s;
   }
   return null;
+}
+
+// ── The home's time zone ──────────────────────────────────────────
+
+/**
+ * Each of the person's homes and its time zone, as the server keeps it:
+ * { [propertyId]: 'America/Chicago' | null }. GET /properties doesn't
+ * carry the zone (yet); GET /auth/me lists the homes the person owns or
+ * manages as stored, each with its `timezone` (property-timezone.ts).
+ * A zone in the homes list itself wins, for a server that sends one there.
+ */
+export function homeZones(properties, me) {
+  const user = (me && me.user) || me || {};
+  const rows = [
+    ...((user.homeownerProfile && user.homeownerProfile.properties) || []),
+    ...((user.propertyManagerProfile && user.propertyManagerProfile.properties) || []),
+    ...(properties || []),
+  ];
+  const out = {};
+  for (const p of rows) if (p && p.id) out[p.id] = isTimeZone(p.timezone) ? p.timezone : out[p.id] || null;
+  return out;
+}
+
+/**
+ * The zone the draft's day and window count in: the chosen home's.
+ * Before a home is chosen, the zone all the person's homes share, if
+ * they share one. Null when the server hasn't said: the browser's own
+ * zone stands in, and the review step checks the day again once the
+ * home is known (app.js go).
+ */
+export function homeTimeZone(draft, zones) {
+  const z = zones || {};
+  if (draft && draft.propertyId) return isTimeZone(z[draft.propertyId]) ? z[draft.propertyId] : null;
+  const all = [...new Set(Object.values(z))];
+  return all.length === 1 && isTimeZone(all[0]) ? all[0] : null;
 }
 
 // ── Money ─────────────────────────────────────────────────────────
@@ -176,17 +212,21 @@ export function offeredTiers(pricing) {
  * GET /jobs/cancellation-terms query for the draft: the same date the
  * booking sends, so the terms shown are the ones it's booked under.
  */
-export function cancellationTermsQuery(draft) {
+export function cancellationTermsQuery(draft, tz = null) {
   if (draft.tier === 'EXPRESS') return { isExpress: 'true' };
   if (draft.tier === 'NOW') return { priority: 'NOW' };
-  return { scheduledDate: scheduledDateIso(draft.day), scheduledTimeWindow: draft.window };
+  return { scheduledDate: scheduledDateIso(draft.day, tz), scheduledTimeWindow: draft.window };
 }
 
-/** POST /jobs body for a Standard or Express draft. Throws on a draft that isn't ready. */
-export function jobBody(draft, pricing) {
+/**
+ * POST /jobs body for a Standard or Express draft. Throws on a draft
+ * that isn't ready. `tz` is the home's time zone: the day is midnight
+ * there, with its offset.
+ */
+export function jobBody(draft, pricing, tz = null) {
   if (draft.tier === 'NOW') throw new Error('NOW jobs go through nowDispatchBody');
   for (const s of ['service', 'issue', 'details', 'speed', 'schedule', 'home']) {
-    const p = stepProblem(s, draft);
+    const p = stepProblem(s, draft, new Date(), tz);
     if (p) throw new Error(p);
   }
   if (!draft.idempotencyKey) throw new Error('idempotencyKey missing');
@@ -206,7 +246,7 @@ export function jobBody(draft, pricing) {
     // when it holds the fee. Never sent unless the person ticked it.
     if (draft.useCredits === true) body.useCreditsForExpressFee = true;
   } else {
-    body.scheduledDate = scheduledDateIso(draft.day);
+    body.scheduledDate = scheduledDateIso(draft.day, tz);
     body.scheduledTimeWindow = draft.window;
   }
   return body;
@@ -249,10 +289,48 @@ export function bookingErrorAction(err, call = 'job') {
   if (code === 'PAYMENT_METHOD_REQUIRED') return { kind: 'card' };
   if (code === 'PRICE_CHANGED') return { kind: 'price_changed', amountCents: err.body && err.body.amountCents };
   if (code === 'DUPLICATE_TRADE_REQUEST') return { kind: 'duplicate', existingJob: err.body && err.body.existingJob };
+  // The day is today (or past) at the home: pick again, with the server's words.
+  if (code === 'STANDARD_NOT_SAME_DAY') return { kind: 'schedule', message: err.message };
   // A NOW dispatch that loses the race (the pro was just taken) is a
   // plain 409 from the server: pick someone else, with its message.
   if (call === 'dispatch' && err && err.status === 409) return { kind: 'pick_again', message: err.message };
   if (code === 'PRO_UNAVAILABLE' || code === 'PRO_JUST_BOOKED') return { kind: 'pick_again', message: err.message };
   if (err && err.status === 409) return { kind: 'retry_same_key' };
   return { kind: 'show', message: (err && err.message) || 'Something went wrong. Try again.' };
+}
+
+// ── After sending: who has the request ───────────────────────────
+
+/** A pro's names from an offer's contractor: { firstName, name } ("Ray", "Diaz Plumbing"). */
+function proNames(c) {
+  const u = (c && c.user) || {};
+  const firstName = String(u.firstName || '').trim();
+  const name = String((c && c.businessName) || '').trim() || `${firstName} ${String(u.lastName || '').trim()}`.trim();
+  return { firstName: firstName || null, name: name || null };
+}
+
+/**
+ * What the done screen says about who has the request, read from the
+ * server's GET /jobs/:id/matched-contractors ({ job, offers }); the page
+ * never decides who gets it. In order:
+ * - 'no_pro': nobody can take it (NO_CONTRACTOR_AVAILABLE);
+ * - 'preferred': the server offered it to the home's Preferred Pro first
+ *   (the job's selected pro holds the PREFERRED offer,
+ *   preferred-pro-offers.service.ts); nothing to pick;
+ * - 'with_pro': it's already with one pro (picked earlier, or Express's
+ *   closest pro); nothing to pick;
+ * - 'pick': a Standard request waiting on the homeowner: the open offers;
+ * - 'matching': no open offers yet.
+ */
+export function offerState(res) {
+  const job = (res && res.job) || {};
+  const offers = ((res && res.offers) || []).filter((o) => o && o.contractor);
+  if (job.status === 'NO_CONTRACTOR_AVAILABLE') return { kind: 'no_pro' };
+  if (job.status === 'AWAITING_ACCEPTANCE' && job.selectedContractorId) {
+    const o = offers.find((x) => (x.contractorId || x.contractor.id) === job.selectedContractorId);
+    return { kind: o && o.offerType === 'PREFERRED' ? 'preferred' : 'with_pro', ...proNames(o && o.contractor) };
+  }
+  // The app leaves out pros who passed or timed out (contractor_selection_screen.dart).
+  const open = offers.filter((o) => o.response == null);
+  return open.length ? { kind: 'pick', offers: open } : { kind: 'matching' };
 }

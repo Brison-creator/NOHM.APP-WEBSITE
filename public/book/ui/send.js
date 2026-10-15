@@ -2,10 +2,10 @@
 // the done screen (pick a pro for Standard; any photo that didn't upload).
 
 import { h, append, button, money, clear } from '../../nohm/dom.js';
-import { TIERS, feeFor, cancellationTermsQuery } from '../lib/flow.js';
+import { TIERS, feeFor, cancellationTermsQuery, offerState } from '../lib/flow.js';
 import { WINDOWS, bookableDays, homeId } from '../../nohm/format.js';
 import { photoFailureText } from '../lib/photos.js';
-import { head, footer, HOLD, premiumText } from './parts.js';
+import { head, footer, HOLD, premiumText, homeClock } from './parts.js';
 
 // ── 9. Review ─────────────────────────────────────────────────────
 
@@ -14,9 +14,11 @@ export function reviewScreen(a) {
   const tier = TIERS[d.tier];
   const fee = feeFor(d.tier, a.state.pricing);
   const win = WINDOWS.find((w) => w.key === d.window);
-  const day = bookableDays().find((x) => x.iso === d.day);
+  // The day and window are the home's (its time zone, from the server).
+  const tz = a.timeZone();
+  const day = bookableDays(new Date(), 7, tz).find((x) => x.iso === d.day);
   const terms = h('p.b-small', '…');
-  a.api.jobs.cancellationTerms(cancellationTermsQuery(d)).then((t) => (terms.textContent = (t && t.disclosure) || '')).catch(() => (terms.textContent = ''));
+  a.api.jobs.cancellationTerms(cancellationTermsQuery(d, tz)).then((t) => (terms.textContent = (t && t.disclosure) || '')).catch(() => (terms.textContent = ''));
 
   // Express: if the server says the person has spendable NOHM Credits,
   // offer to put them toward the fee (off unless ticked). How many apply
@@ -43,7 +45,7 @@ export function reviewScreen(a) {
       row('Note', d.description, 'details'),
       d.photos && d.photos.length ? row('Photos', `${d.photos.length}`, 'details') : null,
       row('Speed', tier.name, 'speed'),
-      d.tier === 'STANDARD' ? row('When', `${day ? day.label : d.day}, ${win ? `${win.name.toLowerCase()} ${win.range}` : ''}`, 'schedule') : null,
+      d.tier === 'STANDARD' ? row('When', `${day ? day.label : d.day}, ${win ? `${win.name.toLowerCase()} ${win.range}` : ''}${homeClock(tz, d.day)}`, 'schedule') : null,
       row('Home', a.state.property ? a.state.property.formattedAddress : '', 'home'),
       row('Card', a.state.card ? `${a.state.card.brand || 'Card'} •••• ${a.state.card.last4}` : 'On file'),
       h('div.b-row.b-total', [h('span', 'NOHM fee'), h('span', [fee && fee.discounted ? h('s', money(fee.base)) : null, ' ', fee ? (fee.current ? money(fee.current) : 'None') : '…'])]),
@@ -131,24 +133,37 @@ export function doneScreen(a) {
       ? 'The closest pro gets it first; if they pass, the next closest does. Watch it happen in the app.'
       : 'Here are the pros who can take it. Pick one and the job is theirs to accept.';
 
+  // Who has it is the server's answer (lib/flow.js offerState): the
+  // home's Preferred Pro first, a pro already picked, or the pros to
+  // choose from. Only a Standard request waiting on the homeowner asks
+  // them to pick.
   async function loadOffers() {
-    if (d.tier !== 'STANDARD') return;
     try {
-      const j = await a.api.jobs.get(job.id);
-      if (j.status === 'NO_CONTRACTOR_AVAILABLE') {
+      const s = offerState(await a.api.jobs.matchedContractors(job.id));
+      if (s.kind === 'preferred') {
+        const who = s.firstName || s.name;
+        status.textContent = d.tier === 'EXPRESS'
+          ? `Sent to your Preferred Pro${who ? `, ${who}` : ''}. If they can’t take it in the next few minutes, the closest pro gets it. Watch it happen in the app.`
+          : `Sent to your Preferred Pro${who ? `, ${who}` : ''}. You’ll hear as soon as they accept. If they can’t take it this time, you’ll choose another pro in the app.`;
+        return;
+      }
+      if (d.tier !== 'STANDARD') return;
+      if (s.kind === 'no_pro') {
         status.textContent = 'No pro can take this one right now. You can send it again from the app.';
         return;
       }
-      const r = await a.api.jobs.matchedContractors(job.id);
-      const offers = (r && r.offers) || [];
-      if (!offers.length) {
+      if (s.kind === 'with_pro') {
+        status.textContent = `Your request is with ${s.firstName || s.name || 'your pro'}. You’ll hear as soon as they accept.`;
+        return;
+      }
+      if (s.kind === 'matching') {
         if (++tries < 10 && !left) { status.textContent = 'Finding pros near you…'; pollTimer = setTimeout(loadOffers, 2000); return; }
         status.textContent = 'Still matching. Pick a pro in the app as soon as they show up.';
         return;
       }
       status.textContent = what;
       clear(pros);
-      for (const o of offers) {
+      for (const o of s.offers) {
         const c = o.contractor || {};
         const name = c.businessName || `${(c.user && c.user.firstName) || ''} ${(c.user && c.user.lastName) || ''}`.trim();
         pros.append(h('button.b-choice', { type: 'button', dataset: { contractor: c.id }, onClick: () => pick(c.id, name) }, [
@@ -157,7 +172,10 @@ export function doneScreen(a) {
           h('span.b-chev', '›'),
         ]));
       }
-    } catch (ex) { err.textContent = ex.message; }
+    } catch (ex) {
+      // Express already says what happens next; only a Standard pick needs this answer.
+      if (d.tier === 'STANDARD') err.textContent = ex.message;
+    }
   }
   async function pick(contractorId, name) {
     await a.run(async () => {
@@ -166,10 +184,15 @@ export function doneScreen(a) {
       status.textContent = `${name} has your request and a short window to accept. The app shows it live.`;
     }, err);
   }
-  if (d.tier === 'STANDARD') loadOffers();
-  else status.textContent = what;
+  // NOW is already with its pro. Express says what happens next at once
+  // and changes it only if the server sent it to the Preferred Pro first.
+  if (d.tier !== 'STANDARD') status.textContent = what;
+  if (d.tier !== 'NOW') loadOffers();
 
-  wrap.append(
+  // append(), not wrap.append(): a part that isn't there (no failed
+  // photo, no Home ID) is left out, where the DOM's own append would
+  // print it as the word "null".
+  append(wrap, [
     head(d.tier === 'NOW' ? 'A pro is on the way.' : 'Request sent.', job.jobNumber ? `Job ${job.jobNumber}` : ''),
     h('div.b-card', [h('b', `${d.trade.label} · ${d.issue.title}`), h('p', a.state.property ? a.state.property.formattedAddress : ''), a.state.property && a.state.property.hin ? h('p.b-small', `Home ID ${homeId(a.state.property.hin)}`) : null]),
     status,
@@ -178,6 +201,6 @@ export function doneScreen(a) {
     err,
     h('div.b-card.blue', [h('b', 'Everything else lives in the app.'), h('p', 'Live tracking, chat with your pro, the door PIN, the estimate to approve, and this home’s record.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM')]),
     h('p.b-small', [h('button.b-inline', { type: 'button', onClick: () => a.restart() }, 'Book something else')]),
-  );
+  ]);
   return wrap;
 }

@@ -56,52 +56,114 @@ export function windowByKey(key) {
   return WINDOWS.find((w) => w.key === key) || null;
 }
 
+// ── Days and times at the home ────────────────────────────────────
+//
+// A booking's day and arrival window are the home's, in the home's own
+// time zone (the server keeps it on the property: `timezone`, an IANA
+// name like "America/Chicago"), never the browser's: a browser in UTC
+// booking a Chicago home still means Chicago's Tuesday, 11 AM. Each
+// helper takes that zone; without one (the server hasn't said) the
+// browser's own zone stands in.
+
+/** True for an IANA zone this browser knows. */
+export function isTimeZone(tz) {
+  if (!tz || typeof tz !== 'string') return false;
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** The browser's own zone, or null when it can't say. */
+export function browserTimeZone() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+  } catch {
+    return null;
+  }
+}
+
+/** The wall clock in `tz` (else the browser's zone) at an instant: { year, month, day, hour, minute, second }. */
+export function zonedParts(at, tz) {
+  const f = new Intl.DateTimeFormat('en-US', { timeZone: isTimeZone(tz) ? tz : undefined, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
+  const p = {};
+  for (const x of f.formatToParts(at)) if (x.type !== 'literal') p[x.type] = Number(x.value);
+  return { year: p.year, month: p.month, day: p.day, hour: p.hour % 24, minute: p.minute, second: p.second };
+}
+
+/** Minutes east of UTC in `tz` at an instant (Chicago in October: −300). */
+export function zoneOffsetMinutes(at, tz) {
+  const t = Math.floor(at.getTime() / 1000) * 1000;
+  const p = zonedParts(new Date(t), tz);
+  return Math.round((Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - t) / 60000);
+}
+
+const isoOf = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+/** The date in `tz` at an instant: "YYYY-MM-DD". */
+export function dateIn(at, tz) {
+  const p = zonedParts(at, tz);
+  return isoOf(p.year, p.month, p.day);
+}
+
+/** "CDT": the zone's short name at an instant, to say whose clock a window is on. */
+export function zoneShortName(tz, at = new Date()) {
+  if (!isTimeZone(tz)) return '';
+  const part = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(at).find((x) => x.type === 'timeZoneName');
+  return part ? part.value : '';
+}
+
 /**
  * The seven days a Standard job can be booked for: tomorrow through a
- * week out. Standard is never same day (owner, 2026-10-09: "Standard
- * service isn't allowed to be booked same day"); today is NOHM Express,
- * and the server refuses a Standard job for today. Each:
+ * week out, counted at the home (`tz`). Standard is never same day
+ * (owner, 2026-10-09: "Standard service isn't allowed to be booked same
+ * day"); today is NOHM Express, and the server refuses a Standard job
+ * for today in the home's time (standard-day.ts). Each:
  * { iso: 'YYYY-MM-DD', label }.
  */
-export function bookableDays(now = new Date(), count = 7) {
+export function bookableDays(now = new Date(), count = 7, tz = null) {
+  const t = zonedParts(now, tz);
   const out = [];
   for (let i = 1; i <= count; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-    const iso = localDateIso(d);
-    const label = i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    // Calendar arithmetic on the home's date, in UTC so no zone moves it.
+    const d = new Date(Date.UTC(t.year, t.month - 1, t.day + i));
+    const iso = isoOf(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+    const label = i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
     out.push({ iso, label });
   }
   return out;
 }
 
-export function localDateIso(d) {
-  const p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
-
 /**
- * The scheduledDate the server expects: local midnight of the chosen
- * day, with the browser's offset at midnight ("2026-10-03T00:00:00-05:00"),
- * exactly what the app sends (date_iso.dart). The server adds the
- * window's start hour itself (time-window.util.ts windowOpensAt), so
- * sending the window's start here would book every job hours late.
- * Used for both POST /jobs and the cancellation terms shown before it.
+ * The scheduledDate the server expects: midnight at the home on the
+ * chosen day, with the home's offset at that midnight
+ * ("2026-10-03T00:00:00-05:00" for Chicago), the shape the app sends
+ * (date_iso.dart). The server adds the window's start hour itself
+ * (time-window.util.ts windowOpensAt), so the offset sets the real
+ * arrival time: the browser's offset would move a Chicago visit by
+ * hours whenever the browser isn't on Chicago time. Used for both
+ * POST /jobs and the cancellation terms shown before it.
  */
-export function scheduledDateIso(dayIso, tzOffsetMinutesOf = (d) => d.getTimezoneOffset()) {
+export function scheduledDateIso(dayIso, tz = null) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dayIso || '')) return null;
   const [y, m, d] = dayIso.split('-').map(Number);
-  const off = -tzOffsetMinutesOf(new Date(y, m - 1, d, 0, 0, 0)); // minutes east of UTC
+  // The offset at that wall-clock midnight: a first guess from the offset
+  // at UTC midnight, then read again at the instant the guess names.
+  const wall = Date.UTC(y, m - 1, d);
+  const off = zoneOffsetMinutes(new Date(wall - zoneOffsetMinutes(new Date(wall), tz) * 60000), tz);
   const sign = off < 0 ? '-' : '+';
   const p = (n) => String(Math.abs(n)).padStart(2, '0');
-  return `${y}-${p(m)}-${p(d)}T00:00:00${sign}${p(Math.trunc(off / 60))}:${p(off % 60)}`;
+  return `${isoOf(y, m, d)}T00:00:00${sign}${p(Math.trunc(off / 60))}:${p(off % 60)}`;
 }
 
-/** A window that has already ended today isn't offered for today. */
-export function windowOpenOn(dayIso, windowKey, now = new Date()) {
+/** A window that has already ended today at the home isn't offered for today. */
+export function windowOpenOn(dayIso, windowKey, now = new Date(), tz = null) {
   const w = windowByKey(windowKey);
   if (!w) return false;
-  if (dayIso !== localDateIso(now)) return true;
-  return now.getHours() < w.startHour + 3;
+  if (dayIso !== dateIn(now, tz)) return true;
+  return zonedParts(now, tz).hour < w.startHour + 3;
 }
 
 /** A random id for idempotency keys and the device id; UUID v4 shaped. */

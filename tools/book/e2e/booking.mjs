@@ -61,7 +61,9 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
     'POST /auth/check-exists', 'POST /auth/email-signup/send-otp', 'POST /auth/email-signup/verify-otp', 'POST /auth/email-signup/verify-otp',
     'GET /auth/me', 'GET /properties', 'GET /stripe/customer/payment-method',
     'GET /places/autocomplete', 'GET /places/details', 'POST /properties/check-type', 'POST /properties/shell', 'POST /properties/p-1/confirm',
-    'GET /jobs/cancellation-terms', 'POST /jobs', 'POST /jobs/j-1042/photos', 'GET /jobs/j-1042', 'GET /jobs/j-1042/matched-contractors', 'POST /jobs/j-1042/select-contractor',
+    // The new home's time zone: GET /auth/me lists the homes with it (GET /properties doesn't).
+    'GET /auth/me',
+    'GET /jobs/cancellation-terms', 'POST /jobs', 'POST /jobs/j-1042/photos', 'GET /jobs/j-1042/matched-contractors', 'POST /jobs/j-1042/select-contractor',
   ]);
   const verify = calls.find((c) => c.path === '/auth/email-signup/verify-otp').body;
   assert.deepEqual(Object.keys(verify).sort(), ['appVersion', 'code', 'deviceId', 'deviceName', 'deviceType', 'email', 'firstName', 'lastName', 'password', 'phone', 'role']);
@@ -74,7 +76,7 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   assert.equal(job.propertyId, 'p-1');
   assert.equal(job.tradeId, 't-plumb');
   assert.equal(job.scheduledTimeWindow, 'MIDDAY');
-  assert.match(job.scheduledDate, /T00:00:00[+-]\d\d:\d\d$/, "local midnight; the server adds the window");
+  assert.match(job.scheduledDate, /T00:00:00-0[56]:00$/, "midnight at the (Central time) home; the server adds the window");
   const photos = calls.find((c) => c.path.endsWith('/photos'));
   assert.match(photos.body._contentType, /^multipart\/form-data/);
   assert.ok(calls.filter((c) => c.path.startsWith('/jobs')).every((c) => c.auth === 'Bearer acc-1'));

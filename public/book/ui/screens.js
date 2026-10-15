@@ -7,7 +7,7 @@ import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, stepProblem, lateA
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone } from '../../nohm/format.js';
 import { preparePhoto, splitToLimit, overLimitText } from '../lib/photos.js';
-import { svg, head, footer, HOLD, premiumText } from './parts.js';
+import { svg, head, footer, HOLD, premiumText, homeClock } from './parts.js';
 export { accountScreen } from '../../nohm/account.js';
 export { homeScreen, cardScreen } from './home.js';
 export { reviewScreen, nowScreen, doneScreen } from './send.js';
@@ -217,33 +217,45 @@ export function speedScreen(a) {
 // ── 5. Schedule (Standard) ────────────────────────────────────────
 
 export function scheduleScreen(a) {
-  const days = bookableDays();
+  // Days and windows at the home, in its time zone once the server has
+  // said which home (lib/flow.js homeTimeZone); "Tomorrow" is the home's.
+  const tz = a.timeZone();
+  const days = bookableDays(new Date(), 7, tz);
   const dayRow = h('div.b-chips');
   const winList = h('div.b-list');
   const err = h('p.b-err');
   let { day, window: win } = a.draft;
-  if (!day) day = days[0].iso;
+  if (!day || !days.some((x) => x.iso === day)) day = days[0].iso;
+  const clock = homeClock(tz, day).trim();
 
   function drawWindows() {
     clear(winList);
     for (const w of WINDOWS) {
-      const open = windowOpenOn(day, w.key);
+      const open = windowOpenOn(day, w.key, new Date(), tz);
       const on = win === w.key && open;
       winList.append(h('button.b-choice', { type: 'button', class: on ? 'on' : '', disabled: !open, dataset: { window: w.key }, onClick: () => { win = w.key; drawWindows(); err.textContent = ''; } }, [h('span', [h('b', w.name), h('small', open ? w.range : `${w.range} · passed`)]), w.premium && premiumText(a) ? h('span.b-price', premiumText(a)) : null]));
     }
   }
   function drawDays() {
     clear(dayRow);
-    for (const d of days) dayRow.append(h('button.b-chip', { type: 'button', class: d.iso === day ? 'on' : '', dataset: { day: d.iso }, onClick: () => { day = d.iso; if (win && !windowOpenOn(day, win)) win = null; drawDays(); drawWindows(); } }, d.label));
+    for (const d of days) dayRow.append(h('button.b-chip', { type: 'button', class: d.iso === day ? 'on' : '', dataset: { day: d.iso }, onClick: () => { day = d.iso; if (win && !windowOpenOn(day, win, new Date(), tz)) win = null; drawDays(); drawWindows(); } }, d.label));
   }
   drawDays();
   drawWindows();
   const go = () => {
     a.setDraft({ day, window: win });
-    const p = stepProblem('schedule', a.draft);
+    const p = stepProblem('schedule', a.draft, new Date(), tz);
     if (p) return (err.textContent = p);
     a.next();
   };
   const premium = lateAfternoonPremium(a.state.pricing);
-  return h('section.b-screen', [head('When should the pro come?', `Pick a day from tomorrow on and an arrival window. Need a pro today? Go back and choose ${TIERS.EXPRESS.name}. The cancellation terms are on the last step.`), dayRow, winList, h('p.b-small', premium ? `Late afternoon adds a ${money(premium)} premium, held when your pro accepts.` : 'Late afternoon adds a premium, held when your pro accepts.'), err, footer(a, go)]);
+  return h('section.b-screen', [
+    head('When should the pro come?', `Pick a day from tomorrow on and an arrival window. Need a pro today? Go back and choose ${TIERS.EXPRESS.name}. The cancellation terms are on the last step.`),
+    dayRow,
+    winList,
+    clock ? h('p.b-small.b-clock', `Days and arrival windows are the home’s time (${clock}).`) : null,
+    h('p.b-small', premium ? `Late afternoon adds a ${money(premium)} premium, held when your pro accepts.` : 'Late afternoon adds a premium, held when your pro accepts.'),
+    err,
+    footer(a, go),
+  ]);
 }

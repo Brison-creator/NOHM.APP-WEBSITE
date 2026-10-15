@@ -61,6 +61,11 @@ function freshProInvites() {
 // propertyAddress is the home's formattedAddress, city and state included, as the server sends it.
 const INVITE = { inviteCode: '482913', tenantName: 'Ava Ng', propertyAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', propertyCity: 'Bauxite', propertyState: 'AR', landlordName: 'Kristi M.', rentAmount: 1250, leaseStartDate: '2026-11-01', leaseDueDay: 1, leaseEndDate: null };
 
+/** A home as GET /properties and the property writes answer it: no time zone. */
+function asPropertyResponse({ timezone, timezoneSource, ...rest }) {
+  return rest;
+}
+
 function json(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
   res.end(JSON.stringify(body));
@@ -221,6 +226,9 @@ function api(method, url, body, req) {
     [/^\/jobs$/, ['HOMEOWNER', 'PROPERTY_MANAGER']],
   ].find(([re]) => re.test(p));
   if (guard && !guard[1].includes(world.role)) return [403, { message: 'Forbidden resource' }];
+  // /auth/me carries the homes as stored rows, each with its `timezone`
+  // (property-timezone.ts); GET /properties and the property writes don't
+  // (property-queries.service.ts mapToPropertyResponse).
   if (p === '/auth/me') return [200, { user: { ...(world.user || USER), role: world.role, caps: [world.role], homeownerProfile: { properties: world.properties } } }];
   // ── Pros ──
   if (p === '/contractors/dashboard') { const pr = world.pro; return [200, { contractorId: pr.contractorId, applicationStatus: pr.applicationStatus, dispatchEligible: pr.dispatchEligible, shiftStatus: pr.shiftStatus, ...proChecklist(pr), profile: (({ attestedName, ...rest }) => rest)(pr.profile), user: { ...(world.user || USER), role: 'CONTRACTOR' }, trades: pr.trades, documents: pr.documents }]; }
@@ -285,7 +293,7 @@ function api(method, url, body, req) {
   if (p === '/tenants/my-property') return [200, world.tenant.linked ? { hasProperty: true, property: { id: 'p-9', hin: '7QWE3HNKY', address: INVITE.propertyAddress, city: INVITE.propertyCity, state: INVITE.propertyState, zipCode: '72011' }, lease: { id: 'lease-1', rentAmount: 1250, startDate: '2026-11-01', endDate: null, dueDay: 1 }, landlord: { name: 'Kristi M.', phone: '+15015550100' } } : { hasProperty: false }];
   // GET /nohmcredit/balance (nohmcredit.service.ts getBalance): whole credits.
   if (p === '/nohmcredit/balance') return [200, { balance: world.credits || 0, pendingBalance: 0, totalBalance: world.credits || 0 }];
-  if (p === '/properties' && method === 'GET') return [200, { properties: world.properties, total: world.properties.length }];
+  if (p === '/properties' && method === 'GET') return [200, { properties: world.properties.map(asPropertyResponse), total: world.properties.length }];
   if (p === '/stripe/customer/payment-method') return [200, world.hasCard ? { hasCard: true, last4: '4242', brand: 'visa' } : { hasCard: false }];
   if (p === '/stripe/customer/setup-intent') return [201, { clientSecret: 'seti_secret', customerId: 'cus_1' }];
   if (p === '/stripe/customer/confirm-card') { world.hasCard = true; return [201, { success: true, last4: '4242', brand: 'visa' }]; }
@@ -293,7 +301,8 @@ function api(method, url, body, req) {
   if (p === '/places/details') return [200, { placeId: 'pl-1', formattedAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', latitude: 34.55, longitude: -92.5 }];
   if (p === '/properties/check-type') return [201, { isMultiFamily: false, propertyType: 'SINGLE_FAMILY', existingProperty: false, message: 'ok' }];
   if (p === '/properties/shell') { const prop = { id: 'p-1', hin: null, structureStatus: 'PENDING_STRUCTURE', formattedAddress: body.formattedAddress, city: 'Bauxite', state: 'AR', zipCode: '72011' }; return [201, prop]; }
-  if (p === '/properties/p-1/confirm') { const prop = { id: 'p-1', hin: '4K7-M2Q-9XC', structureStatus: 'CONFIRMED_SINGLE', formattedAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', city: 'Bauxite', state: 'AR', zipCode: '72011' }; world.properties = [prop]; return [201, prop]; }
+  // Bauxite, AR is Central time; the shell stores the zone from the coordinates.
+  if (p === '/properties/p-1/confirm') { const prop = { id: 'p-1', hin: '4K7-M2Q-9XC', structureStatus: 'CONFIRMED_SINGLE', formattedAddress: '11008 Chambers Rd, Bauxite, AR 72011, USA', city: 'Bauxite', state: 'AR', zipCode: '72011', timezone: 'America/Chicago', timezoneSource: 'COORDINATES' }; world.properties = [prop]; return [201, asPropertyResponse(prop)]; }
   if (p === '/jobs/cancellation-terms' && url.searchParams.has('scheduledDate') && !LOCAL_MIDNIGHT.test(url.searchParams.get('scheduledDate'))) return [400, { message: 'scheduledDate must be local midnight with its offset' }];
   if (p === '/jobs/cancellation-terms') return [200, { tier: 'SCHEDULED', version: 1, feeCents: 7500, disclosure: 'Free to cancel up to 24 hours before your arrival window. After that, a $75 service call fee applies. Always free if your pro misses the window.' }];
   if (p === '/jobs' && method === 'POST') {
@@ -301,12 +310,29 @@ function api(method, url, body, req) {
     if (world.conflicts > 0) { world.conflicts--; return [409, { message: 'This request was already used. Try again.' }]; }
     if (body.isExpress && body.shownFeeCents !== PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents) return [400, { code: 'PRICE_CHANGED', amountCents: PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents, message: 'Price changed' }];
     if (!body.isExpress && !LOCAL_MIDNIGHT.test(body.scheduledDate || '')) return [400, { message: ['scheduledDate must be local midnight with its offset'] }];
+    // Standard is never same day, counted in the home's own time (standard-day.ts).
+    if (!body.isExpress) {
+      const home = world.properties.find((x) => x.id === body.propertyId);
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: (home && home.timezone) || 'America/Chicago' }).format(new Date(world.now || Date.now()));
+      if (body.scheduledDate.slice(0, 10) <= today) return [400, { code: 'STANDARD_NOT_SAME_DAY', message: 'Standard service starts tomorrow. For a pro today, choose NOHM Express.' }];
+    }
     const existing = Object.values(world.jobs).find((j) => j.idempotencyKey === body.idempotencyKey);
     if (existing) return [201, existing];
     const id = `j-${++world.seq}`;
-    const job = { id, jobNumber: `NOHM-${world.seq}`, status: 'AWAITING_ACCEPTANCE', priority: body.isExpress ? 'EXPRESS' : 'STANDARD', ...body, photos: [] };
+    const job = { id, jobNumber: `NOHM-${world.seq}`, status: 'AWAITING_ACCEPTANCE', priority: body.isExpress ? 'EXPRESS' : 'STANDARD', selectedContractorId: null, candidateContractorIds: [], ...body, photos: [] };
+    const expiresAt = new Date(Date.now() + 15 * 60000).toISOString();
     world.jobs[id] = job;
-    world.offers[id] = [{ contractorId: 'c-1', contractor: { id: 'c-1', businessName: 'Diaz Plumbing', averageRating: 4.9, completedJobsCount: 212, yearsExperience: 11, hasNohmProBadge: true, user: { firstName: 'Ray', lastName: 'Diaz' } } }];
+    if (world.preferred) {
+      // The home's Preferred Pro for the trade gets it first
+      // (preferred-pro-offers.service.ts offerFirst): the job names them
+      // as selected and their offer is the only one, typed PREFERRED.
+      Object.assign(job, { selectedContractorId: 'c-7', candidateContractorIds: ['c-7'], offerAttemptIndex: 1, offerExpiresAt: expiresAt });
+      world.offers[id] = [{ id: `o-${id}-7`, jobId: id, contractorId: 'c-7', offerType: 'PREFERRED', attemptNumber: 1, response: null, respondedAt: null, expiresAt, contractor: { id: 'c-7', businessName: 'Benton Plumbing Co', profilePhotoUrl: null, averageRating: 5, ratingCount: 2, completedJobsCount: 2, yearsExperience: 8, hasNohmProBadge: false, user: { firstName: 'Marcus', lastName: 'R.' } } }];
+    } else {
+      // Standard: matched pros, each with an open STANDARD offer, for the homeowner to choose from.
+      world.offers[id] = [{ id: `o-${id}-1`, jobId: id, contractorId: 'c-1', offerType: body.isExpress ? 'EXPRESS' : 'STANDARD', attemptNumber: 1, response: null, respondedAt: null, expiresAt, contractor: { id: 'c-1', businessName: 'Diaz Plumbing', averageRating: 4.9, completedJobsCount: 212, yearsExperience: 11, hasNohmProBadge: true, user: { firstName: 'Ray', lastName: 'D.' } } }];
+      if (body.isExpress) Object.assign(job, { selectedContractorId: 'c-1', candidateContractorIds: ['c-1'], offerAttemptIndex: 1, offerExpiresAt: expiresAt });
+    }
     return [201, job];
   }
   // POST /jobs/:id/photos (jobs.controller.ts): multer field `files`, up to 5,
@@ -330,7 +356,7 @@ function api(method, url, body, req) {
   m = /^\/jobs\/([^/]+)\/matched-contractors$/.exec(p);
   if (m) return world.jobs[m[1]] ? [200, { job: world.jobs[m[1]], offers: world.offers[m[1]] || [] }] : [404, { message: 'Job not found' }];
   m = /^\/jobs\/([^/]+)\/select-contractor$/.exec(p);
-  if (m) return world.jobs[m[1]] ? [200, { success: true }] : [404, { message: 'Job not found' }];
+  if (m) { const j = world.jobs[m[1]]; if (!j) return [404, { message: 'Job not found' }]; j.selectedContractorId = body.contractorId; return [200, { success: true }]; }
   m = /^\/jobs\/([^/]+)$/.exec(p);
   if (m && method === 'GET') return world.jobs[m[1]] ? [200, world.jobs[m[1]]] : [404, { message: 'Job not found' }];
   if (p === '/now/live') return [200, { kind: 'PROS', pros: [{ availabilityId: 'av-1', contractorProfileId: 'c-2', contractorName: 'Express Plumbing', completedJobs: 88, averageRating: 4.8, etaMinutes: 22, hasNohmProBadge: true }] }];
@@ -350,7 +376,11 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; world.legacy = false; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; world.legacy = false; world.preferred = false; world.now = null; return json(res, 200, { ok: true }); }
+  // /__now?t=<ISO>: the server's clock, for a run whose browser clock is set too (none: the real time).
+  if (url.pathname === '/__now') { const t = url.searchParams.get('t'); world.now = t ? Date.parse(t) : null; return json(res, 200, { ok: true }); }
+  // /__preferred?on=1: the home has a Preferred Pro for every trade, so a new Standard or Express job goes to them first.
+  if (url.pathname === '/__preferred') { world.preferred = url.searchParams.get('on') !== '0'; return json(res, 200, { ok: true, preferred: world.preferred }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }
