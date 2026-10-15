@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Renters | NOHM</title>
-  <meta name="description" content="Renting, made easy. Pay rent, send repairs and sign your lease from your phone. Free for renters." />
+  <meta name="description" content="Renting, made easy. Apply free, pay rent, send repairs and sign your lease from your phone. Screening is optional and your choice." />
   <link rel="canonical" href="https://nohm.app/renters/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NOHM" />
   <meta property="og:title" content="Renters | NOHM" />
-  <meta property="og:description" content="Renting, made easy. Pay rent, send repairs and sign your lease from your phone. Free for renters." />
+  <meta property="og:description" content="Renting, made easy. Apply free, pay rent, send repairs and sign your lease from your phone. Screening is optional and your choice." />
   <meta property="og:url" content="https://nohm.app/renters/" />
   <meta property="og:image" content="https://nohm.app/img/crew-1672.jpg" />
   <meta property="og:image:width" content="1672" />
@@ -119,6 +119,13 @@
     .fee .price s { font-size: 20px; color: #6e6e73; }
     .fee p { margin: 0; font-size: 16px; line-height: 1.5; color: #393c41; }
     .fine { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #5c5e62; }
+    /* Applying & Screening: free to apply, NOHM Ready sold as +$20 on Standard. */
+    .fees h2 + .lede { max-width: 640px; margin: -4px 0 22px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .fee .ready-total { margin: 0 0 12px; font-weight: var(--weight-ui); color: #171a20; }
+    .ready-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+    .ready-list li { position: relative; padding: 11px 0 11px 26px; font-size: 15px; line-height: 1.4; font-weight: var(--weight-body-strong); color: #171a20; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+    .ready-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+    .ready-list li::before { content: ""; position: absolute; left: 2px; top: 16px; width: 11px; height: 5px; border-left: 2px solid #171a20; border-bottom: 2px solid #171a20; transform: rotate(-45deg); }
 
 
 
@@ -257,7 +264,7 @@
         <li>Freeze alerts</li>
         <li>Your AI housing assistant</li>
         <li>Apply from a listing</li>
-        <li>Free for renters</li>
+        <li>Apply free, no limit</li>
       </ul>
     </section>
 
@@ -283,21 +290,52 @@
 
     <section class="trio" aria-label="More for renters">
       <div class="fact"><b>Joining is easy</b><span>Your landlord sends you a code by text. Enter it in the app and you&rsquo;re connected to your home.</span></div>
-      <div class="fact"><b>Apply on your phone</b><span>Found a place? Tap Apply on the listing, fill it out and sign it. Pay your deposit by bank when you&rsquo;re approved.</span></div>
+      <div class="fact"><b>Apply on your phone</b><span>Found a place? Tap Apply on the listing, fill it out and sign it. Applying is free. Pay your deposit by bank when you&rsquo;re approved.</span></div>
       <div class="fact"><b>Ready for the weather</b><span>When a freeze is coming, NOHM tells you how to protect the pipes before anything bursts.</span></div>
+    </section>
+
+    <section class="fees" id="apply" aria-labelledby="apply-title">
+      <p class="eyebrow">Applying &amp; Screening</p>
+      <h2 id="apply-title">Apply free.<br />Screening is your choice.</h2>
+      <p class="lede">No application fee and no limit. Add screening if you want the landlord to have it when they review your application.</p>
+      <div class="fee-grid">
+        <div class="fee">
+          <h3>Apply</h3>
+          <div class="price"><b>Free</b></div>
+          <p>Every application. It&rsquo;s complete without screening.</p>
+        </div>
+        <div class="fee">
+          <h3>Standard Screening</h3>
+          <div class="price"><b data-rental="screeningStandard">$55</b></div>
+          <p>Credit check, US core criminal check and identity verification from Certn. Your report in the NOHM app.</p>
+        </div>
+        <div class="fee">
+          <h3>NOHM Ready</h3>
+          <div class="price"><b>+<span data-rental="readyAddOn">$20</span></b></div>
+          <p class="ready-total">On top of Standard Screening: <span data-rental="screeningReady">$75</span> in all.</p>
+          <ul class="ready-list">
+            <li>See what the landlord sees</li>
+            <li>Know where you stand against the landlord&rsquo;s published requirements and NOHM&rsquo;s benchmarks</li>
+            <li>Your report and application stored securely for 30 days, included</li>
+          </ul>
+        </div>
+      </div>
+      <p class="fine">Screening is optional, and NOHM Ready doesn&rsquo;t guarantee approval: the landlord decides. You have 30 days to finish Certn&rsquo;s short identity form; if you don&rsquo;t, the screening is cancelled and isn&rsquo;t refunded. If Certn can&rsquo;t complete it on their side, NOHM runs it again at no charge, and refunds you if that fails too. Some states limit screening charges, so you may pay less there. In Massachusetts and Vermont screening isn&rsquo;t sold, and applying is still free.</p>
     </section>
 
     <section class="faq">
       <h2>Questions.</h2>
-      <details><summary>Does NOHM cost me anything?</summary><p>No. NOHM is free for renters. Your landlord pays for the repairs they approve.</p></details>
+      <details><summary>Does NOHM cost me anything?</summary><p>Using NOHM is free, and so is applying. Screening is optional and yours to choose. If your landlord passes on the bank payment fee, paying rent by bank costs <span data-rental="achFlat">$7</span> a payment, and you see it before you pay. Your landlord pays for the repairs they approve.</p></details>
       <details><summary>How do I join?</summary><p>Your landlord invites you. You&rsquo;ll get a text with a code. Download NOHM, enter the code and you&rsquo;re connected to your home.</p></details>
-      <details><summary>How do I pay rent?</summary><p>Link your bank account in the Rent tab and pay now, pay part of it, or turn on autopay. Rent goes straight to your landlord.</p></details>
+      <details><summary>How do I pay rent?</summary><p>If your landlord collects rent in NOHM, link your bank account in the Rent tab and pay now, pay part of it, or turn on autopay. Rent goes straight to your landlord.</p></details>
       <details><summary>Can I sign my lease in the app?</summary><p>Yes. When your landlord uploads the lease, you&rsquo;ll get it in the app to read and e-sign.</p></details>
       <details><summary>How is my deposit handled?</summary><p>You and your landlord both sign a room-by-room report with photos when you move in. At move-out you&rsquo;ll get an itemized statement next to that report, and you can dispute anything you don&rsquo;t agree with.</p></details>
       <details><summary>What can I send a repair request for?</summary><p>Plumbing, HVAC, electrical, appliances, roofing and general repairs. Add photos, a description and whether it&rsquo;s urgent.</p></details>
       <details><summary>My landlord isn&rsquo;t on NOHM. Can I still use it?</summary><p>Tell them about it. Landlords add their rentals and invite tenants in a few minutes.</p></details>
-      <details><summary>Who runs my background check?</summary><p>NOHM uses Certn for identity, credit and criminal screening. If your landlord asks for a NOHM Income Check, Plaid securely connects to your bank to verify income from settled deposits. The landlord sees your income against the rent, never your bank login, balances or where your income comes from. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
-      <details><summary>How much is a rental application?</summary><p>Where local law allows it, the background check is <span data-rental="application">$50</span>. If local law requires a lower fee, NOHM reduces the checkout amount before you pay; in Massachusetts and Vermont there is no fee. A NOHM Income Check costs you nothing: your landlord pays for it.</p></details>
+      <details><summary>Who runs my screening?</summary><p>If you choose screening, Certn runs it: a credit check, a US core criminal check and identity verification. If your landlord asks for a NOHM Income Check, Plaid securely connects to your bank to verify income from settled deposits. The landlord sees your income against the rent, never your bank login, balances or where your income comes from. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
+      <details><summary>How much is a rental application?</summary><p>Nothing. Applying is free, with no limit on applications. Screening is optional: Standard Screening is <span data-rental="screeningStandard">$55</span>, and NOHM Ready is <span data-rental="readyAddOn">$20</span> more, <span data-rental="screeningReady">$75</span> in all. Some states limit screening charges, so the price may be lower there; in Massachusetts and Vermont screening isn&rsquo;t sold. A NOHM Income Check costs you nothing: your landlord pays for it.</p></details>
+      <details><summary>What is NOHM Ready?</summary><p>Standard Screening plus Rental Readiness. You see what the landlord sees and where you stand against their published requirements and NOHM&rsquo;s benchmarks, and your report and application are stored securely for 30 days at no extra charge. It doesn&rsquo;t guarantee approval: the landlord decides.</p></details>
+      <details><summary>What if my screening doesn&rsquo;t finish?</summary><p>Certn emails you a short identity form, and your screening starts when you finish it. You have 30 days; if you don&rsquo;t finish it, the screening is cancelled and isn&rsquo;t refunded. If Certn can&rsquo;t complete it on their side, NOHM runs it again at no charge, and refunds you if that fails too.</p></details>
       <details><summary>What if it&rsquo;s an emergency?</summary><p>Mark it urgent and it goes straight to your landlord. If there&rsquo;s fire, flooding, a gas smell or anyone is in danger, call 911 first.</p></details>
     </section>
 

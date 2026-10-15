@@ -101,14 +101,16 @@ export const CONTACT_FOR_DETAILS = 'Contact for details';
 /**
  * Costs & Fees: [{ label, value, note? }]. Rent, the deposit (if the
  * listing has one), the application fee as the server quotes it (none
- * when the landlord asks no application), and "Contact for details"
- * for anything else. Never an estimate.
+ * when the landlord asks no application; 0 where applying is free, as
+ * it is everywhere once the server's free applications are on), and
+ * "Contact for details" for anything else. Never an estimate.
  */
 export function costRows(l) {
   const rows = [{ label: 'Monthly rent', value: dollars(l.rentCents) }];
   rows.push({ label: 'Security deposit', value: l.depositCents != null ? dollars(l.depositCents) : CONTACT_FOR_DETAILS });
   if (l.asksApplication === false) rows.push({ label: 'Application', value: 'No application', note: 'The landlord invites you to your lease on NOHM.' });
-  else if (typeof l.applicationFeeCents === 'number') rows.push({ label: 'Application fee', value: l.applicationFeeCents === 0 ? 'No fee' : dollars(l.applicationFeeCents), note: 'Paid when you apply on NOHM, for the background check.' });
+  else if (l.applicationFeeCents === 0) rows.push({ label: 'Application fee', value: 'No fee', note: 'Applying on NOHM is free.' });
+  else if (typeof l.applicationFeeCents === 'number') rows.push({ label: 'Application fee', value: dollars(l.applicationFeeCents), note: 'Paid when you apply on NOHM, for the background check.' });
   else rows.push({ label: 'Application fee', value: CONTACT_FOR_DETAILS });
   rows.push({ label: 'Other fees', value: CONTACT_FOR_DETAILS });
   return rows;

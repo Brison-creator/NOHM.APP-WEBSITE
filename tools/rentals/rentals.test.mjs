@@ -112,7 +112,8 @@ test('highlights, features and costs come only from the listing; never an estima
   ]);
   const unknown = costRows({ rentCents: 100000, depositCents: null, applicationFeeCents: null });
   assert.deepEqual(unknown.map((r) => r.value), ['$1,000', CONTACT_FOR_DETAILS, CONTACT_FOR_DETAILS, CONTACT_FOR_DETAILS]);
-  assert.equal(costRows({ ...LISTING, applicationFeeCents: 0 })[2].value, 'No fee');
+  // Free applications: no fee, and no line saying one is paid.
+  assert.deepEqual(costRows({ ...LISTING, applicationFeeCents: 0 })[2], { label: 'Application fee', value: 'No fee', note: 'Applying on NOHM is free.' });
   assert.equal(costRows({ ...LISTING, asksApplication: false, applicationFeeCents: null })[2].value, 'No application');
   for (const r of costRows(LISTING)) assert.doesNotMatch(r.value, /–|-\s*\$|estimate|about|~/i);
 });
