@@ -28,16 +28,15 @@ export function prettyPhone(e164) {
 }
 
 /**
- * A Home ID (HIN) as the app shows it (formatHin in hin_plate.dart):
- * v1 "ACD4F7HJK" → "ACD-4F7-HJK"; v2 "H27KQM4XRT9WPD3NC8" →
- * "H2-7KQM-4XRT-9WPD-3NC8". Anything else is shown as stored.
+ * A Home ID (HIN) as anyone sees it, the way the app shows it (shownHin in
+ * hin_format.dart): only its last four, card style. "ACD4F7HJK" →
+ * "•••• 7HJK"; "H27KQM4XRT9WPD3NC8" → "•••• 3NC8". The whole code is
+ * printed only on NOHM's official records (owner, 2026-10-17: "we never
+ * display the full HIN to anyone"). "" for none.
  */
 export function homeId(hin) {
-  const raw = String(hin || '');
-  const s = raw.replace(/[\s-]/g, '').toUpperCase();
-  if (s.length === 18 && s.startsWith('H2')) return ['H2', ...s.slice(2).match(/.{4}/g)].join('-');
-  if (s.length === 9) return `${s.slice(0, 3)}-${s.slice(3, 6)}-${s.slice(6)}`;
-  return raw;
+  const s = String(hin || '').replace(/[\s\-‐-―_.]/g, '').toUpperCase();
+  return s ? `•••• ${s.slice(-4)}` : '';
 }
 
 export function isEmail(s) {
