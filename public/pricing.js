@@ -9,14 +9,12 @@ var NOHM_PRICING = {
   // Rentals, in dollars (set in the NOHM admin's Prices; keep these in step
   // with it). Rental plans are chosen per rental and mix freely:
   //   Free                  $0, always. Adding a rental never starts a plan.
-  //   Financial Management  planBase + financialPerRental for each enrolled rental
-  //   NOHM Autopilot        planBase + autopilotPerRental for each Autopilot
-  //                         rental; includes Financial Management (never
-  //                         also financialPerRental)
-  // planBase is charged once per landlord account while any rental is on a
-  // paid plan, whichever plans they are.
+  //   Financial Management  financialPerRental for each enrolled rental
+  //   NOHM Autopilot        autopilotPerRental for each Autopilot rental;
+  //                         includes Financial Management (never also
+  //                         financialPerRental)
+  // No account fee (owner, 2026-10-20: "forget the 9 bucks just keep it 0").
   rentals: {
-    planBase: 9,
     financialPerRental: 7,
     autopilotPerRental: 19.99,
     walkthrough: 79,
@@ -40,7 +38,7 @@ var NOHM_PRICING = {
   var r = p.rentals;
   r.readyAddOn = r.screeningReady - r.screeningStandard;
 
-  // "$7", "$19.99", "$55.98": cents only when there are some.
+  // "$7", "$19.99", "$46.98": cents only when there are some.
   function money(n) {
     var c = Math.round(n * 100);
     return '$' + (c % 100 ? (c / 100).toFixed(2) : String(c / 100));
@@ -58,7 +56,7 @@ var NOHM_PRICING = {
   document.querySelectorAll('[data-rental]').forEach(function (el) {
     el.textContent = money(r[el.getAttribute('data-rental')]);
   });
-  // A worked total: data-rental-sum="planBase autopilotPerRental*2 financialPerRental".
+  // A worked total: data-rental-sum="autopilotPerRental*2 financialPerRental".
   document.querySelectorAll('[data-rental-sum]').forEach(function (el) {
     var cents = 0;
     el.getAttribute('data-rental-sum').split(/\s+/).forEach(function (part) {

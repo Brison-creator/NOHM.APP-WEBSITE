@@ -118,7 +118,7 @@
   font-weight: var(--weight-ui-strong);
 }
 
-/* How the bill adds up: the account fee, a worked month, the card. */
+/* How the bill adds up: no account fee, a worked month, the card. */
 .bill {
   margin: 12px 0 0;
   padding: 4px 22px;
