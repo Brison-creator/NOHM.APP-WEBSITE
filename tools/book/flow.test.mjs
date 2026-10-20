@@ -337,12 +337,13 @@ test('NOHM Credits: only the Express opt-in is sent, and only when ticked; the s
   assert.equal(restoreDraft(persistableDraft({ ...readyDraft('EXPRESS'), useCredits: true })).useCredits, true, 'the choice survives a reload');
 });
 
-test('homeId groups a Home ID the way the app does', async () => {
+test('homeId shows only a Home ID’s last four, the way the app does', async () => {
   const { homeId } = await import('../../public/nohm/format.js');
-  assert.equal(homeId('MV7K4MQXG'), 'MV7-K4M-QXG');
-  assert.equal(homeId('mv7-k4m-qxg'), 'MV7-K4M-QXG');
-  assert.equal(homeId('H27KQM4XRT9WPD3NC8'), 'H2-7KQM-4XRT-9WPD-3NC8');
-  assert.equal(homeId('LEGACY-ID'), 'LEGACY-ID');
+  // Only the last four, never the whole code (owner, 2026-10-17).
+  assert.equal(homeId('MV7K4MQXG'), '•••• MQXG');
+  assert.equal(homeId('mv7-k4m-qxg'), '•••• MQXG');
+  assert.equal(homeId('H27KQM4XRT9WPD3NC8'), '•••• 3NC8');
+  assert.equal(homeId('h2-7kqm-4xrt-9wpd-3nc8'), '•••• 3NC8');
   assert.equal(homeId(null), '');
 });
 

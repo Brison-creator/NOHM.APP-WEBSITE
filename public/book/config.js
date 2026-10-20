@@ -10,7 +10,7 @@
 //   GOOGLE_CLIENT_ID also needs this site's origin in the Google
 //   console's authorized JavaScript origins.
 window.NOHM_BOOK = {
-  apiBase: 'https://api.nohm.app/api/v1',
+  apiBase: 'https://api.nohm.io/api/v1',
   appStore: 'https://apps.apple.com/us/app/nohm-app/id6761128513',
   playStore: 'https://play.google.com/store/apps/details?id=com.nohm.app',
 };

@@ -144,6 +144,6 @@ export async function addHome(page) {
   await page.click('[data-structure=SINGLE]');
   await page.waitForSelector('text=Your home is on NOHM.');
   await snap(page, 'home-added');
-  assert.ok(await page.textContent('.b-sub').then((t) => t.includes('4K7-M2Q-9XC')));
+  assert.ok(await page.textContent('.b-sub').then((t) => t.includes('•••• Q9XC') && !t.includes('4K7')));
   await page.click('[data-key=next]');
 }

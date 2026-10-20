@@ -3,7 +3,7 @@
 // (NOHM-ID-…, NOHM-TAX-…, NOHM-HOME-…). Loaded by /verify and by the
 // not-found page, which is what a path like /verify/NOHM-ID-… lands on.
 (function () {
-  var CHECK = 'https://api.nohm.app/verify/';
+  var CHECK = 'https://api.nohm.io/verify/';
   var clean = function (raw) {
     return String(raw || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 40);
   };
