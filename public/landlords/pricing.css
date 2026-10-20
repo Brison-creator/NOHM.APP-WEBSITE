@@ -81,6 +81,17 @@
   line-height: 1.5;
 }
 
+.plan-note b {
+  color: #171a20;
+  font-weight: var(--weight-ui-strong);
+}
+
+.plan-note s,
+.bill-row s,
+.nohm-row s {
+  color: #6e6e73;
+}
+
 .plan-list {
   margin: 0;
   padding: 0;
@@ -118,7 +129,7 @@
   font-weight: var(--weight-ui-strong);
 }
 
-/* How the bill adds up: no account fee, a worked month, the card. */
+/* How the bill adds up: the launch offer, a worked month, the card. */
 .bill {
   margin: 12px 0 0;
   padding: 4px 22px;

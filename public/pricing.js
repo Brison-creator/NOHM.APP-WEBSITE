@@ -13,8 +13,12 @@ var NOHM_PRICING = {
   //   NOHM Autopilot        autopilotPerRental for each Autopilot rental;
   //                         includes Financial Management (never also
   //                         financialPerRental)
-  // No account fee (owner, 2026-10-20: "forget the 9 bucks just keep it 0").
+  // accountFee is the regular monthly account fee, shown struck through:
+  // launch members never pay it (owner, 2026-10-20: "Launch members never
+  // pay a monthly subscription fee. Just make it look like a launch
+  // offer"). NOHM charges $0 for it.
   rentals: {
+    accountFee: 9,
     financialPerRental: 7,
     autopilotPerRental: 19.99,
     walkthrough: 79,

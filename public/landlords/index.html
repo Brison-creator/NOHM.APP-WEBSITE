@@ -429,6 +429,7 @@
       <p class="eyebrow">Plans</p>
       <h2 id="plans-title">Start free.<br />Pay only for the rentals you enroll.</h2>
       <p class="plans-lede">Choose a plan for each rental and mix them. Rentals you don&rsquo;t enroll stay on Free.</p>
+      <p class="launch">Launch offer: no monthly account fee, ever</p>
       <div class="plan-grid">
         <article class="plan">
           <h3>Free</h3>
@@ -451,7 +452,7 @@
           <h3>Financial Management</h3>
           <p class="plan-sum">NOHM collects rent and keeps the books.</p>
           <div class="plan-price"><b data-rental="financialPerRental">$7</b><span>a month per rental</span></div>
-          <p class="plan-note">No account fee. Only the rentals you enroll.</p>
+          <p class="plan-note"><s data-rental="accountFee">$9</s> <b>$0</b> monthly account fee for launch members.</p>
           <ul class="plan-list">
             <li class="plan-all">Everything in Free</li>
             <li>Rent collection by bank</li>
@@ -466,7 +467,7 @@
           <h3>NOHM Autopilot</h3>
           <p class="plan-sum">NOHM handles the routine work.</p>
           <div class="plan-price"><b data-rental="autopilotPerRental">$19.99</b><span>a month per rental</span></div>
-          <p class="plan-note">No account fee. Financial Management included, never another <span data-rental="financialPerRental">$7</span>.</p>
+          <p class="plan-note"><s data-rental="accountFee">$9</s> <b>$0</b> monthly account fee for launch members. Financial Management included, never another <span data-rental="financialPerRental">$7</span>.</p>
           <ul class="plan-list">
             <li class="plan-all">Everything in Financial Management</li>
             <li>Routine tenant questions answered in the same conversation</li>
@@ -478,8 +479,8 @@
         </article>
       </div>
       <div class="bill">
-        <div class="bill-row"><b>No account fee</b><span>You pay only for the rentals you put on a paid plan. Every other rental stays free.</span></div>
-        <div class="bill-row"><b>Example</b><span>2 rentals on Autopilot and 1 on Financial Management: 2 &times; <span data-rental="autopilotPerRental">$19.99</span> + <span data-rental="financialPerRental">$7</span> = <strong data-rental-sum="autopilotPerRental*2 financialPerRental">$46.98</strong> a month.</span></div>
+        <div class="bill-row"><b>Monthly account fee</b><span><s data-rental="accountFee">$9</s> <strong>$0</strong> for launch members. Join during launch and you never pay it. You pay only for the rentals you put on a paid plan.</span></div>
+        <div class="bill-row"><b>Example</b><span>2 rentals on Autopilot and 1 on Financial Management: 2 &times; <span data-rental="autopilotPerRental">$19.99</span> + <span data-rental="financialPerRental">$7</span> = <strong data-rental-sum="autopilotPerRental*2 financialPerRental">$46.98</strong> a month for a launch member.</span></div>
         <div class="bill-row"><b>A card on file, Free included</b><span>It helps keep NOHM safe from fraud and lets you request service. You&rsquo;re not charged on Free unless you book or buy something.</span></div>
       </div>
     </section>
@@ -522,7 +523,7 @@
           <tbody>
             <tr class="nohm-row">
               <td>NOHM</td>
-              <td>Free plan; Financial Management <span data-rental="financialPerRental">$7</span>/rental/mo; Autopilot <span data-rental="autopilotPerRental">$19.99</span>/rental/mo; no account fee</td>
+              <td>Free plan; Financial Management <span data-rental="financialPerRental">$7</span>/rental/mo; Autopilot <span data-rental="autopilotPerRental">$19.99</span>/rental/mo; account fee <s data-rental="accountFee">$9</s>/mo, $0 for launch members</td>
               <td>$0; applying is free and screening is the renter&rsquo;s choice to buy; optional Income Check <span data-rental="incomeCheck">$20</span></td>
               <td>$0 if passed to tenant; otherwise <span data-rental="achFlat">$7</span>/payment</td>
             </tr>
@@ -570,8 +571,9 @@
 
     <section class="faq">
       <h2>Questions.</h2>
-      <details><summary>How much does NOHM cost for landlords?</summary><p>NOHM is free to start: rentals you don&rsquo;t enroll stay on Free. Financial Management is <span data-rental="financialPerRental">$7</span> a month per enrolled rental, and NOHM Autopilot is <span data-rental="autopilotPerRental">$19.99</span> a month per Autopilot rental with Financial Management included. There&rsquo;s no account fee. Walkthroughs are <span data-rental="walkthrough">$79</span> each.</p></details>
-      <details><summary>Can I put different rentals on different plans?</summary><p>Yes. Choose a plan for each rental and change it any time in the app. 2 rentals on Autopilot and 1 on Financial Management is 2 &times; <span data-rental="autopilotPerRental">$19.99</span> + <span data-rental="financialPerRental">$7</span> = <span data-rental-sum="autopilotPerRental*2 financialPerRental">$46.98</span> a month.</p></details>
+      <details><summary>How much does NOHM cost for landlords?</summary><p>NOHM is free to start: rentals you don&rsquo;t enroll stay on Free. Financial Management is <span data-rental="financialPerRental">$7</span> a month per enrolled rental, and NOHM Autopilot is <span data-rental="autopilotPerRental">$19.99</span> a month per Autopilot rental with Financial Management included. The <span data-rental="accountFee">$9</span> monthly account fee is $0 for launch members, for good. Walkthroughs are <span data-rental="walkthrough">$79</span> each.</p></details>
+      <details><summary>Can I put different rentals on different plans?</summary><p>Yes. Choose a plan for each rental and change it any time in the app. 2 rentals on Autopilot and 1 on Financial Management is 2 &times; <span data-rental="autopilotPerRental">$19.99</span> + <span data-rental="financialPerRental">$7</span> = <span data-rental-sum="autopilotPerRental*2 financialPerRental">$46.98</span> a month for a launch member.</p></details>
+      <details><summary>What is the launch offer?</summary><p>Landlords who join NOHM during launch are launch members. Launch members never pay the <span data-rental="accountFee">$9</span> monthly account fee, now or later. You pay only for the rentals you put on a paid plan, and rentals on Free stay free.</p></details>
       <details><summary>Why do I need a card on file on Free?</summary><p>It helps keep NOHM safe from fraud and lets you request service when something breaks. You&rsquo;re not charged on Free unless you book or buy something.</p></details>
       <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Rent goes straight to your connected payout account. A bank (ACH) rent payment has a flat <span data-rental="achFlat">$7</span> fee, whatever the rent. You decide, lease by lease, whether your tenant pays it on top or you pay it from your payout.</p></details>
       <details><summary>What does NOHM Autopilot actually do?</summary><p>It answers your tenants&rsquo; routine questions in the same conversation: when rent is due, what&rsquo;s owed, how to pay. A repair message becomes a maintenance request, handled within the limit you set. Anything else, like pets, lease changes or money requests, comes to you, and you can review what it did and take over any time. It relists the unit after move-out and sends you a weekly summary. Emergency reports always come straight to you.</p></details>
