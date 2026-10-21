@@ -1,0 +1,42 @@
+/* The invite pages (/invite/family, /invite/neighbor, /invite/team,
+   /invite/renter): where the link in an invite text lands. A photo, a
+   short warm hello written for that invite, the store badges, and three
+   steps to join. Owner, 2026-10-21: "each invite to have its own page
+   with a nice message for them". */
+html, body { margin: 0; background: #fff; }
+body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #171a20; }
+.inv *, .inv *::before, .inv *::after { box-sizing: border-box; }
+
+.inv { max-width: 560px; margin: 0 auto; padding: 16px 16px 64px; }
+
+.inv-photo { display: block; margin: 0 0 28px; }
+.inv-photo img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 12px; background: #f4f4f4; }
+
+.inv-eyebrow { margin: 0 0 10px; font: var(--weight-ui) 12px/1 var(--font-text); letter-spacing: .08em; text-transform: uppercase; color: #356ca3; }
+.inv h1 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-hero); font-size: clamp(32px, 7.5vw, 46px); line-height: 1.06; letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); color: #171a20; }
+.inv-lede { margin: 14px 0 0; font-size: 17px; line-height: 1.55; color: #393c41; }
+
+.inv .store-cta { margin: 20px 0 4px; }
+
+/* "Welcome to the future." (owner, 2026-10-21: "we used to look in a book
+   to find a taxi same thing. welcome to the future. your one of the
+   first"): the same block on every invite page, near-black like a Tesla
+   panel. */
+.inv-future { margin: 24px 0 0; padding: 24px 20px; border-radius: 12px; background: #171a20; color: #fff; }
+.inv-future h2 { margin: 0 0 12px; font-family: var(--font-display); font-weight: var(--weight-hero); font-size: clamp(26px, 6vw, 32px); line-height: 1.08; letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); color: #fff; }
+.inv-future p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.55; color: rgba(255, 255, 255, .78); }
+.inv-future p.inv-first { margin: 16px 0 0; font-weight: var(--weight-ui-strong); color: #fff; }
+
+.inv-how { margin: 24px 0 0; padding: 20px 16px; border-radius: 12px; background: #f4f4f4; }
+.inv-how h2 { margin: 0 0 14px; font-family: var(--font-display); font-weight: var(--weight-heading); font-size: 18px; letter-spacing: var(--tracking-title); color: #171a20; }
+.inv-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: step; }
+.inv-steps li { display: flex; gap: 12px; align-items: flex-start; counter-increment: step; font-size: 15px; line-height: 1.45; color: #393c41; }
+.inv-steps li::before { content: counter(step); flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #356ca3; font: var(--weight-ui-strong) 14px/1 var(--font-text); }
+.inv-steps b { display: block; color: #171a20; font-weight: var(--weight-ui-strong); }
+
+.inv-small { margin: 20px 0 0; font-size: 14px; line-height: 1.5; color: #6e6e73; }
+.inv-small a { color: #356ca3; font-weight: var(--weight-ui); text-decoration: none; }
+
+@media (min-width: 600px) {
+  .inv { padding-top: 32px; }
+}
