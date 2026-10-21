@@ -1,0 +1,101 @@
+/* The role pages (/for/landlords, /for/homeowners, /for/pros, /for/renters):
+   one short page per role that sells it. The photo with the promise, the
+   reasons as gray cards, the price, three steps, and the ask again on
+   black. Links after /type.css, /bar.css, /screens.css and /store-cta.css. */
+
+html, body { margin: 0; background: #fff; }
+body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #171a20; }
+
+/* The opening: the photo, and the promise over it. */
+.hero { position: relative; height: min(84svh, 780px); min-height: 520px; background: #16171a; }
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.72) 38%, rgba(0, 0, 0, 0.28) 64%, rgba(0, 0, 0, 0) 84%);
+}
+.hero .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 36px; padding: 0 24px; text-align: center; color: #fff; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35); }
+.hero .kicker { margin: 0 0 10px; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: var(--weight-ui-strong); opacity: 0.85; }
+.hero h1 {
+  margin: 0; font-size: clamp(42px, 6.4vw, 80px); line-height: 1.02;
+  font-family: var(--font-display); font-weight: var(--weight-hero);
+  letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
+}
+.hero h1 { text-wrap: balance; }
+/* screens.css has a site-wide .sub in charcoal; over the photo it's white. */
+.hero .sub { margin: 14px auto 0; max-width: 620px; font-size: clamp(17px, 1.6vw, 21px); line-height: 1.45; color: #fff; font-weight: var(--weight-body-strong); }
+.hero .actions { margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+/* Buttons: NOHM blue, one per group; the second is white. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 220px; height: 48px; padding: 0 28px;
+  border-radius: 4px; background: #356CA3; color: #fff; text-decoration: none;
+  font-size: var(--size-button); font-weight: var(--weight-ui);
+}
+.btn:hover { background: #2b5885; }
+.btn--light { background: #fff; color: #393c41; border: 1px solid #d0d1d2; }
+.btn--light:hover { background: #f4f4f4; }
+.hero .btn--light, .final .btn--light { background: rgba(255, 255, 255, 0.92); border: 0; color: #171a20; }
+.textlink { color: inherit; font-size: 15px; font-weight: var(--weight-ui); text-decoration: underline; text-underline-offset: 3px; padding: 12px 0; }
+
+/* Sections share one width and the site's spacing. */
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 12px; }
+.sec { padding: 64px 0 8px; }
+.sec h2 {
+  margin: 0 12px 24px; font-size: clamp(30px, 3.6vw, 48px); line-height: 1.06; text-align: center;
+  font-family: var(--font-display); font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
+}
+.sec .lede { margin: -10px auto 28px; max-width: 620px; padding: 0 12px; text-align: center; font-size: 18px; line-height: 1.5; color: #393c41; }
+
+/* The reasons: short, bold, one line each. */
+.reasons { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.reasons li { background: #f4f4f4; border-radius: 12px; padding: 28px 24px; }
+.reasons h3 {
+  margin: 0 0 8px; font-size: clamp(24px, 2.4vw, 30px); line-height: 1.12;
+  font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline);
+}
+.reasons p { margin: 0; font-size: 17px; line-height: 1.55; color: #393c41; }
+.soon {
+  display: inline-block; margin-left: 8px; padding: 3px 9px; border-radius: 999px; vertical-align: 0.35em;
+  background: #171a20; color: #fff; font-family: var(--font-text); font-size: 12px; font-weight: var(--weight-ui-strong);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+@media (min-width: 760px) {
+  .reasons { grid-template-columns: 1fr 1fr; }
+  .reasons li { padding: 36px 32px; }
+}
+
+/* The price: one card per plan, the number big. */
+.plans { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.plan { border: 1px solid #e3e4e6; border-radius: 12px; padding: 28px 24px; }
+.plan--lead { border: 2px solid #171a20; }
+.plan .name { margin: 0; font-size: 15px; font-weight: var(--weight-ui-strong); letter-spacing: 0.04em; text-transform: uppercase; color: #6e6e73; }
+.plan .price { margin: 10px 0 2px; font-family: var(--font-display); font-weight: var(--weight-hero); font-size: 52px; line-height: 1; letter-spacing: var(--tracking-headline); }
+.plan .price s { margin-right: 10px; font-size: 26px; color: #86868b; font-weight: var(--weight-heading); }
+.plan .per { margin: 0 0 14px; font-size: 15px; color: #6e6e73; }
+.plan p { margin: 0; font-size: 16px; line-height: 1.55; color: #393c41; }
+.fine { margin: 18px auto 0; max-width: 760px; padding: 0 12px; text-align: center; font-size: 14px; line-height: 1.55; color: #6e6e73; }
+@media (min-width: 760px) {
+  .plans--3 { grid-template-columns: repeat(3, 1fr); }
+  .plans--2 { grid-template-columns: repeat(2, 1fr); max-width: 820px; margin: 0 auto; }
+}
+
+/* Three steps to start. */
+.steps { list-style: none; margin: 0 auto; padding: 0; max-width: 820px; counter-reset: step; }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 48px 1fr; gap: 16px; align-items: start; padding: 18px 12px; border-bottom: 1px solid #e6e7e9; }
+.steps li:last-child { border-bottom: 0; }
+.steps li::before {
+  content: counter(step); width: 48px; height: 48px; border-radius: 50%; background: #171a20; color: #fff;
+  display: grid; place-items: center; font-family: var(--font-display); font-weight: var(--weight-hero); font-size: 20px;
+}
+.steps b { display: block; font-size: 19px; font-weight: var(--weight-ui-strong); margin: 2px 0 4px; }
+.steps span { font-size: 16px; line-height: 1.5; color: #393c41; }
+
+/* The ask again, on black. */
+.final { margin: 64px 12px 24px; padding: 64px 24px 48px; border-radius: 12px; background: #171a20; color: #fff; text-align: center; }
+.final h2 {
+  margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.04;
+  font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
+}
+.final p { margin: 12px auto 22px; max-width: 560px; font-size: 18px; line-height: 1.5; color: #d0d1d2; }
+.final .actions { display: flex; flex-direction: column; align-items: center; gap: 4px; }
