@@ -34,7 +34,25 @@ const api = createApi(http, session);
 const prefill = MODE === 'pro' ? readPrefill(window.sessionStorage) : null;
 
 const COPY = {
-  pro: { signupTitle: 'Join NOHM as a pro', signupSub: 'Your account first. Then your profile, payouts and the Standard: about ten minutes.', signinSub: 'Pick up where you left off.' },
+  pro: {
+    signupTitle: 'Join NOHM as a pro',
+    signupSub: 'Your account first. Then your profile, payouts and the Standard: about ten minutes.',
+    signinSub: 'Pick up where you left off.',
+    // The hello a referred pro lands on, straight from the owner's pitch:
+    // take out the middleman, free to join, paid inside NOHM via Stripe,
+    // no leads. Shown above the sign-up tabs (nohm/account.js welcomeBlock).
+    welcome: {
+      eyebrow: 'You’re invited',
+      title: 'Welcome — let’s cut out the middleman.',
+      intro: 'NOHM connects local homeowners straight to pros like you. If someone sent you this link, they already think you’re one of the great ones — and that’s exactly who we want.',
+      props: [
+        { icon: 'check', title: 'Free to join', body: 'No fees, no monthly cost. Just a few quick verifications to confirm you’re the real deal.' },
+        { icon: 'lock', title: 'Get paid securely, inside NOHM', body: 'Every job is paid through NOHM and deposited straight to your own bank account.', stripe: true },
+        { icon: 'calendar', title: 'No leads. No tire-kickers.', body: 'Real homeowners sent straight to you — with free scheduling software, so it’s all in one place.' },
+      ],
+      lead: 'Set up takes about ten minutes — your account comes first.',
+    },
+  },
   renter: { signupTitle: 'Join NOHM as a renter', signupSub: 'Use the phone number your landlord has for you; the invite is matched to it.', signinSub: 'Sign in to accept your landlord’s invite.' },
 };
 

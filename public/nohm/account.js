@@ -67,6 +67,55 @@ function head(title, sub) {
   return h('header.b-head', [h('h1.b-h1', title), sub ? h('p.b-sub', sub) : null]);
 }
 
+// One 24px stroke icon per value prop, in the site's icon style (as in
+// nohm/trust.js), ink on the blue chip behind it.
+const WELCOME_ICONS = {
+  check: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8.5 12.5l2.4 2.4L15.6 9.5',
+  lock: 'M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6zM12 15v2',
+  calendar: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
+};
+
+function welcomeIcon(name) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'b-prop-ic');
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', WELCOME_ICONS[name] || WELCOME_ICONS.check);
+  svg.appendChild(p);
+  return svg;
+}
+
+/**
+ * The welcome a referred pro sees on nohm.app/join, above the sign-up
+ * tabs: a short hello, then the quick rundown (free to join, paid inside
+ * NOHM via Stripe, no leads). Shown only when the host passes `welcome`
+ * (so /book and /join/renter never see it). All text comes from the
+ * host, never from anything the person typed.
+ */
+function welcomeBlock(w) {
+  const props = (w.props || []).map((p) =>
+    h('li.b-prop', [
+      h('span.b-prop-chip', welcomeIcon(p.icon)),
+      h('div.b-prop-body', [
+        h('b', p.title),
+        h('span', p.body),
+        p.stripe
+          ? h('span.b-stripe-line', ['Payouts powered by ', h('img.b-stripe', { src: '/img/logos/stripe.svg', width: 60, height: 25, alt: 'Stripe', loading: 'lazy' })])
+          : null,
+      ]),
+    ]),
+  );
+  return h('header.b-welcome', [
+    w.eyebrow ? h('p.b-welcome-eyebrow', w.eyebrow) : null,
+    h('h1.b-h1', w.title),
+    w.intro ? h('p.b-sub', w.intro) : null,
+    props.length ? h('ul.b-props', props) : null,
+    w.lead ? h('p.b-welcome-lead', w.lead) : null,
+  ]);
+}
+
 function footer(a) {
   return h('div.b-foot', [a.canGoBack() ? button('Back', { kind: 'sec', onClick: () => a.back() }) : null]);
 }
@@ -330,7 +379,10 @@ export function accountScreen(a, opts = {}) {
     else if (mode === 'signin-code') body.push(h('p.b-line', a.state.pendingLogin.emailedTo ? `New browser. We emailed a code to ${a.state.pendingLogin.emailedTo}.` : `New browser. We texted a code to ${a.state.pendingLogin.maskedPhone || 'your phone'}.`), codeForm({ phone: a.state.pendingLogin.maskedPhone || '', onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyDeviceOtp(a.state.pendingLogin.email, code)) }));
     else if (mode === 'signin-phone') body.push(phoneSigninForm());
     else if (mode === 'signin-phone-code') body.push(codeForm({ phone: a.state.pendingLogin.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyOtp(a.state.pendingLogin.phone, code)), onResend: (human) => a.api.auth.loginSendOtp(a.state.pendingLogin.phone, human, trap.fields()) }));
-    append(wrap, [head(title, sub), mode === 'signup' || mode === 'signup-phone' || mode === 'signin' ? tabs() : null, ...body, err, footer(a), trustMarks({ webConfig: a.webConfig })]);
+    // A referred pro's welcome stands in for the plain header on the
+    // first sign-up screens; "Sign in" and the later steps keep the head.
+    const header = opts.welcome && (mode === 'signup' || mode === 'signup-phone') ? welcomeBlock(opts.welcome) : head(title, sub);
+    append(wrap, [header, mode === 'signup' || mode === 'signup-phone' || mode === 'signin' ? tabs() : null, ...body, err, footer(a), trustMarks({ webConfig: a.webConfig })]);
   }
   draw();
   return wrap;

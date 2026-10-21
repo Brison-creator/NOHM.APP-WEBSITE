@@ -12,3 +12,22 @@
 .b-standard ul { margin: 8px 0 12px; padding-left: 20px; columns: 2; font-size: 15px; line-height: 1.7; color: #171a20; }
 .b-standard li { break-inside: avoid; }
 @media (max-width: 420px) { .b-standard ul { columns: 1; } }
+
+/* The referred pro's welcome (nohm/account.js welcomeBlock): a hello,
+   then the owner's quick rundown, above the sign-up tabs. */
+.b-welcome { margin: 4px 0 22px; }
+.b-welcome-eyebrow { margin: 0 0 10px; font: var(--weight-ui) 12px/1 var(--font-text); letter-spacing: .08em; text-transform: uppercase; color: #356ca3; }
+.b-welcome .b-h1 { margin: 0 0 10px; }
+.b-welcome .b-sub { margin: 0; }
+
+.b-props { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 12px; }
+.b-prop { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border: 1px solid #e6e7e9; border-radius: 12px; background: #fff; }
+.b-prop-chip { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: rgba(53,108,163,.1); }
+.b-prop-ic { width: 22px; height: 22px; fill: none; stroke: #356ca3; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.b-prop-body { min-width: 0; }
+.b-prop-body b { display: block; font-size: 16px; font-weight: var(--weight-ui-strong); color: #171a20; letter-spacing: var(--tracking-title); }
+.b-prop-body span { display: block; margin-top: 3px; font-size: 14px; line-height: 1.45; color: #393c41; }
+.b-stripe-line { display: flex; align-items: center; gap: 6px; margin-top: 8px !important; font-size: 12.5px; color: #6e6e73; }
+.b-stripe { height: 20px; width: auto; display: inline-block; vertical-align: middle; }
+
+.b-welcome-lead { margin: 20px 0 0; font-size: 14px; line-height: 1.5; color: #6e6e73; }
