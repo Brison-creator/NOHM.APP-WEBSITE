@@ -157,6 +157,28 @@ function bodyProblem(method, p, body) {
   for (const k of rule.required) if (body[k] === undefined || body[k] === '') return `${k} should not be empty`;
   return null;
 }
+// The spam checks' { formTrap: { hp, ms } } (public/nohm/form-traps.js):
+// taken only on these routes; on any other the server's whitelist refuses
+// it like any unknown field. A filled decoy is a 400 TRY_AGAIN. The stub
+// doesn't judge `ms` (a headless run fills a form faster than a person).
+// Legacy mode takes it too, though the old server would refuse it: the
+// site ships only after the server takes formTrap (docs/spam-protection.md).
+const FORM_TRAP_ROUTES = /^\/auth\/(email-signup|phone-signup|social-signup|login)\/send-otp$|^\/auth\/login\/email-password$|^\/recruit\/interest$/;
+const TRY_AGAIN = 'That didn’t go through. Wait a moment, then try again.';
+function formTrapProblem(method, p, body) {
+  if (!body || body._contentType || !Object.prototype.hasOwnProperty.call(body, 'formTrap')) return null;
+  if (method !== 'POST' || !FORM_TRAP_ROUTES.test(p)) return [400, { message: ['property formTrap should not exist'] }];
+  const t = body.formTrap;
+  delete body.formTrap;
+  const ok = t && typeof t === 'object' && !Array.isArray(t) && Object.keys(t).sort().join() === 'hp,ms' && typeof t.hp === 'string' && Number.isInteger(t.ms) && t.ms >= 0;
+  if (!ok) return [400, { message: ['formTrap must be { hp: string, ms: whole milliseconds }'] }];
+  if (t.hp !== '') return [400, { code: 'TRY_AGAIN', message: TRY_AGAIN }];
+  return null;
+}
+// A throwaway address (the server's disposable-email list): 400 BAD_EMAIL.
+const THROWAWAY = /@(mailinator\.com|throwaway\.test)$/i;
+const BAD_EMAIL = 'Use an email address you check. Throwaway addresses can’t be used.';
+
 // scheduledDate is the homeowner's local midnight; the server adds the
 // window's start hour itself (time-window.util.ts).
 const LOCAL_MIDNIGHT = /^\d{4}-\d{2}-\d{2}T00:00:00[+-]\d{2}:\d{2}$/;
@@ -166,6 +188,8 @@ function api(method, url, body, req) {
   const p = url.pathname.replace('/api/v1', '');
   // Legacy mode: the server live before 3b5f675 has no /config/web and no phone sign-up.
   if (world.legacy && (p === '/config/web' || p.startsWith('/auth/phone-signup/'))) return [404, { message: `Cannot ${method} /api/v1${p}`, error: 'Not Found', statusCode: 404 }];
+  const trapped = formTrapProblem(method, p, body);
+  if (trapped) return trapped;
   // common/human-check runs before validation: it takes the token off the
   // body, and with the box on a code is sent only with a passed check.
   if (/^\/auth\/(email-signup|phone-signup|social-signup|login)\/send-otp$|^\/auth\/login\/email-password$/.test(p) && body && !body._contentType) {
@@ -200,6 +224,7 @@ function api(method, url, body, req) {
     return [200, { stripePublishableKey: STUB_STRIPE_KEY, googleClientId: null }];
   }
   if (p === '/auth/check-exists') return [200, { exists: body.email === 'taken@example.com' }];
+  if (p === '/auth/email-signup/send-otp' && THROWAWAY.test(body.email)) return [400, { code: 'BAD_EMAIL', message: BAD_EMAIL }];
   if (p === '/auth/email-signup/send-otp') return body.email === 'taken@example.com' ? [409, { message: 'Email already registered' }] : [200, { message: 'OTP sent' }];
   if (p === '/auth/email-signup/verify-otp') { if (body.code !== '123456') return [400, { message: 'Invalid or expired code' }]; world.role = body.role || 'HOMEOWNER'; world.user = { ...USER, firstName: body.firstName, lastName: body.lastName, email: body.email, phone: body.phone, role: world.role }; return [201, { accessToken: 'acc-1', refreshToken: 'ref-1', user: world.user }]; }
   // Phone sign-up (auth.controller.ts, auth-signup.service.ts): a taken phone is a 409 before any text.
@@ -214,6 +239,7 @@ function api(method, url, body, req) {
     if (body.email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(body.email)) return [400, { message: ['email must be an email'] }];
     if (body.firstName.length > 60 || body.lastName.length > 60) return [400, { message: ['firstName must be shorter than or equal to 60 characters'] }];
     if (!SIGNUP_ROLES.includes(body.role)) return [400, { message: ['role must be a signup account type'] }];
+    if (body.email !== undefined && THROWAWAY.test(body.email)) return [400, { code: 'BAD_EMAIL', message: BAD_EMAIL }];
     if (!world.phoneOtp[body.phone] || body.code !== '123456') return [401, { message: 'Invalid OTP' }];
     if (body.email === 'taken@example.com') return [409, { message: 'This email already has an account. Please sign in with your email and password.' }];
     world.role = body.role;
@@ -415,6 +441,8 @@ http.createServer(async (req, res) => {
     }
     const body = await readBody(req);
     const entry = { method: req.method, path: url.pathname.replace('/api/v1', '') + url.search, auth: req.headers.authorization || null, body };
+    // The spam checks' field, kept beside the body (api() takes it off, like humanToken).
+    if (body && typeof body === 'object' && Object.prototype.hasOwnProperty.call(body, 'formTrap')) entry.formTrap = body.formTrap;
     log.push(entry);
     let [status, out] = api(req.method, url, body, req);
     // Legacy mode: the old server's 401s carry no code (Nest's plain UnauthorizedException).

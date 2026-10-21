@@ -59,6 +59,24 @@ async function phoneSignUp(page, { email } = {}) {
   await page.fill('#f-code', '123456');
   await page.click('[data-key=verify]');
 }
+/** A request the page made carries the spam checks' formTrap, as a person leaves it: an empty decoy and time on screen. */
+function assertTrap(entry, where) {
+  assert.ok(entry && entry.formTrap, `${where} carries formTrap`);
+  assert.deepEqual(Object.keys(entry.formTrap).sort(), ['hp', 'ms'], where);
+  assert.equal(entry.formTrap.hp, '', `${where}: the decoy left empty`);
+  assert.ok(Number.isInteger(entry.formTrap.ms) && entry.formTrap.ms > 0, `${where}: whole ms on screen (${entry.formTrap.ms})`);
+}
+/** The one decoy on the page: in the form, out of sight, out of the tab order, hidden from screen readers. */
+async function assertDecoy(page, where) {
+  const d = await page.$$eval('input[name=nohm_extra_field]', (els) => els.map((el) => {
+    const wrap = el.closest('[aria-hidden="true"]');
+    const r = el.getBoundingClientRect();
+    return { inForm: Boolean(el.closest('form')), hidden: Boolean(wrap), display: wrap && getComputedStyle(wrap).display, right: r.right, tabindex: el.getAttribute('tabindex'), autocomplete: el.getAttribute('autocomplete'), label: el.closest('label').textContent };
+  }));
+  assert.equal(d.length, 1, `${where}: one decoy`);
+  assert.deepEqual({ ...d[0], right: d[0].right <= 0 }, { inForm: true, hidden: true, display: 'block', right: true, tabindex: '-1', autocomplete: 'off', label: 'Leave this empty' }, where);
+}
+
 const tmp = path.join(os.tmpdir(), 'nohm-doc.png');
 fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
 
@@ -281,10 +299,12 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   assert.equal(wrong.status, 401, 'the server answers a wrong code with a 401 (INVALID_CODE)');
   assert.ok(!calls.some((c) => c.path === '/auth/refresh'), 'a wrong code is not a reason to refresh and send it again');
   assert.deepEqual(calls.find((c) => c.path === '/auth/phone-signup/send-otp').body, { phone: '+15015550199', role: 'TENANT' });
+  assertTrap(calls.find((c) => c.path === '/auth/phone-signup/send-otp'), 'renter phone sign-up send-otp');
+  assert.ok(!calls.some((c) => c.formTrap && c.path !== '/auth/phone-signup/send-otp'), 'no other call carries formTrap');
   const pv = calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body;
   assert.deepEqual([pv.role, pv.email, pv.phone], ['TENANT', 'ray@example.com', '+15015550199']);
   assert.ok(calls.some((c) => c.path === '/auth/check-exists'), 'a given email is checked before the code is spent');
-  console.log('✓ Renter: phone sign-up (with email) → invite (listed and typed) → text code → lease linked, survives reload');
+  console.log('✓ Renter: phone sign-up (with email) → invite (listed and typed) → text code → lease linked, survives reload; only the send-otp carries formTrap');
   await ctx.close();
 }
 
@@ -295,6 +315,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.goto(`${BASE}/pro/${api}&from=flyer`);
   await page.waitForSelector('[data-key=pro-continue]');
   await snap(page, 'pro-page');
+  await assertDecoy(page, '/pro');
   await page.click('[data-key=pro-continue]');
   await page.waitForSelector('.b-field.bad');
   assert.equal(await page.textContent('#e-tradeId'), 'Pick your main trade', 'problems are named per field before anything is sent');
@@ -333,10 +354,13 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   const lead = calls.find((c) => c.method === 'POST' && c.path === '/recruit/interest');
   assert.equal(lead.status, 200);
   assert.deepEqual(lead.body, { firstName: 'Dale', lastName: 'Smith', phone: '+15015550142', tradeId: 't-hvac', zip: '72015', source: 'flyer', email: 'dale@abcair.com', businessName: 'ABC Air' });
+  assertTrap(lead, '/pro POST /recruit/interest');
+  assertTrap(calls.find((c) => c.path === '/auth/phone-signup/send-otp'), '/join phone sign-up send-otp');
   const verify = calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body;
   assert.equal(verify.role, 'CONTRACTOR');
   assert.equal(verify.phone, '+15015550142');
-  console.log('✓ /pro: short form → lead sent → /join phone sign-up filled in → profile starts with business, trade and ZIP');
+  assert.ok(!calls.find((c) => c.path === '/auth/phone-signup/verify-otp').formTrap, 'verify-otp carries no formTrap');
+  console.log('✓ /pro: short form → lead sent → /join phone sign-up filled in → profile starts with business, trade and ZIP; the lead and the send-otp carry formTrap (empty decoy, ms on screen)');
   await ctx.close();
 }
 

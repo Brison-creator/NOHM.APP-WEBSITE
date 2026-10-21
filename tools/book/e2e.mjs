@@ -9,8 +9,9 @@
 // The runs live in tools/book/e2e/ (booking.mjs: runs 1–5, extras.mjs:
 // runs 6–9, legacy.mjs: runs 10–11 against the old live server,
 // human.mjs: "I'm human", home.mjs: runs 12–13, the home's Preferred
-// Pro and the home's clock, lib.mjs: the shared browser and steps); they
-// run in that order.
+// Pro and the home's clock, traps.mjs: run 14, the spam checks' decoy
+// and formTrap, lib.mjs: the shared browser and steps); they run in that
+// order.
 
 // One after the other: sibling modules with top-level await would run
 // at the same time against the one stub.
@@ -20,6 +21,7 @@ await import('./e2e/extras.mjs');
 await import('./e2e/legacy.mjs');
 await import('./e2e/human.mjs');
 await import('./e2e/home.mjs');
+await import('./e2e/traps.mjs');
 
 await browser.close();
 console.log('all e2e runs passed');

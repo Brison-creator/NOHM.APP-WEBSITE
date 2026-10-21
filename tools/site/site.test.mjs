@@ -59,11 +59,59 @@ test('the sitemap lists every indexable page, and only those', () => {
   assert.deepEqual([...locs].sort(), want);
 });
 
+// robots.txt as groups (RFC 9309): one or more User-agent lines, then their rules.
+function robotsGroups(text) {
+  const groups = [];
+  let g = null;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.replace(/#.*/, '').trim();
+    const m = /^([A-Za-z-]+)\s*:\s*(.*)$/.exec(line);
+    if (!m) continue;
+    const key = m[1].toLowerCase();
+    if (key === 'sitemap') continue;
+    if (key === 'user-agent') {
+      if (!g || g.rules.length) groups.push((g = { agents: [], rules: [] }));
+      g.agents.push(m[2].toLowerCase());
+    } else if (g) g.rules.push(`${key}: ${m[2]}`);
+  }
+  return groups;
+}
+// The group a crawler follows: the one naming its token, else `*`.
+const groupFor = (groups, token) => groups.find((g) => g.agents.includes(token.toLowerCase())) || groups.find((g) => g.agents.includes('*'));
+
+// AI training crawlers are kept out; AI search and answer bots are let in,
+// so NOHM still comes up when someone asks an AI for a local pro.
+const AI_TRAINING = ['GPTBot', 'ClaudeBot', 'anthropic-ai', 'Google-Extended', 'Applebot-Extended', 'CCBot', 'Bytespider', 'meta-externalagent', 'cohere-ai', 'cohere-training-data-crawler', 'Diffbot', 'Omgilibot'];
+const AI_SEARCH = ['OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot', 'Perplexity-User', 'Claude-SearchBot', 'Claude-User'];
+
 test('robots.txt allows crawling and names the sitemap', () => {
   const robots = read(path.join(ROOT, 'robots.txt'));
-  assert.match(robots, /^User-agent: \*$/m);
-  assert.ok(!/^Disallow: \/\s*$/m.test(robots), 'nothing disallowed site-wide');
+  const groups = robotsGroups(robots);
+  const all = groups.find((g) => g.agents.includes('*'));
+  assert.ok(all, 'a User-agent: * group');
+  assert.deepEqual(all.rules, ['allow: /'], 'everyone else may crawl everything');
+  for (const token of ['Googlebot', 'Bingbot', 'Applebot', 'DuckDuckBot']) assert.equal(groupFor(groups, token), all, `${token} follows *`);
   assert.match(robots, new RegExp(`^Sitemap: ${HOST}/sitemap.xml$`, 'm'));
+});
+
+test('robots.txt blocks AI training crawlers and leaves AI search and answer bots allowed', () => {
+  const robots = read(path.join(ROOT, 'robots.txt'));
+  const groups = robotsGroups(robots);
+  const all = groups.find((g) => g.agents.includes('*'));
+  for (const token of AI_TRAINING) {
+    const g = groupFor(groups, token);
+    assert.notEqual(g, all, `${token} has its own group`);
+    assert.deepEqual(g.rules, ['disallow: /'], `${token} is kept out of the whole site`);
+  }
+  for (const token of AI_SEARCH) {
+    assert.equal(groupFor(groups, token), all, `${token} follows * (allowed)`);
+    // A crawler that matches by substring must not catch a search bot either.
+    for (const blocked of AI_TRAINING) assert.ok(!token.toLowerCase().includes(blocked.toLowerCase()), `${blocked} would also match ${token}`);
+  }
+  // Nothing else is disallowed: every group but * is a training crawler's.
+  const named = groups.filter((g) => g !== all).flatMap((g) => g.agents);
+  assert.deepEqual(named.sort(), AI_TRAINING.map((t) => t.toLowerCase()).sort());
+  assert.match(robots, /^#.*training.*search/im, 'a comment says why');
 });
 
 test('the 404 page is noindex and uses root-relative assets', () => {

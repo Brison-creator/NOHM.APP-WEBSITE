@@ -131,6 +131,11 @@ test('contact: the default message, what is required, and only the fields the se
     firstName: 'Ana', lastName: 'Ruiz', email: 'ana@example.com', moveIn: '2026-11-15', message: 'Hi', requestApplication: false, humanToken: 'tok',
   });
   assert.equal('humanToken' in contactBody(ok, ''), false);
+  // The spam checks' formTrap rides along when the form has one, and only it.
+  assert.deepEqual(contactBody(ok, 'tok', { formTrap: { hp: '', ms: 5321 }, stray: 1 }).formTrap, { hp: '', ms: 5321 });
+  assert.equal('stray' in contactBody(ok, 'tok', { formTrap: { hp: '', ms: 5321 }, stray: 1 }), false);
+  assert.equal('formTrap' in contactBody(ok, 'tok'), false);
+  assert.equal('formTrap' in contactBody(ok, 'tok', { formTrap: { hp: '', ms: 1.5 } }), false, 'only whole milliseconds');
 });
 
 test('the texting note is the registered Apply note, word for word (as /sms quotes it)', () => {

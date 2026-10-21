@@ -9,6 +9,7 @@ import { createApi, apiBaseFor } from '../nohm/api.js';
 import { createWebConfig } from '../nohm/web-config.js';
 import { h, clear, field, button } from '../nohm/dom.js';
 import { humanCheck, TICK_FIRST } from '../nohm/human.js';
+import { addFormTrap } from '../nohm/form-traps.js';
 import { savePrefill } from '../nohm/pro-prefill.js';
 import { interestProblems, interestBody, interestError, sourceFrom } from './lib/form.js';
 
@@ -63,16 +64,19 @@ function form(trades) {
     if (hc.needed() && !hc.token()) { err.textContent = TICK_FIRST; return; }
     btn.busy(true, 'Sending…');
     try {
-      await http.post('/recruit/interest', { ...interestBody(values, source), humanToken: hc.token() }, { auth: false });
+      // `formTrap`: the spam checks' decoy and time on screen (nohm/form-traps.js).
+      await http.post('/recruit/interest', { ...interestBody(values, source), humanToken: hc.token(), ...trap.fields() }, { auth: false });
       savePrefill(window.sessionStorage, values);
       location.assign(joinUrl());
     } catch (ex) {
-      err.textContent = interestError(ex);
+      // A throwaway email (the spam checks) is said under the email field.
+      if (ex && ex.code === 'BAD_EMAIL' && values.email) { f.email.setError(ex.message); f.email.input.focus(); }
+      else err.textContent = interestError(ex);
       btn.busy(false);
       hc.reset();
     }
   };
-  return h('form.b-form', { onSubmit: submit, novalidate: true }, [
+  const formEl = h('form.b-form', { onSubmit: submit, novalidate: true }, [
     h('div.b-two', [f.firstName.el, f.lastName.el]),
     f.phone.el,
     f.email.el,
@@ -83,6 +87,9 @@ function form(trades) {
     btn,
     h('p.b-small', ['By continuing you agree that NOHM can call, text or email you about joining. Msg & data rates may apply. Tell us to stop anytime and we will. ', h('a', { href: '/terms' }, 'Terms'), ' · ', h('a', { href: '/privacy' }, 'Privacy'), '.']),
   ]);
+  // Timed from when the form is shown (boot() puts it on the page right away).
+  const trap = addFormTrap(formEl);
+  return formEl;
 }
 
 async function boot() {

@@ -2,7 +2,8 @@
 //   SHOTS=<dir> node tools/rentals/e2e.mjs
 // Starts the stub twice (search on, and switched off), walks the search
 // (ZIP, filters, List / Map, empty, a bad ZIP), a listing's page (tabs,
-// costs, Contact, the phone's bottom bar) and "coming soon", and saves
+// costs, Contact with the spam checks' formTrap, the phone's bottom bar)
+// and "coming soon", and saves
 // screenshots to SHOTS when it is set. Map tiles come from
 // OpenStreetMap; without internet the map shows its pins on gray.
 
@@ -200,9 +201,14 @@ try {
     await p.waitForSelector('.r-done:not([hidden])');
     assert.match(await p.textContent('.r-done'), /Message sent\./);
     const sent = (await log()).filter((r) => r.path.endsWith('/inquire')).pop();
-    assert.deepEqual(Object.keys(sent.body).sort(), ['email', 'firstName', 'humanToken', 'lastName', 'message', 'requestApplication'].sort());
+    assert.deepEqual(Object.keys(sent.body).sort(), ['email', 'firstName', 'formTrap', 'humanToken', 'lastName', 'message', 'requestApplication'].sort());
     assert.equal(sent.body.humanToken, 'stub-token');
     assert.equal(sent.body.requestApplication, false);
+    // The spam checks: the decoy left empty, whole ms on screen.
+    assert.deepEqual(Object.keys(sent.body.formTrap).sort(), ['hp', 'ms']);
+    assert.equal(sent.body.formTrap.hp, '');
+    assert.ok(Number.isInteger(sent.body.formTrap.ms) && sent.body.formTrap.ms > 0, `ms on screen (${sent.body.formTrap.ms})`);
+    assert.ok((await log()).every((r) => r.path.endsWith('/inquire') || !(r.body && 'formTrap' in r.body)), 'only the inquiry carries formTrap');
     // The Location map loads when its section is near.
     await p.click('.r-tabs a:has-text("Location")');
     await p.waitForSelector('#location .leaflet-container');
@@ -260,6 +266,37 @@ try {
     assert.ok(await p.locator('text=To apply, tap Request to Apply.').isVisible());
     await p.fill('#c-firstName', 'Ana');
     await p.fill('#c-lastName', 'Ruiz');
+    await p.fill('#c-email', 'ana@example.com');
+    await p.click('.r-contact button[type="submit"]');
+    await p.waitForSelector('.r-done:not([hidden])');
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+
+  // ── The spam checks: one decoy, out of sight; a filled one and a throwaway email are refused in the server's words ──
+  {
+    const { p, ctx, errors } = await open(PHONE, page(NO_HUMAN, '?l=412-maple-ave-a1b2c3'));
+    await p.waitForSelector('.r-contact');
+    const d = await p.$$eval('input[name=nohm_extra_field]', (els) => els.map((el) => {
+      const wrap = el.closest('[aria-hidden="true"]');
+      return { inForm: Boolean(el.closest('form.r-contact')), hidden: Boolean(wrap), display: wrap && getComputedStyle(wrap).display, offScreen: el.getBoundingClientRect().right <= 0, tabindex: el.getAttribute('tabindex'), autocomplete: el.getAttribute('autocomplete') };
+    }));
+    assert.deepEqual(d, [{ inForm: true, hidden: true, display: 'block', offScreen: true, tabindex: '-1', autocomplete: 'off' }]);
+    const wide = await p.evaluate(() => document.documentElement.scrollWidth);
+    assert.ok(wide <= 390, `the decoy adds no sideways scroll (${wide})`);
+    await p.fill('#c-firstName', 'Ana');
+    await p.fill('#c-lastName', 'Ruiz');
+    await p.fill('#c-email', 'ana@example.com');
+    await p.evaluate(() => { document.querySelector('input[name=nohm_extra_field]').value = 'buy now'; });
+    await p.click('.r-contact button[type="submit"]');
+    await p.waitForFunction(() => /Wait a moment, then try again/.test(document.querySelector('.r-form-err').textContent));
+    assert.ok(await p.locator('.r-done').isHidden(), 'never "sent"');
+    await p.evaluate(() => { document.querySelector('input[name=nohm_extra_field]').value = ''; });
+    await p.fill('#c-email', 'ana@mailinator.com');
+    await p.click('.r-contact button[type="submit"]');
+    await p.waitForFunction(() => /Throwaway addresses/.test(document.querySelector('#c-email-err').textContent));
+    assert.equal(await p.textContent('.r-form-err'), '', 'said at the email field');
+    await snap(p, 'rentals-contact-bad-email-phone');
     await p.fill('#c-email', 'ana@example.com');
     await p.click('.r-contact button[type="submit"]');
     await p.waitForSelector('.r-done:not([hidden])');

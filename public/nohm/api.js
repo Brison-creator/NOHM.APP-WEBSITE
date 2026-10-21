@@ -3,6 +3,8 @@
 // nothing here decides anything, it only carries requests. Public
 // routes pass auth:false so a stale token can't 401 them.
 
+import { formTrapField } from './form-traps.js';
+
 /**
  * Which server the page talks to. `?api=` is honored on localhost only
  * (for tools/book/stub-server.mjs); on nohm.app a link can never point
@@ -35,16 +37,19 @@ export function createApi(http, session, { signupRef } = {}) {
       checkExists: (email) => http.post('/auth/check-exists', { email }, { auth: false }),
       /** Email sign-up, step 1: texts a code to the phone. 409 when the email or phone is taken. */
       // `human`: the "I'm human" box's token (nohm/human.js), when the server asks for one.
-      emailSignupSendOtp: (body, human) => http.post('/auth/email-signup/send-otp', { ...body, ...(human ? { humanToken: human } : {}) }, { auth: false }),
+      // `trap`: the spam checks' { formTrap } (nohm/form-traps.js fields()). Only these five
+      // calls take it (the server refuses the field anywhere else): the four send-otps and
+      // the password sign-in.
+      emailSignupSendOtp: (body, human, trap) => http.post('/auth/email-signup/send-otp', { ...body, ...(human ? { humanToken: human } : {}), ...formTrapField(trap) }, { auth: false }),
       /** Step 2: the code plus the same fields again creates the account and signs in. */
       emailSignupVerify: async (body, code) => http.post('/auth/email-signup/verify-otp', { ...body, code, ...dev(), ...(await ref()) }, { auth: false }),
       /** Phone sign-up, step 1: { phone, role } → a code to the phone. 409 when the phone is taken. */
-      phoneSignupSendOtp: ({ phone, role }, human) => http.post('/auth/phone-signup/send-otp', { phone, role, ...(human ? { humanToken: human } : {}) }, { auth: false }),
+      phoneSignupSendOtp: ({ phone, role }, human, trap) => http.post('/auth/phone-signup/send-otp', { phone, role, ...(human ? { humanToken: human } : {}), ...formTrapField(trap) }, { auth: false }),
       /** Step 2: { phone, firstName, lastName, role, email? } plus the code creates the account and signs in. */
       phoneSignupVerify: async (body, code) => http.post('/auth/phone-signup/verify-otp', { ...body, code, ...dev(), ...(await ref()) }, { auth: false }),
-      loginEmailPassword: async (email, password, human) => {
+      loginEmailPassword: async (email, password, human, trap) => {
         const deviceSecret = session.deviceSecret(email);
-        const res = await http.post('/auth/login/email-password', { email, password, ...dev(), ...(deviceSecret ? { deviceSecret } : {}), ...(human ? { humanToken: human } : {}) }, { auth: false });
+        const res = await http.post('/auth/login/email-password', { email, password, ...dev(), ...(deviceSecret ? { deviceSecret } : {}), ...(human ? { humanToken: human } : {}), ...formTrapField(trap) }, { auth: false });
         session.saveDeviceSecret(email, res && res.deviceSecret);
         return res;
       },
@@ -54,10 +59,10 @@ export function createApi(http, session, { signupRef } = {}) {
         session.saveDeviceSecret(email, res && res.deviceSecret);
         return res;
       },
-      loginSendOtp: (phone, human) => http.post('/auth/login/send-otp', { phone, ...(human ? { humanToken: human } : {}) }, { auth: false }),
+      loginSendOtp: (phone, human, trap) => http.post('/auth/login/send-otp', { phone, ...(human ? { humanToken: human } : {}), ...formTrapField(trap) }, { auth: false }),
       loginVerifyOtp: (phone, code) => http.post('/auth/login/verify-otp', { phone, code, ...dev() }, { auth: false }),
       googleSignin: (idToken, role = 'HOMEOWNER') => http.post('/auth/google/signin', { idToken, role, ...dev() }, { auth: false }),
-      socialSignupSendOtp: (phone, human) => http.post('/auth/social-signup/send-otp', { phone, ...(human ? { humanToken: human } : {}) }, { auth: false }),
+      socialSignupSendOtp: (phone, human, trap) => http.post('/auth/social-signup/send-otp', { phone, ...(human ? { humanToken: human } : {}), ...formTrapField(trap) }, { auth: false }),
       googleSignupWithPhone: (idToken, phone, code, role = 'HOMEOWNER') => http.post('/auth/google/signup-with-phone', { idToken, phone, code, role, ...dev() }, { auth: false }),
       me: () => http.get('/auth/me'),
       logout: () => http.post('/auth/logout'),

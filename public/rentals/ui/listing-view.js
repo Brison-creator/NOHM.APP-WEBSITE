@@ -8,6 +8,7 @@
 
 import { h, clear } from '../../nohm/dom.js';
 import { humanCheck, TICK_FIRST } from '../../nohm/human.js';
+import { addFormTrap } from '../../nohm/form-traps.js';
 import {
   APPLY_TEXT_NOTE, availableLine, contactBody, contactError, contactOutcome, contactProblems, costRows, defaultMessage, factsLine,
   featureGroups, fullAddress, highlights, listingHead, mapPoint, placeLine, PRIVACY_NOTE, rentLine, safeUrl, streetLine,
@@ -258,6 +259,8 @@ function contactForm(l, api, webConfig) {
     send,
     h('p.r-fine', PRIVACY_NOTE),
   ]);
+  // The spam checks' decoy, timed from when the page shows the form.
+  const trap = addFormTrap(form);
 
   async function submit(e) {
     e.preventDefault();
@@ -285,7 +288,7 @@ function contactForm(l, api, webConfig) {
     send.disabled = true;
     send.textContent = 'Sending…';
     try {
-      const res = await api.inquire(l.slug, contactBody(values, human.token()));
+      const res = await api.inquire(l.slug, contactBody(values, human.token(), trap.fields()));
       const out = contactOutcome(res, l.url);
       form.hidden = true;
       clear(done).append(
@@ -296,7 +299,12 @@ function contactForm(l, api, webConfig) {
       done.hidden = false;
       done.focus?.();
     } catch (x) {
-      formErr.textContent = contactError(x);
+      // A throwaway email (the spam checks) is said under the email field.
+      if (x && x.code === 'BAD_EMAIL' && values.email.trim()) {
+        err.email.textContent = x.message;
+        f.email.toggleAttribute('aria-invalid', true);
+        f.email.focus();
+      } else formErr.textContent = contactError(x);
       onChoice();
       send.disabled = false;
     } finally {

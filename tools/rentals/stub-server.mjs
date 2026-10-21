@@ -8,6 +8,8 @@
 // STUB_RENTALS=off answers as a server with the search switched off;
 // STUB_TURNSTILE=off as one without the "I'm human" check. The e2e run
 // stands in for Cloudflare's script, so its token is always "stub-token".
+// The inquiry's formTrap (the spam checks) is checked for shape and a
+// filled decoy; an email @mailinator.com is a throwaway (400 BAD_EMAIL).
 // Every request is kept at GET /__log. Photos are the site's own images.
 
 import http from 'node:http';
@@ -44,8 +46,24 @@ function send(res, status, body, headers = {}) {
   res.end(body === undefined ? '' : JSON.stringify(body));
 }
 
+// The spam checks' { formTrap: { hp, ms } } (public/nohm/form-traps.js):
+// only the inquiry takes it (any other route refuses an unknown field); a
+// filled decoy is a 400 TRY_AGAIN. `ms` isn't judged: a headless run is fast.
+const THROWAWAY = /@(mailinator\.com|throwaway\.test)$/i;
+function formTrapProblem(req, p, body) {
+  if (!body || typeof body !== 'object' || !Object.prototype.hasOwnProperty.call(body, 'formTrap')) return null;
+  if (req.method !== 'POST' || !/^\/listings\/public\/[a-z0-9-]+\/inquire$/.test(p)) return [400, { statusCode: 400, message: ['property formTrap should not exist'] }];
+  const t = body.formTrap;
+  const ok = t && typeof t === 'object' && !Array.isArray(t) && Object.keys(t).sort().join() === 'hp,ms' && typeof t.hp === 'string' && Number.isInteger(t.ms) && t.ms >= 0;
+  if (!ok) return [400, { statusCode: 400, message: ['formTrap must be { hp: string, ms: whole milliseconds }'] }];
+  if (t.hp !== '') return [400, { statusCode: 400, code: 'TRY_AGAIN', message: 'That didn’t go through. Wait a moment, then try again.' }];
+  return null;
+}
+
 function api(req, res, u, body) {
   const p = u.pathname.replace(/^\/api\/v1/, '');
+  const trapped = formTrapProblem(req, p, body);
+  if (trapped) return send(res, ...trapped);
   if (p === '/config/web') return send(res, 200, { stripePublishableKey: null, googleClientId: null, turnstileSiteKey: HUMAN ? SITE_KEY : null, publicRentalsSearch: !OFF });
   if (p === '/listings/public' && req.method === 'GET') {
     if (OFF) return send(res, 404, { statusCode: 404, message: 'Not Found' });
@@ -73,6 +91,7 @@ function api(req, res, u, body) {
       // request when the check is on; no application without it.
       if (HUMAN && !(body && body.humanToken)) return send(res, 403, { statusCode: 403, code: 'HUMAN_CHECK', message: 'Please confirm you’re human, then try again.' });
       if (!HUMAN && body && body.requestApplication) return send(res, 403, { statusCode: 403, code: 'APPLY_NEEDS_HUMAN_CHECK', message: 'Applying from here isn’t available right now. Tap Request to Apply instead.' });
+      if (body && THROWAWAY.test(body.email || '')) return send(res, 400, { statusCode: 400, code: 'BAD_EMAIL', message: 'Use an email address you check. Throwaway addresses can’t be used.' });
       if (body && body.requestApplication && body.firstName === 'Fail') return send(res, 409, { statusCode: 409, code: 'APPLICATION_NOT_STARTED', message: 'The landlord has your message, but your application didn’t start. Tap Request to Apply to try again.' });
       if (body && body.requestApplication && body.phone) return send(res, 200, { token: 'stub-application-token' });
       return send(res, 200, { sent: true });

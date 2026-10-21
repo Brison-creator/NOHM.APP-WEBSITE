@@ -4,6 +4,8 @@
 // costs, and the contact form's body. Only what the listing has: nothing
 // is guessed, estimated or filled in. No DOM, no network.
 
+import { formTrapField } from '../../nohm/form-traps.js';
+
 /** "$1,550" from cents (cents shown only when there are some). */
 export function dollars(cents) {
   const n = Math.round(Number(cents) || 0) / 100;
@@ -155,8 +157,11 @@ export function contactProblems(f) {
   return p;
 }
 
-/** The body for POST /listings/public/:slug/inquire (only the fields it takes). */
-export function contactBody(f, humanToken) {
+/**
+ * The body for POST /listings/public/:slug/inquire (only the fields it
+ * takes). `trap`: the spam checks' { formTrap } (nohm/form-traps.js fields()).
+ */
+export function contactBody(f, humanToken, trap) {
   const t = (v) => String(v || '').trim();
   return {
     firstName: t(f.firstName).slice(0, 60),
@@ -167,6 +172,7 @@ export function contactBody(f, humanToken) {
     ...(t(f.message) ? { message: t(f.message).slice(0, 2000) } : {}),
     requestApplication: Boolean(f.requestApplication),
     ...(humanToken ? { humanToken } : {}),
+    ...formTrapField(trap),
   };
 }
 

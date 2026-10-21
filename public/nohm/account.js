@@ -12,7 +12,11 @@ import { mountGoogleButton } from './google.js';
 import { GOOGLE_UNAVAILABLE } from './web-config.js';
 import { isAccountStop } from './http.js';
 import { humanCheck, TICK_FIRST } from './human.js';
+import { formTrap } from './form-traps.js';
 import { trustMarks } from './trust.js';
+
+/** The server turned the email down as a throwaway address (the spam checks): said under the email field where there is one. */
+const badEmail = (ex) => Boolean(ex && ex.code === 'BAD_EMAIL');
 
 /**
  * Under every phone field where a number is given for texts: the same
@@ -78,6 +82,10 @@ export function accountScreen(a, opts = {}) {
   const pre = opts.prefill || {};
   let mode = a.state.accountMode || (opts.prefill ? 'signup-phone' : 'signup');
   const err = h('p.b-err', { role: 'alert' });
+  // The spam checks' decoy (nohm/form-traps.js): one for the screen, put
+  // at the end of whichever form sends a code or a password sign-in, its
+  // clock restarted each time draw() shows a new step.
+  const trap = formTrap();
 
   // The box must be ticked before anything is sent (when the server asks).
   function humanReady(hc) {
@@ -139,18 +147,19 @@ export function accountScreen(a, opts = {}) {
       try {
         const exists = await a.api.auth.checkExists(body.email);
         if (exists && exists.exists) { f.email.setError('That email already has a NOHM account. Sign in instead.'); return; }
-        await a.api.auth.emailSignupSendOtp(body, hc.token());
+        await a.api.auth.emailSignupSendOtp(body, hc.token(), trap.fields());
         a.state.pendingSignup = body;
         mode = 'signup-code';
         draw();
       } catch (ex) {
-        err.textContent = ex.status === 409 ? 'That email or phone already has a NOHM account. Sign in instead.' : ex.message;
+        if (badEmail(ex)) { err.textContent = ''; f.email.setError(ex.message); }
+        else err.textContent = ex.status === 409 ? 'That email or phone already has a NOHM account. Sign in instead.' : ex.message;
       } finally {
         btn.busy(false);
         hc.reset();
       }
     };
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, hc.el, btn, legalLine()]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.email.el, f.phone.el, f.password.el, hc.el, btn, legalLine(), trap.el]);
   }
 
   // Phone sign-up: name and phone (email optional), a code, the account.
@@ -178,7 +187,7 @@ export function accountScreen(a, opts = {}) {
           const exists = await a.api.auth.checkExists(body.email);
           if (exists && exists.exists) { f.email.setError('That email already has a NOHM account. Sign in instead, or leave it empty.'); return; }
         }
-        await a.api.auth.phoneSignupSendOtp(phoneSignupStart(values, role), hc.token());
+        await a.api.auth.phoneSignupSendOtp(phoneSignupStart(values, role), hc.token(), trap.fields());
         a.state.pendingPhoneSignup = body;
         mode = 'signup-phone-code';
         draw();
@@ -191,13 +200,14 @@ export function accountScreen(a, opts = {}) {
           err.textContent = PHONE_SIGNUP_UNAVAILABLE;
           return;
         }
-        err.textContent = ex.message;
+        if (badEmail(ex)) { err.textContent = ''; f.email.setError(ex.message); }
+        else err.textContent = ex.message;
       } finally {
         btn.busy(false);
         hc.reset();
       }
     };
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.phone.el, f.email.el, hc.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Use email and a password instead'), legalLine()]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [h('div.b-two', [f.firstName.el, f.lastName.el]), f.phone.el, f.email.el, hc.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signup'; draw(); } }, 'Use email and a password instead'), legalLine(), trap.el]);
   }
 
   // Offered only when the server has phone sign-up: not on a server from
@@ -223,10 +233,17 @@ export function accountScreen(a, opts = {}) {
       e && e.preventDefault();
       if (!/^\d{4,6}$/.test(code.value.trim())) return code.setError('The code from the text.');
       btn.busy(true, 'Checking…');
-      try { await onCode(code.value.trim()); } catch (ex) { code.setError(ex.message); } finally { btn.busy(false); }
+      try {
+        await onCode(code.value.trim());
+      } catch (ex) {
+        // A throwaway email (phone sign-up sends it with the code) isn't the code's fault.
+        if (badEmail(ex)) { code.setError(''); err.textContent = ex.message; }
+        else code.setError(ex.message);
+      } finally { btn.busy(false); }
     };
     setTimeout(() => code.input.focus(), 0);
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [code.el, btn, hc ? hc.el : null, onResend ? h('button.b-link', { type: 'button', onClick: resend }, 'Send a new code') : null, h('button.b-link', { type: 'button', onClick: () => { mode = back; draw(); } }, 'Change my details')]);
+    // A new code goes to a send-otp, so it carries the decoy too.
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [code.el, btn, hc ? hc.el : null, onResend ? h('button.b-link', { type: 'button', onClick: resend }, 'Send a new code') : null, h('button.b-link', { type: 'button', onClick: () => { mode = back; draw(); } }, 'Change my details'), onResend ? trap.el : null]);
   }
 
   function signinForm() {
@@ -242,7 +259,7 @@ export function accountScreen(a, opts = {}) {
       btn.busy(true, 'Signing in…');
       try {
         const address = email.value.trim().toLowerCase();
-        const res = await a.api.auth.loginEmailPassword(address, pw.value, hc.token());
+        const res = await a.api.auth.loginEmailPassword(address, pw.value, hc.token(), trap.fields());
         if (res.status === 'otp_required') {
           a.state.pendingLogin = { email: email.value.trim().toLowerCase(), maskedPhone: res.maskedPhone, emailedTo: res.sentTo === 'email' ? (res.maskedEmail || res.maskedPhone) : null };
           mode = 'signin-code';
@@ -251,15 +268,18 @@ export function accountScreen(a, opts = {}) {
         }
         await a.account.signedIn(res);
       } catch (ex) {
-        // A paused or blocked account gets the server's words, not "don't match".
-        err.textContent = (ex.status === 401 || ex.status === 400) && !isAccountStop(ex.body) ? 'That email and password don’t match.' : ex.message;
+        // A paused or blocked account, or the spam checks' "try again"
+        // (400 TRY_AGAIN), gets the server's words, not "don't match".
+        const theirs = isAccountStop(ex.body) || ex.code === 'TRY_AGAIN';
+        if (badEmail(ex)) { err.textContent = ''; email.setError(ex.message); }
+        else err.textContent = (ex.status === 401 || ex.status === 400) && !theirs ? 'That email and password don’t match.' : ex.message;
       } finally {
         btn.busy(false);
         hc.reset();
       }
     };
     const phoneBtn = h('button.b-link', { type: 'button', onClick: () => { mode = 'signin-phone'; draw(); } }, 'Sign in with a text code instead');
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [email.el, pw.el, hc.el, btn, phoneBtn]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [email.el, pw.el, hc.el, btn, phoneBtn, trap.el]);
   }
 
   function phoneSigninForm() {
@@ -273,26 +293,27 @@ export function accountScreen(a, opts = {}) {
       if (!humanReady(hc)) return;
       btn.busy(true, 'Sending…');
       try {
-        await a.api.auth.loginSendOtp(e164, hc.token());
+        await a.api.auth.loginSendOtp(e164, hc.token(), trap.fields());
         a.state.pendingLogin = { phone: e164 };
         mode = 'signin-phone-code';
         draw();
       } catch (ex) { err.textContent = ex.message; } finally { btn.busy(false); hc.reset(); }
     };
-    return h('form.b-form', { onSubmit: submit, novalidate: true }, [phone.el, hc.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signin'; draw(); } }, 'Use my password instead')]);
+    return h('form.b-form', { onSubmit: submit, novalidate: true }, [phone.el, hc.el, btn, h('button.b-link', { type: 'button', onClick: () => { mode = 'signin'; draw(); } }, 'Use my password instead'), trap.el]);
   }
 
   function draw() {
     clear(wrap);
     err.textContent = '';
+    trap.restart();
     a.state.accountMode = mode;
     const title = mode.startsWith('signin') ? 'Welcome back' : opts.signupTitle || 'Create your NOHM account';
     const sub = mode.startsWith('signin') ? opts.signinSub || '' : opts.signupSub || 'Takes a minute.';
     const body = [];
     if (mode === 'signup') body.push(googleRow(), phoneSignupButton(), signupForm());
     else if (mode === 'signup-phone') body.push(phoneSignupForm());
-    else if (mode === 'signup-phone-code') body.push(codeForm({ phone: a.state.pendingPhoneSignup.phone, back: 'signup-phone', onCode: async (code) => a.account.signedIn(await a.api.auth.phoneSignupVerify(a.state.pendingPhoneSignup, code)), onResend: (human) => a.api.auth.phoneSignupSendOtp(phoneSignupStart(a.state.pendingPhoneSignup, role), human) }));
-    else if (mode === 'signup-code') body.push(codeForm({ phone: a.state.pendingSignup.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.emailSignupVerify(a.state.pendingSignup, code)), onResend: (human) => a.api.auth.emailSignupSendOtp(a.state.pendingSignup, human) }));
+    else if (mode === 'signup-phone-code') body.push(codeForm({ phone: a.state.pendingPhoneSignup.phone, back: 'signup-phone', onCode: async (code) => a.account.signedIn(await a.api.auth.phoneSignupVerify(a.state.pendingPhoneSignup, code)), onResend: (human) => a.api.auth.phoneSignupSendOtp(phoneSignupStart(a.state.pendingPhoneSignup, role), human, trap.fields()) }));
+    else if (mode === 'signup-code') body.push(codeForm({ phone: a.state.pendingSignup.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.emailSignupVerify(a.state.pendingSignup, code)), onResend: (human) => a.api.auth.emailSignupSendOtp(a.state.pendingSignup, human, trap.fields()) }));
     else if (mode === 'google-phone') {
       const phone = field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT });
       const btn = button('Text me a code', { key: 'gphone' });
@@ -301,14 +322,14 @@ export function accountScreen(a, opts = {}) {
         const e164 = toE164US(phone.value);
         if (!e164) return phone.setError('A US mobile number');
         if (!humanReady(hc)) return;
-        a.run(async () => { try { await a.api.auth.socialSignupSendOtp(e164, hc.token()); } finally { hc.reset(); } a.state.pendingGoogle.phone = e164; mode = 'google-code'; draw(); }, err);
+        a.run(async () => { try { await a.api.auth.socialSignupSendOtp(e164, hc.token(), trap.fields()); } finally { hc.reset(); } a.state.pendingGoogle.phone = e164; mode = 'google-code'; draw(); }, err);
       });
-      body.push(h('form.b-form', { onSubmit: (e) => e.preventDefault() }, [h('p.b-line', `Hi ${a.state.pendingGoogle.firstName || ''}, Google checked out.`), phone.el, hc.el, btn]));
-    } else if (mode === 'google-code') body.push(codeForm({ phone: a.state.pendingGoogle.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.googleSignupWithPhone(a.state.pendingGoogle.idToken, a.state.pendingGoogle.phone, code, role)), onResend: (human) => a.api.auth.socialSignupSendOtp(a.state.pendingGoogle.phone, human) }));
+      body.push(h('form.b-form', { onSubmit: (e) => e.preventDefault() }, [h('p.b-line', `Hi ${a.state.pendingGoogle.firstName || ''}, Google checked out.`), phone.el, hc.el, btn, trap.el]));
+    } else if (mode === 'google-code') body.push(codeForm({ phone: a.state.pendingGoogle.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.googleSignupWithPhone(a.state.pendingGoogle.idToken, a.state.pendingGoogle.phone, code, role)), onResend: (human) => a.api.auth.socialSignupSendOtp(a.state.pendingGoogle.phone, human, trap.fields()) }));
     else if (mode === 'signin') body.push(googleRow(), signinForm());
     else if (mode === 'signin-code') body.push(h('p.b-line', a.state.pendingLogin.emailedTo ? `New browser. We emailed a code to ${a.state.pendingLogin.emailedTo}.` : `New browser. We texted a code to ${a.state.pendingLogin.maskedPhone || 'your phone'}.`), codeForm({ phone: a.state.pendingLogin.maskedPhone || '', onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyDeviceOtp(a.state.pendingLogin.email, code)) }));
     else if (mode === 'signin-phone') body.push(phoneSigninForm());
-    else if (mode === 'signin-phone-code') body.push(codeForm({ phone: a.state.pendingLogin.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyOtp(a.state.pendingLogin.phone, code)), onResend: (human) => a.api.auth.loginSendOtp(a.state.pendingLogin.phone, human) }));
+    else if (mode === 'signin-phone-code') body.push(codeForm({ phone: a.state.pendingLogin.phone, onCode: async (code) => a.account.signedIn(await a.api.auth.loginVerifyOtp(a.state.pendingLogin.phone, code)), onResend: (human) => a.api.auth.loginSendOtp(a.state.pendingLogin.phone, human, trap.fields()) }));
     append(wrap, [head(title, sub), mode === 'signup' || mode === 'signup-phone' || mode === 'signin' ? tabs() : null, ...body, err, footer(a), trustMarks({ webConfig: a.webConfig })]);
   }
   draw();
