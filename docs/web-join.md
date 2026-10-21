@@ -52,6 +52,10 @@ tools/join/
 
 Also: `public/menu.js` (Join as a Pro), `public/pros/index.html` (hero button and the join section point to `/join`; the mailto form stays), `public/renters/index.html` (hero button → `/join/renter`), `tools/book/stub-server.mjs` (pro and renter routes).
 
+## nohm.app/pro (the supply-house flyer)
+
+The contractor flyer's QR code opens `/pro/?from=flyer`: the facts (the same as `/for/pros`), then a short form (first and last name, mobile, optional email, main trade from `GET /trades`, ZIP, optional business name) with the "I'm human" box. It posts to the server's `POST /recruit/interest` (a lead to call back in Admin, Recruiter, and an email to admin@nohm.app; website-only human check, 5 an hour per address), keeps what they typed in the tab's sessionStorage (`public/nohm/pro-prefill.js`, only those fields) and sends them on to `/join/?from=pro`. There the account step opens on phone sign-up with name, mobile and email filled in, and the profile starts with business name, main trade and ZIP wherever the server has none. They still tick the box and verify the text code: nothing about the account is skipped. The page is in the sitemap, not the menu. Rules in `public/pro/lib/form.js`; `tools/join/pro-form.test.mjs` and two runs in `e2e.mjs` cover it.
+
 ## Security and rules
 
 - The server owns the application state and dispatch eligibility; the site never claims a pro is approved or live except from the dashboard.

@@ -90,7 +90,7 @@ export function inviteScreen(a) {
 // ── Profile + trades ──────────────────────────────────────────────
 
 export function profileScreen(a) {
-  const f0 = profileFormFrom(a.state.dashboard, a.state.user);
+  const f0 = profileFormFrom(a.state.dashboard, a.state.user, a.state.prefill);
   const trades = a.state.trades;
   const tradeSelect = (name, label, value, allowNone) => {
     const sel = h('select', { name, id: `f-${name}` }, [allowNone ? h('option', { value: '' }, 'None') : h('option', { value: '' }, 'Pick one'), ...trades.map((t) => h('option', { value: t.id, selected: t.id === value }, t.label + (t.licenseRequired ? ' (license required)' : '')))]);

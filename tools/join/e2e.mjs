@@ -288,6 +288,82 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await ctx.close();
 }
 
+// ── nohm.app/pro (the supply-house flyer) → /join, filled in ──────
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  await page.goto(`${BASE}/pro/${api}&from=flyer`);
+  await page.waitForSelector('[data-key=pro-continue]');
+  await snap(page, 'pro-page');
+  await page.click('[data-key=pro-continue]');
+  await page.waitForSelector('.b-field.bad');
+  assert.equal(await page.textContent('#e-tradeId'), 'Pick your main trade', 'problems are named per field before anything is sent');
+  assert.equal(await page.textContent('#e-zip'), 'Your 5-digit ZIP');
+  assert.ok(!(await log()).some((c) => c.path === '/recruit/interest'), 'nothing sent with problems');
+  await page.fill('#f-firstName', 'Dale');
+  await page.fill('#f-lastName', 'Smith');
+  await page.fill('#f-phone', '(501) 555-0142');
+  await page.fill('#f-email', 'dale@abcair.com');
+  await page.selectOption('#f-tradeId', 't-hvac');
+  await page.fill('#f-zip', '72015');
+  await page.fill('#f-businessName', 'ABC Air');
+  await page.click('[data-key=pro-continue]');
+
+  // On /join: phone sign-up first, with what they typed.
+  await page.waitForURL(/\/join\/\?from=pro/);
+  await page.waitForSelector('[data-key=phone-signup-send]');
+  assert.equal(await page.inputValue('#f-firstName'), 'Dale');
+  assert.equal(await page.inputValue('#f-lastName'), 'Smith');
+  assert.equal(await page.inputValue('#f-phone'), '(501) 555-0142');
+  assert.equal(await page.inputValue('#f-email'), 'dale@abcair.com');
+  await snap(page, 'pro-page-join');
+  await page.click('[data-key=phone-signup-send]');
+  await page.waitForSelector('#f-code');
+  await page.fill('#f-code', '123456');
+  await page.click('[data-key=verify]');
+  await page.waitForSelector('[data-key=invite-skip]');
+  await page.click('[data-key=invite-skip]');
+  await page.waitForSelector('#f-businessName');
+  assert.equal(await page.inputValue('#f-businessName'), 'ABC Air');
+  assert.equal(await page.inputValue('#f-primaryTradeId'), 't-hvac');
+  assert.equal(await page.inputValue('#f-baseZip'), '72015');
+  await snap(page, 'pro-page-profile');
+
+  const calls = await log();
+  const lead = calls.find((c) => c.method === 'POST' && c.path === '/recruit/interest');
+  assert.equal(lead.status, 200);
+  assert.deepEqual(lead.body, { firstName: 'Dale', lastName: 'Smith', phone: '+15015550142', tradeId: 't-hvac', zip: '72015', source: 'flyer', email: 'dale@abcair.com', businessName: 'ABC Air' });
+  const verify = calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body;
+  assert.equal(verify.role, 'CONTRACTOR');
+  assert.equal(verify.phone, '+15015550142');
+  console.log('✓ /pro: short form → lead sent → /join phone sign-up filled in → profile starts with business, trade and ZIP');
+  await ctx.close();
+}
+
+// ── /pro with the "I'm human" box on: nothing goes until it's ticked ──
+{
+  await reset();
+  await fetch(`${BASE}/__webconfig?mode=human`);
+  const { ctx, page } = await fresh();
+  await page.route('https://challenges.cloudflare.com/**', (route) => route.fulfill({ contentType: 'text/javascript', body: 'window.turnstile = { render(el, o) { window.__ts = o; return 1; }, reset() {} };' }));
+  await page.goto(`${BASE}/pro/${api}`);
+  await page.waitForSelector('[data-key=pro-continue]');
+  await page.fill('#f-firstName', 'Dale'); await page.fill('#f-lastName', 'Smith'); await page.fill('#f-phone', '5015550142');
+  await page.selectOption('#f-tradeId', 't-plumb'); await page.fill('#f-zip', '72015');
+  await page.waitForFunction(() => window.__ts);
+  await page.click('[data-key=pro-continue]');
+  await page.waitForFunction(() => /Confirm you’re human/.test(document.querySelector('#pro-form p.b-err').textContent));
+  assert.ok(!(await log()).some((c) => c.path === '/recruit/interest'));
+  await page.evaluate(() => window.__ts.callback('tok-human'));
+  await page.click('[data-key=pro-continue]');
+  await page.waitForURL(/\/join\//);
+  const lead = (await log()).find((c) => c.path === '/recruit/interest');
+  assert.equal(lead.status, 200);
+  assert.equal(lead.body.source, 'pro-page');
+  console.log('✓ /pro: with the human check on, sent only once ticked');
+  await ctx.close();
+}
+
 // ── Wrong account type ───────────────────────────────────────────
 {
   await reset();

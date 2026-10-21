@@ -74,7 +74,9 @@ function footer(a) {
 export function accountScreen(a, opts = {}) {
   const role = opts.role || 'HOMEOWNER';
   const wrap = h('section.b-screen');
-  let mode = a.state.accountMode || 'signup';
+  // From nohm.app/pro: what they typed there, and phone sign-up first.
+  const pre = opts.prefill || {};
+  let mode = a.state.accountMode || (opts.prefill ? 'signup-phone' : 'signup');
   const err = h('p.b-err', { role: 'alert' });
 
   // The box must be ticked before anything is sent (when the server asks).
@@ -117,10 +119,10 @@ export function accountScreen(a, opts = {}) {
 
   function signupForm() {
     const f = {
-      firstName: field({ label: 'First name', name: 'firstName', autocomplete: 'given-name' }),
-      lastName: field({ label: 'Last name', name: 'lastName', autocomplete: 'family-name' }),
-      email: field({ label: 'Email', name: 'email', type: 'email', autocomplete: 'email', inputmode: 'email' }),
-      phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT }),
+      firstName: field({ label: 'First name', name: 'firstName', value: pre.firstName, autocomplete: 'given-name' }),
+      lastName: field({ label: 'Last name', name: 'lastName', value: pre.lastName, autocomplete: 'family-name' }),
+      email: field({ label: 'Email', name: 'email', type: 'email', value: pre.email, autocomplete: 'email', inputmode: 'email' }),
+      phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', value: pre.phone, autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT }),
       password: field({ label: 'Password', name: 'password', type: 'password', autocomplete: 'new-password', hint: 'At least 8 characters.' }),
     };
     const btn = button('Text me a code', { key: 'signup', submit: true });
@@ -154,10 +156,10 @@ export function accountScreen(a, opts = {}) {
   // Phone sign-up: name and phone (email optional), a code, the account.
   function phoneSignupForm() {
     const f = {
-      firstName: field({ label: 'First name', name: 'firstName', autocomplete: 'given-name', maxlength: 60 }),
-      lastName: field({ label: 'Last name', name: 'lastName', autocomplete: 'family-name', maxlength: 60 }),
-      phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT }),
-      email: field({ label: 'Email (optional)', name: 'email', type: 'email', autocomplete: 'email', inputmode: 'email', hint: 'You can add it later in the app.' }),
+      firstName: field({ label: 'First name', name: 'firstName', value: pre.firstName, autocomplete: 'given-name', maxlength: 60 }),
+      lastName: field({ label: 'Last name', name: 'lastName', value: pre.lastName, autocomplete: 'family-name', maxlength: 60 }),
+      phone: field({ label: 'Mobile number', name: 'phone', type: 'tel', value: pre.phone, autocomplete: 'tel', inputmode: 'tel', hint: SMS_CONSENT }),
+      email: field({ label: 'Email (optional)', name: 'email', type: 'email', value: pre.email, autocomplete: 'email', inputmode: 'email', hint: 'You can add it later in the app.' }),
     };
     const btn = button('Text me a code', { key: 'phone-signup-send', submit: true });
     const hc = humanCheck(a.webConfig);

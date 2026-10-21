@@ -147,6 +147,7 @@ const BODIES = {
   'POST /now/dispatch': { required: ['availabilityId', 'propertyId', 'tradeId', 'issueSummary'], optional: ['shownFeeCents', 'emergencyId'] },
   'POST /contractors/attestation': { required: ['attestedName'] },
   'POST /contractor-invites/accept': { required: ['inviteCode'] },
+  'POST /recruit/interest': { required: ['firstName', 'lastName', 'phone', 'tradeId'], optional: ['email', 'businessName', 'zip', 'source'] },
 };
 function bodyProblem(method, p, body) {
   const rule = BODIES[`${method} ${p}`] || (method === 'POST' && /^\/properties\/[^/]+\/confirm$/.test(p) ? { required: ['structureType'] } : null);
@@ -172,10 +173,23 @@ function api(method, url, body, req) {
     delete body.humanToken;
     if (world.webConfig === 'human' && token !== 'tok-human') return [403, { code: 'HUMAN_CHECK', message: 'Please confirm you’re human, then try again.' }];
   }
+  // nohm.app/pro's form (recruit-interest.controller.ts): website only, so
+  // WebOnlyHumanCheckGuard asks every request once the box is on.
+  if (p === '/recruit/interest' && method === 'POST' && body && !body._contentType) {
+    const token = body.humanToken;
+    delete body.humanToken;
+    if (world.webConfig === 'human' && token !== 'tok-human') return [403, { code: 'HUMAN_CHECK', message: 'Please confirm you’re human, then try again.' }];
+  }
   const bad = bodyProblem(method, p, body);
   if (bad) return [400, { message: [bad] }];
   const needAuth = () => (auth === 'Bearer acc-1' ? null : json);
   if (p === '/trades' && method === 'GET') return [200, TRADES];
+  if (p === '/recruit/interest' && method === 'POST') {
+    if (!/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(body.phone)) return [400, { code: 'BAD_PHONE', message: 'Enter a 10-digit US mobile number.' }];
+    if (!TRADES.some((t) => t.id === body.tradeId)) return [400, { code: 'BAD_TRADE', message: 'Choose your trade.' }];
+    if (body.zip !== undefined && !/^\d{5}$/.test(body.zip)) return [400, { message: ['zip must match /^\\d{5}$/ regular expression'] }];
+    return [200, { ok: true }];
+  }
   if (p === '/config/pricing' && method === 'GET') return [200, PRICING];
   // GET /config/web (app-version/web-config.controller.ts): public; null for a value the server doesn't have.
   if (p === '/config/web' && method === 'GET') {

@@ -15,6 +15,7 @@ import { h, clear } from '../nohm/dom.js';
 import { accountScreen, clearPending, signingUp, accountStoppedScreen } from '../nohm/account.js';
 import { proStepFor } from './lib/pro-flow.js';
 import { renterStepFor } from './lib/renter-flow.js';
+import { readPrefill, clearPrefill } from '../nohm/pro-prefill.js';
 import * as pro from './ui/pro-screens.js';
 import * as renter from './ui/renter-screens.js';
 
@@ -29,6 +30,9 @@ const session = createSession(window.localStorage, { deviceName: navigator.userA
 const http = createHttp({ baseUrl: apiBase, session, onAccountStop: (err) => a.accountStopped(err) });
 const api = createApi(http, session);
 
+// From nohm.app/pro (the flyer): what they typed there fills this in.
+const prefill = MODE === 'pro' ? readPrefill(window.sessionStorage) : null;
+
 const COPY = {
   pro: { signupTitle: 'Join NOHM as a pro', signupSub: 'Your account first. Then your profile, payouts and the Standard: about ten minutes.', signinSub: 'Pick up where you left off.' },
   renter: { signupTitle: 'Join NOHM as a renter', signupSub: 'Use the phone number your landlord has for you; the invite is matched to it.', signinSub: 'Sign in to accept your landlord’s invite.' },
@@ -39,7 +43,7 @@ const a = {
   api,
   session,
   webConfig: createWebConfig(api),
-  state: { user: null, trades: [], dashboard: null, myProperty: null, invite: null },
+  state: { user: null, trades: [], dashboard: null, myProperty: null, invite: null, prefill },
   step: 'account',
   history: [],
   leave: [],
@@ -129,6 +133,7 @@ const a = {
   async signOut() {
     try { await api.auth.logout(); } catch { /* fine */ }
     session.clear();
+    clearPrefill(window.sessionStorage);
     this.state = { user: null, trades: this.state.trades, dashboard: null, myProperty: null, invite: null };
     this.go('account');
   },
@@ -173,7 +178,7 @@ function render() {
     return;
   }
   const screens = MODE === 'pro'
-    ? { account: (app) => accountScreen(app, { role: ROLE, ...COPY.pro }), invite: pro.inviteScreen, profile: pro.profileScreen, documents: pro.documentsScreen, payouts: pro.payoutsScreen, agreement: pro.agreementScreen, review: pro.reviewScreen, status: pro.statusScreen, 'wrong-role': wrongRoleScreen }
+    ? { account: (app) => accountScreen(app, { role: ROLE, ...COPY.pro, prefill: app.state.prefill }), invite: pro.inviteScreen, profile: pro.profileScreen, documents: pro.documentsScreen, payouts: pro.payoutsScreen, agreement: pro.agreementScreen, review: pro.reviewScreen, status: pro.statusScreen, 'wrong-role': wrongRoleScreen }
     : { account: (app) => accountScreen(app, { role: ROLE, ...COPY.renter }), invite: renter.inviteScreen, confirm: renter.confirmScreen, done: renter.doneScreen, 'wrong-role': wrongRoleScreen };
   root.append((screens[a.step] || screens.account)(a));
   root.dataset.step = a.step;

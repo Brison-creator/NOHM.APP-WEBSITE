@@ -112,17 +112,19 @@ export function profileBody(f) {
 }
 
 /** The form, pre-filled from a dashboard (a returning pro). */
-export function profileFormFrom(dash, user) {
+export function profileFormFrom(dash, user, prefill) {
   const p = (dash && dash.profile) || {};
   const u = (dash && dash.user) || user || {};
   const trades = (dash && dash.trades) || [];
+  // What they typed on nohm.app/pro, where the server has nothing yet.
+  const pre = prefill || {};
   return {
     firstName: u.firstName || '',
     lastName: u.lastName || '',
-    businessName: p.businessName && p.businessName !== 'Not Provided' ? p.businessName : '',
-    baseZip: p.baseZip || '',
+    businessName: p.businessName && p.businessName !== 'Not Provided' ? p.businessName : pre.businessName || '',
+    baseZip: p.baseZip || pre.zip || '',
     serviceRadius: p.serviceRadius || 20,
-    primaryTradeId: trades[0] ? trades[0].id : '',
+    primaryTradeId: trades[0] ? trades[0].id : pre.tradeId || '',
     secondaryTradeId: trades[1] ? trades[1].id : '',
     bio: p.bio || '',
     licenseNumber: p.licenseNumber || '',
