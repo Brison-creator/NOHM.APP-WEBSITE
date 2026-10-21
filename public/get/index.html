@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Get the NOHM app | NOHM</title>
+  <meta name="description" content="Get the NOHM app on the App Store or Google Play." />
+  <!-- The business card's QR code (nohm.app/get?from=card): a phone goes
+       straight to its store; anything else sees both badges. It only
+       forwards, so it stays out of search and the sitemap. -->
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/favicon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <script>
+    (function () {
+      var ua = navigator.userAgent;
+      // iPadOS reports a Mac; a touch screen gives it away.
+      var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      if (/Android/i.test(ua)) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app');
+      else if (ios) location.replace('https://apps.apple.com/us/app/nohm-app/id6761128513');
+    })();
+  </script>
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #171a20; }
+    .get { max-width: 560px; margin: 0 auto; padding: 72px 16px 64px; text-align: center; }
+    .get h1 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-hero); font-size: clamp(36px, 6vw, 56px); line-height: 1.04; letter-spacing: var(--tracking-headline); }
+    .get p { margin: 12px auto 24px; max-width: 420px; font-size: 18px; line-height: 1.5; color: #393c41; }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main class="get">
+    <h1>Get the NOHM app.</h1>
+    <p>Book local pros, keep your home's history and run your rentals, all in one app.</p>
+    <div class="store-cta store-cta--center">
+      <ul class="store-cta__badges">
+        <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+        <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+      </ul>
+      <a class="store-cta__more" href="/">Learn more at nohm.app</a>
+    </div>
+  </main>
+  <footer>
+    <span>NOHM&trade; &copy; 2026</span>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+  <script src="/menu.js" defer></script>
+</body>
+</html>

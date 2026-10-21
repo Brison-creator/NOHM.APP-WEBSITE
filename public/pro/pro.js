@@ -48,7 +48,7 @@ function form(trades) {
   };
   const err = h('p.b-err', { role: 'alert' });
   const hc = humanCheck(webConfig);
-  const btn = button('Continue', { key: 'pro-continue', submit: true });
+  const btn = button('Apply', { key: 'pro-continue', submit: true });
   const submit = async (e) => {
     e && e.preventDefault();
     err.textContent = '';

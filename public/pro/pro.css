@@ -18,6 +18,16 @@
   .facts li { padding: 24px 26px; }
 }
 
+/* What we built, why, who we want: three short cards on black. */
+.story { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.story li { background: #0d1017; color: #eceef2; border-radius: 12px; padding: 22px 22px 20px; }
+.story b { display: block; margin: 0 0 8px; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #acdd7e; font-weight: var(--weight-ui-strong); }
+.story p { margin: 0; font-size: 17px; line-height: 1.5; }
+.story .sig { display: block; margin-top: 8px; font-size: 14px; color: #a1a1a6; }
+@media (min-width: 760px) {
+  .story { grid-template-columns: repeat(3, 1fr); }
+}
+
 /* The form: book.css's fields, in a card. */
 .pro-form.b-main { min-height: 0; padding: 24px 20px 28px; border: 1px solid #e3e4e6; border-radius: 12px; }
 .pro-form .b-btn { margin-top: 4px; }
