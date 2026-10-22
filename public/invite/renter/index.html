@@ -44,6 +44,16 @@
     <p class="inv-eyebrow">You&rsquo;re invited</p>
     <h1>Your landlord invited you to NOHM.</h1>
     <p class="inv-lede">Pay rent, send repair requests and message your landlord, all in one app. It&rsquo;s free for renters.</p>
+    <section class="inv-how" aria-labelledby="inv-how">
+      <h2 id="inv-how">How you connect to your landlord</h2>
+      <ol class="inv-steps">
+        <li><span><b>Download NOHM</b>Free on the App Store and Google Play, right below.</span></li>
+        <li><span><b>Sign up as a renter with this phone number</b>The number this text came to. That&rsquo;s how NOHM finds your landlord&rsquo;s invite.</span></li>
+        <li><span><b>Tap your landlord&rsquo;s invite and enter the 6-digit code</b>The code is in the text from NOHM.</span></li>
+        <li><span><b>Confirm with the code NOHM texts you</b>Your lease is linked to your landlord&rsquo;s rental. Pay rent, send repair requests and message your landlord, all in NOHM.</span></li>
+      </ol>
+      <p class="inv-code" id="inv-code" hidden>Your code <b id="inv-code-value"></b></p>
+    </section>
     <div class="store-cta">
       <ul class="store-cta__badges">
         <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
@@ -57,15 +67,7 @@
       <p>NOHM is the most advanced way to handle anything home. Owning it, renting it, all of it, in one app.</p>
       <p class="inv-first">You&rsquo;re one of the first.</p>
     </section>
-    <section class="inv-how" aria-labelledby="inv-how">
-      <h2 id="inv-how">How to join</h2>
-      <ol class="inv-steps">
-        <li><span><b>Download NOHM</b>Free on the App Store and Google Play.</span></li>
-        <li><span><b>Sign up with your phone number</b>Use the number your landlord has for you.</span></li>
-        <li><span><b>Enter the code from your landlord&rsquo;s text</b>Your lease is linked, and you&rsquo;re all set.</span></li>
-      </ol>
-    </section>
-    <p class="inv-small">Already have NOHM? Open it and sign in to see the invite. Questions? <a href="mailto:support@nohm.app">support@nohm.app</a></p>
+    <p class="inv-small">Signed up with a different number? Ask your landlord to send the invite again to the number you use. Already have NOHM? Sign in with this number and the invite is waiting. Questions? <a href="mailto:support@nohm.app">support@nohm.app</a></p>
   </main>
   <footer>
     <span>NOHM&trade; &copy; 2026</span>
@@ -74,5 +76,6 @@
     <a href="/support">Support</a>
   </footer>
   <script src="/menu.js" defer></script>
+  <script src="/invite/invite.js" defer></script>
 </body>
 </html>
