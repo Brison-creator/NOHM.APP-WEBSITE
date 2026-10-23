@@ -152,3 +152,12 @@ test('every internal link and asset resolves to a file in public/', () => {
   assert.ok(checked > 200, `checked ${checked} links`);
   assert.deepEqual(broken, []);
 });
+
+test('structured data (JSON-LD) parses and names schema.org', () => {
+  for (const { url, s } of pages) {
+    for (const m of s.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+      const data = JSON.parse(m[1]);
+      assert.equal(data['@context'], 'https://schema.org', `${url}: @context`);
+    }
+  }
+});
