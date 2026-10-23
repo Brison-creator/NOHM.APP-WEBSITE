@@ -21,6 +21,9 @@
   <script>
     (function () {
       var ua = navigator.userAgent;
+      // A link preview's fetcher (iMessage's names Facebot and
+      // Twitterbot) stays on the page, to read the image and words.
+      if (/bot|facebookexternalhit|crawler|spider|preview/i.test(ua)) return;
       // iPadOS reports a Mac; a touch screen gives it away.
       var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
       if (/Android/i.test(ua)) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app');
