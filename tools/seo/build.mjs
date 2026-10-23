@@ -419,7 +419,7 @@ function proPage(s) {
   const trail = [['/', 'Home'], ['/pros/', 'For Pros'], [null, s.label]];
   const Jobs = s.jobs[0].toUpperCase() + s.jobs.slice(1);
   const h1 = `More ${s.jobs}. No lead fees.`;
-  const desc = `Get ${s.jobs} from local homeowners and landlords on NOHM: ${s.blurb.toLowerCase()}. No lead fees, no monthly fee: $5.99 a job, only when you get paid.`;
+  const desc = `Get ${s.jobs} from local homeowners and landlords on NOHM: ${s.blurb.toLowerCase()}. No lead fees, no monthly fee: 7.9% only when you get paid.`;
   const quotes = QUOTES[s.name];
   const reasons = [
     ['No lead fees. No ads.', 'A lead is the hope of a job. On NOHM, one request goes to one pro, and NOHM only earns when you get paid.'],
@@ -448,9 +448,9 @@ function proPage(s) {
         </li>
         <li class="plan plan--lead">
           <p class="name">Per job</p>
-          <p class="price">$5.99</p>
-          <p class="per">flat, per job</p>
-          <p>Only on jobs you complete, whatever the job pays. Card processing is its own line, and tips are 100% yours.</p>
+          <p class="price">7.9%</p>
+          <p class="per">of what you&rsquo;re paid</p>
+          <p>Only on jobs you complete. Card processing is its own line, and tips are 100% yours.</p>
         </li>
       </ul>${quotes ? '\n      <p class="fine">Three Quotes jobs: a 5% service fee on jobs you win, deducted from your funds, never added to the homeowner&rsquo;s price.</p>' : ''}`),
     section('Get on NOHM.', steps([
