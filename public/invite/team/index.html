@@ -11,6 +11,20 @@
        text, and they are what make that text's link preview show this
        photo and these words. -->
   <meta name="robots" content="noindex" />
+  <!-- On a phone the link is a real link to the app, as /get is (owner,
+       2026-10-23, on the family invite: "it sent her to the site. No real
+       link"): straight to the App Store or Google Play. A computer sees
+       this page, and a text's link preview still shows its photo and words
+       (previews don't run scripts). -->
+  <script>
+    (function () {
+      var ua = navigator.userAgent;
+      // iPadOS reports a Mac; a touch screen gives it away.
+      var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      if (/Android/i.test(ua)) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app');
+      else if (ios) location.replace('https://apps.apple.com/us/app/nohm-app/id6761128513');
+    })();
+  </script>
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NOHM" />
   <meta property="og:title" content="You&rsquo;ve been added to a team on NOHM | NOHM" />
@@ -49,7 +63,7 @@
       <ol class="inv-steps">
         <li><span><b>Download NOHM</b>Free on the App Store and Google Play, right below.</span></li>
         <li><span><b>Sign up with this phone number</b>The number this text came to. That&rsquo;s how NOHM finds the invite. There&rsquo;s no code to type.</span></li>
-        <li><span><b>Accept the team invite</b>It&rsquo;s waiting when you sign in. You&rsquo;ll see the rentals they&rsquo;ve shared with you.</span></li>
+        <li><span><b>You&rsquo;re on the team</b>Signing up with that number adds you. You&rsquo;ll see the rentals they&rsquo;ve shared with you.</span></li>
       </ol>
     </section>
     <div class="store-cta">

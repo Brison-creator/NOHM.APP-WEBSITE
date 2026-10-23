@@ -11,6 +11,20 @@
        text, and they are what make that text's link preview show this
        photo and these words. -->
   <meta name="robots" content="noindex" />
+  <!-- On a phone the link is a real link to the app, as /get is (owner,
+       2026-10-23, on the family invite: "it sent her to the site. No real
+       link"): straight to the App Store or Google Play. A computer sees
+       this page, and a text's link preview still shows its photo and words
+       (previews don't run scripts). -->
+  <script>
+    (function () {
+      var ua = navigator.userAgent;
+      // iPadOS reports a Mac; a touch screen gives it away.
+      var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      if (/Android/i.test(ua)) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app');
+      else if (ios) location.replace('https://apps.apple.com/us/app/nohm-app/id6761128513');
+    })();
+  </script>
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NOHM" />
   <meta property="og:title" content="Your neighbor invited you to NOHM | NOHM" />
