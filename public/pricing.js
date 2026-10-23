@@ -6,20 +6,20 @@ var NOHM_PRICING = {
   launchTarget: 1000,
   express: { launch: 20, regular: 40 },
   now: { launch: 30, regular: 60 },
-  // Rentals (set in the NOHM admin; keep these in step with it).
-  // "plan" is the per-rental line; membership is once per landlord account.
+  // Rentals (set in the NOHM admin; keep these in step with it). Plans are
+  // per rental: Free, Financial Management ("plan") or NOHM Autopilot. No
+  // account fee (owner, 2026-10-20). achFee: each bank rent payment.
   rentals: {
-    membership: 9,
+    free: 0,
     plan: 7,
-    manager: 29,
+    autopilot: 19.99,
+    achFee: 7,
     walkthrough: 79,
     // Owner, 2026-10-09: one background check, paid by the applicant
     // where the law allows; the NOHM Income Check, optional, paid by the
     // landlord only if the applicant connects their bank.
     application: 50,
-    incomeCheck: 20,
-    achRatePercent: 0.8,
-    achCap: 7
+    incomeCheck: 20
   }
 };
 

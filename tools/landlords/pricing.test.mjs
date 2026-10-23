@@ -7,22 +7,27 @@ const landlords = await readFile(new URL('../../public/landlords/index.html', im
 const renters = await readFile(new URL('../../public/renters/index.html', import.meta.url), 'utf8');
 
 test('public rental pricing matches the landlord product', () => {
-  assert.match(pricing, /membership:\s*9/);
+  // Per-rental plans, no account fee (owner, 2026-10-20).
+  assert.match(pricing, /free:\s*0/);
   assert.match(pricing, /plan:\s*7/);
-  assert.match(pricing, /manager:\s*29/);
+  assert.match(pricing, /autopilot:\s*19\.99/);
+  assert.doesNotMatch(pricing, /membership|manager:/);
   assert.match(pricing, /walkthrough:\s*79/);
   assert.match(pricing, /application:\s*50/);
   assert.match(pricing, /incomeCheck:\s*20/);
   // One background check: the old tiers are gone everywhere.
   assert.doesNotMatch(pricing, /applicationIncome|applicationPremium/);
-  assert.match(pricing, /achRatePercent:\s*0\.8/);
-  assert.match(pricing, /achCap:\s*7/);
+  // Bank rent: a flat fee per payment (ACH_RENT_FEE).
+  assert.match(pricing, /achFee:\s*7/);
+  assert.doesNotMatch(pricing, /achRatePercent|achCap/);
 });
 
 test('landlord page shows customer prices, ACH choice and comparison sources', () => {
-  assert.match(landlords, /\$9[\s\S]*\$7/);
-  assert.match(landlords, /0\.8%, capped at \$7/);
-  assert.match(landlords, /tenant pays that fee on top or you absorb it/);
+  assert.match(landlords, /data-rental="free">\$0/);
+  assert.match(landlords, /data-rental="plan">\$7/);
+  assert.match(landlords, /data-rental="autopilot">\$19\.99/);
+  assert.doesNotMatch(landlords, /0\.8%|data-rental="membership"|data-rental="manager"/);
+  assert.match(landlords, /tenant pays it on top or you absorb it/);
   assert.match(landlords, /Landlord cost comparison/);
   for (const name of ['RentRedi', 'TurboTenant', 'Zillow Rental Manager']) {
     assert.match(landlords, new RegExp(name));
