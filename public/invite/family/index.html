@@ -8,13 +8,15 @@
   <!-- Where a family member's invite text lands (the app's
        householdInviteText). Noindex and out of the sitemap like /get, but it
        keeps its share tags on purpose: it is only ever opened from a text,
-       and they are what make that text's link preview show this photo and
+       and they are what make that text's link preview show the black NOHM “You’re invited”
+       image (/img/og-invite.png, owner 2026-10-23) and
        these words. -->
   <meta name="robots" content="noindex" />
   <!-- On a phone the link is a real link to the app, as /get is (owner,
        2026-10-23, on the family invite: "it sent her to the site. No real
        link"): straight to the App Store or Google Play. A computer sees
-       this page, and a text's link preview still shows its photo and words
+       this page, and a text's link preview still shows the black NOHM
+       “You’re invited” image and these words
        (previews don't run scripts). -->
   <script>
     (function () {
@@ -30,10 +32,10 @@
   <meta property="og:title" content="Your family wants to add you | NOHM" />
   <meta property="og:description" content="Someone in your family added you to your home on NOHM. Download the app and sign up with this phone number to join them." />
   <meta property="og:url" content="https://nohm.app/invite/family/" />
-  <meta property="og:image" content="https://nohm.app/img/home-1536.jpg" />
-  <meta property="og:image:width" content="1536" />
-  <meta property="og:image:height" content="1024" />
-  <meta property="og:image:alt" content="A family laughing over a game of chess at home" />
+  <meta property="og:image" content="https://nohm.app/img/og-invite.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="NOHM. You’re invited." />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
