@@ -419,10 +419,10 @@ function proPage(s) {
   const trail = [['/', 'Home'], ['/pros/', 'For Pros'], [null, s.label]];
   const Jobs = s.jobs[0].toUpperCase() + s.jobs.slice(1);
   const h1 = `More ${s.jobs}. No lead fees.`;
-  const desc = `Get ${s.jobs} from local homeowners and landlords on NOHM: ${s.blurb.toLowerCase()}. No lead fees, no ads, no monthly fee. Free to join; pay only when you get paid.`;
+  const desc = `Get ${s.jobs} from local homeowners and landlords on NOHM: ${s.blurb.toLowerCase()}. No lead fees, no monthly fee: $5.99 a job, only when you get paid.`;
   const quotes = QUOTES[s.name];
   const reasons = [
-    ['No lead fees. No ads.', 'Never pay for clicks or leads. NOHM only earns when you get paid.'],
+    ['No lead fees. No ads.', 'A lead is the hope of a job. On NOHM, one request goes to one pro, and NOHM only earns when you get paid.'],
     ['Jobs come to you.', 'Real requests from homeowners and landlords near you: booked, scheduled and same-day.'],
     ['Go live. Get NOW jobs.', 'Turn on Ready Now for four hours and take NOHM NOW calls when you have a gap.'],
     ['Paid through Stripe.', 'Payouts go straight to your bank. Tips are 100% yours.'],
@@ -448,9 +448,9 @@ function proPage(s) {
         </li>
         <li class="plan plan--lead">
           <p class="name">Per job</p>
-          <p class="price">9%</p>
-          <p class="per">of what you&rsquo;re paid</p>
-          <p>Only on jobs you complete. Card processing is its own line, and tips are 100% yours.</p>
+          <p class="price">$5.99</p>
+          <p class="per">flat, per job</p>
+          <p>Only on jobs you complete, whatever the job pays. Card processing is its own line, and tips are 100% yours.</p>
         </li>
       </ul>${quotes ? '\n      <p class="fine">Three Quotes jobs: a 5% service fee on jobs you win, deducted from your funds, never added to the homeowner&rsquo;s price.</p>' : ''}`),
     section('Get on NOHM.', steps([
@@ -546,7 +546,7 @@ function readyNowPage() {
       ['Be there within 60 minutes.', 'NOHM NOW is within 60 minutes of you accepting. Paid through Stripe.'],
     ])),
     section('Built for pros.', cards([
-      ['No lead fees. No ads.', 'Never pay for clicks or leads. NOHM only earns when you get paid.'],
+      ['No lead fees. No ads.', 'A lead is the hope of a job. On NOHM, one request goes to one pro, and NOHM only earns when you get paid.'],
       ['Your schedule.', 'Go live when you have the time. Nobody books you when you’re not.'],
       ['Paid through Stripe.', 'Payouts go straight to your bank. Tips are 100% yours.'],
       ['One standard.', 'Every pro on NOHM is held to the NOHM Standard.'],
