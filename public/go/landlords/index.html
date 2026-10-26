@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Landlords: NOHM is finally in your area | NOHM</title>
+  <meta name="description" content="Premium rental management, built on cutting-edge tech. Rent by bank straight to your account, repairs with a tap, leases signed in the app, and Autopilot to go hands-off. Free to use. Pay only when you collect rent." />
+  <!-- The Facebook ad's page: kept out of search and the menu, like /try. -->
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/favicon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
+  <link rel="stylesheet" href="/for/for.css" />
+  <style>
+    /* The landlord ad's page (owner, 2026-10-26: "a specific landlord landing
+       page that sells the shit out of it"): the gift, the problem, the fix
+       with the real app, NOHMie, Autopilot, the price, the questions, and the
+       download at every turn. Built on the role pages' parts (/for/for.css). */
+    .hero { height: min(92svh, 820px); }
+    .hero img { object-position: 50% 40%; }
+    .hero .kicker { display: inline-block; padding: 7px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); opacity: 1; }
+    .hero h1 { max-width: 900px; margin: 0 auto; }
+    .hero .sub { max-width: 640px; }
+    .hero .free { margin: 14px auto 0; font-size: 15px; font-weight: var(--weight-ui-strong); letter-spacing: 0.02em; }
+
+    /* Cheap software on the left, NOHM on the right. */
+    .versus { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .side { border-radius: 12px; padding: 28px 24px; }
+    .side h3 { margin: 0 0 18px; font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: var(--weight-ui-strong); }
+    .side ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+    .side li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; font-size: 18px; line-height: 1.4; }
+    .side li::before { content: ""; width: 26px; height: 26px; border-radius: 50%; margin-top: 1px; background-repeat: no-repeat; background-position: center; }
+    .side--cheap { background: #f4f4f4; color: #6e6e73; }
+    .side--cheap h3 { color: #6e6e73; }
+    .side--cheap li::before { background-color: #d0d1d2; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 2l8 8M10 2l-8 8' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E"); }
+    .side--nohm { background: #171a20; color: #fff; }
+    .side--nohm h3 { color: #fff; }
+    .side--nohm li::before { background-color: #356CA3; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='12'%3E%3Cpath d='M2 6.5l3.2 3.2L12 2.5' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+    @media (min-width: 760px) {
+      .versus { grid-template-columns: 1fr 1fr; }
+      .side { padding: 40px 36px; }
+    }
+
+    /* The real app: a phone beside its words. */
+    .show { display: grid; gap: 24px; align-items: center; background: #f4f4f4; border-radius: 12px; padding: 40px 24px 0; overflow: hidden; }
+    .show + .show { margin-top: 12px; }
+    .show h3 {
+      margin: 0 0 12px; font-size: clamp(28px, 3vw, 40px); line-height: 1.08;
+      font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline);
+    }
+    .show p { margin: 0 0 16px; font-size: 18px; line-height: 1.55; color: #393c41; }
+    .show ul { margin: 0; padding: 0 0 0 20px; font-size: 17px; line-height: 1.7; color: #393c41; }
+    .phone { justify-self: center; width: min(320px, 78vw); height: min(460px, 112vw); overflow: hidden; }
+    .phone img { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.25)); }
+    @media (min-width: 860px) {
+      .show { grid-template-columns: 1fr 1fr; padding: 56px 56px 0; gap: 48px; }
+      .show .words { padding-bottom: 56px; }
+      .show--flip .words { order: 2; }
+      .phone { width: 340px; height: 500px; }
+    }
+
+    /* NOHMie: a few lines of chat. */
+    .ask { max-width: 640px; margin: 0 auto; display: grid; gap: 10px; padding: 0 12px; }
+    .bubble { max-width: 82%; padding: 13px 17px; border-radius: 20px; font-size: 17px; line-height: 1.45; }
+    .bubble--me { justify-self: end; background: #356CA3; color: #fff; border-bottom-right-radius: 6px; }
+    .bubble--nohmie { justify-self: start; background: #f4f4f4; color: #171a20; border-bottom-left-radius: 6px; }
+    .who { justify-self: start; font-size: 13px; font-weight: var(--weight-ui-strong); color: #6e6e73; margin: 6px 0 -4px 6px; }
+    .ask-note { margin: 18px auto 0; max-width: 620px; text-align: center; font-size: 15px; color: #6e6e73; padding: 0 12px; }
+
+    /* Autopilot: the hands-off pitch, on black. */
+    .auto { margin: 64px 12px 0; padding: 64px 24px; border-radius: 12px; background: #171a20; color: #fff; text-align: center; }
+    .auto .tag { display: inline-block; padding: 6px 12px; border-radius: 6px; background: #fff; color: #171a20; font-size: 13px; font-weight: var(--weight-ui-strong); letter-spacing: 0.12em; text-transform: uppercase; }
+    .auto h2 {
+      margin: 18px 0 0; font-size: clamp(38px, 5.4vw, 72px); line-height: 1.02;
+      font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
+    }
+    .auto p { margin: 16px auto 0; max-width: 620px; font-size: 19px; line-height: 1.5; color: #d0d1d2; }
+    .auto .jobs { list-style: none; margin: 32px auto 0; padding: 0; max-width: 900px; display: grid; gap: 12px; text-align: left; }
+    .auto .jobs li { background: rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 22px 22px; }
+    .auto .jobs b { display: block; font-size: 18px; margin-bottom: 4px; }
+    .auto .jobs span { font-size: 16px; line-height: 1.5; color: #d0d1d2; }
+    .auto .price-line { margin-top: 26px; font-size: 15px; color: #d0d1d2; }
+    @media (min-width: 760px) { .auto .jobs { grid-template-columns: repeat(3, 1fr); } }
+
+    /* From anywhere: three short promises. */
+    .anywhere { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .anywhere li { border: 1px solid #e3e4e6; border-radius: 12px; padding: 28px 24px; }
+    .anywhere b { display: block; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); font-size: 24px; line-height: 1.15; margin-bottom: 8px; }
+    .anywhere span { font-size: 17px; line-height: 1.55; color: #393c41; }
+    @media (min-width: 760px) { .anywhere { grid-template-columns: repeat(3, 1fr); } }
+
+    /* Questions: one tap opens each. */
+    .faq { max-width: 820px; margin: 0 auto; padding: 0 12px; }
+    .faq details { border-bottom: 1px solid #e6e7e9; }
+    .faq summary { list-style: none; cursor: pointer; padding: 20px 36px 20px 0; position: relative; font-size: 19px; font-weight: var(--weight-ui-strong); }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; position: absolute; right: 4px; top: 16px; font-size: 26px; font-weight: 400; color: #6e6e73; }
+    .faq details[open] summary::after { content: "\2212"; }
+    .faq p { margin: 0 0 20px; font-size: 17px; line-height: 1.6; color: #393c41; }
+
+    /* On phones, the download stays at hand (as the homepage's dock). */
+    .dock {
+      --store-badge-h: min(44px, calc((100vw - 48px) / 6.7));
+      position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center; gap: calc(var(--store-badge-h) / 4);
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, 0.94);
+      -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .dock .store-badge { flex: none; }
+    body { padding-bottom: calc(68px + env(safe-area-inset-bottom) + 16px); }
+    @media (min-width: 900px) {
+      .dock { display: none; }
+      body { padding-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main>
+    <section class="hero">
+      <picture>
+        <source type="image/webp" media="(max-width: 760px)" srcset="/img/landlord-960.webp" />
+        <source type="image/webp" srcset="/img/landlord-1920.webp" />
+        <img src="/img/landlord-1920.jpg" alt="A landlord shaking hands with new tenants over a lease" />
+      </picture>
+      <div class="copy">
+        <p class="kicker">A gift for landlords</p>
+        <h1>NOHM is finally in your area.</h1>
+        <p class="sub">Premium rental management, built on cutting-edge tech. Run every rental from anywhere in the world.</p>
+        <p class="free">Free to use. Pay only when you collect rent.</p>
+        <div class="actions">
+          <div class="store-cta store-cta--center store-cta--on-dark">
+            <ul class="store-cta__badges">
+              <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+              <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+            </ul>
+          </div>
+          <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Or sign in on a computer</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec wrap">
+      <h2>Cheap software makes you do the work.<br />NOHM does it for you.</h2>
+      <ul class="versus">
+        <li class="side side--cheap">
+          <h3>Cheap software</h3>
+          <ul>
+            <li>Chasing rent by text</li>
+            <li>Repairs you hear about too late</li>
+            <li>Paper leases in a drawer</li>
+            <li>Spreadsheets that never add up</li>
+            <li>Five apps that don&rsquo;t talk to each other</li>
+          </ul>
+        </li>
+        <li class="side side--nohm">
+          <h3>NOHM</h3>
+          <ul>
+            <li>Rent paid by bank, straight to your account, with autopay and reminders</li>
+            <li>Tenants send repairs with photos. Approve with one tap</li>
+            <li>Leases signed in the app and saved for good</li>
+            <li>Profit for every unit, and a tax report for your accountant</li>
+            <li>Rent, repairs, leases and tenants in one app</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section class="sec wrap">
+      <h2>Every rental. One screen.</h2>
+      <div class="show">
+        <div class="words">
+          <h3>Know where everything stands.</h3>
+          <p>Open the app and see every rental at a glance: who&rsquo;s paid, what needs you, and what&rsquo;s already handled.</p>
+          <ul>
+            <li>Rent comes in by bank, with autopay, reminders and late fees that run themselves</li>
+            <li>A green dot when a rental is fine, red when it needs you</li>
+            <li>Income, costs and profit for each unit</li>
+          </ul>
+        </div>
+        <div class="phone">
+          <picture>
+            <source type="image/webp" srcset="/img/lp-landlord-phone-640.webp" />
+            <img src="/img/lp-landlord-phone-640.png" width="640" height="1285" alt="The NOHM landlord dashboard: five rentals, all paid up" loading="lazy" />
+          </picture>
+        </div>
+      </div>
+      <div class="show show--flip">
+        <div class="words">
+          <h3>Your tenants get an app too.</h3>
+          <p>They pay rent, send repairs with photos, and follow the repair as it happens. You stop being the middleman.</p>
+          <ul>
+            <li>Autopay, so rent shows up on time</li>
+            <li>&ldquo;Fix something&rdquo; with photos, straight to you</li>
+            <li>Messages, the lease and papers in one place</li>
+          </ul>
+        </div>
+        <div class="phone">
+          <picture>
+            <source type="image/webp" srcset="/img/lp-tenant-phone-640.webp" />
+            <img src="/img/lp-tenant-phone-640.png" width="640" height="1285" alt="The NOHM tenant app: rent paid up, autopay on, a repair on the way" loading="lazy" />
+          </picture>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec wrap">
+      <h2>Just ask NOHMie.</h2>
+      <p class="lede">NOHM&rsquo;s assistant knows your rentals. Ask in plain words and it does the work.</p>
+      <div class="ask" aria-label="An example conversation with NOHMie">
+        <div class="bubble bubble--me">Who hasn&rsquo;t paid rent this month?</div>
+        <span class="who">NOHMie</span>
+        <div class="bubble bubble--nohmie">Everyone&rsquo;s paid except 77 Kingsdale Dr. Their $1,650 is 2 days late. Want me to send a reminder?</div>
+        <div class="bubble bubble--me">Yes, send it.</div>
+        <span class="who">NOHMie</span>
+        <div class="bubble bubble--nohmie">Sent. I&rsquo;ll let you know when it&rsquo;s paid.</div>
+      </div>
+      <p class="ask-note">An example. NOHMie can message all your tenants or one, tell you who&rsquo;s paid and who&rsquo;s late, show open repairs, and record a cash or check payment.</p>
+    </section>
+
+    <section class="auto">
+      <span class="tag">NOHM Autopilot</span>
+      <h2>Go 90% hands-off.</h2>
+      <p>Turn on Autopilot and NOHM answers your tenants and handles repairs within the limit you set. You get the update. It does the work.</p>
+      <ul class="jobs">
+        <li><b>Tenants get answers</b><span>Autopilot answers your tenants for you.</span></li>
+        <li><b>Repairs get handled</b><span>Within the limit you set, Autopilot handles the repair so you don&rsquo;t have to.</span></li>
+        <li><b>You stay in charge</b><span>You set the limit, and you see every repair and every answer.</span></li>
+      </ul>
+      <p class="price-line">Optional. <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> per rental, per month.</p>
+    </section>
+
+    <section class="sec wrap">
+      <h2>Run it from anywhere in the world.</h2>
+      <ul class="anywhere">
+        <li><b>On your phone.</b><span>Everything in one app, on iPhone and Android.</span></li>
+        <li><b>On a computer.</b><span>Sign in at business.nohm.app and see the same rentals on a big screen.</span></li>
+        <li><b>On the road.</b><span>Rent comes in and repairs get handled while you&rsquo;re away. You get the alert, not the hassle.</span></li>
+      </ul>
+    </section>
+
+    <section class="sec wrap">
+      <h2>Free until you collect rent.</h2>
+      <p class="lede">Listing, filling and running your rentals is free. Turn on rent collection when you&rsquo;re ready, one rental at a time.</p>
+      <ul class="plans plans--3">
+        <li class="plan">
+          <p class="name">Free</p>
+          <p class="price"><span data-price="RENTAL_PLANS_BASE_MONTHLY">$0</span></p>
+          <p class="per">forever</p>
+          <p>Listings, unlimited applications, tenant invites, repair requests and messages.</p>
+        </li>
+        <li class="plan plan--lead">
+          <p class="name">Financial Management</p>
+          <p class="price"><span data-price="RENTAL_FINANCIAL_PER_RENTAL_MONTHLY">$7</span></p>
+          <p class="per">per rental, per month, once you collect rent</p>
+          <p>Rent collection, autopay, reminders, late fees, ledgers and reports.</p>
+        </li>
+        <li class="plan">
+          <p class="name">Autopilot</p>
+          <p class="price"><span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span></p>
+          <p class="per">per rental, per month</p>
+          <p>Everything in Financial Management, plus NOHM Autopilot: it answers tenants and handles repairs within your limit.</p>
+        </li>
+      </ul>
+      <p class="fine">A card on file is needed to add a rental, to keep NOHM safe from fraud; you&rsquo;re not charged on the Free plan. No account fee for launch members. Bank rent payments carry a <span data-price="ACH_RENT_FEE">$7</span> processing fee per payment, and you choose who covers it.</p>
+    </section>
+
+    <section class="sec wrap">
+      <h2>Start in minutes.</h2>
+      <ol class="steps">
+        <li><div><b>Get the app.</b><span>Sign up as a landlord and add your rentals.</span></div></li>
+        <li><div><b>List it or invite your tenant.</b><span>Fill a vacancy, or bring the tenant you already have.</span></div></li>
+        <li><div><b>Let it run.</b><span>Rent comes in, repairs go out, and every unit&rsquo;s numbers add up.</span></div></li>
+      </ol>
+    </section>
+
+    <section class="sec wrap">
+      <h2>Questions, answered.</h2>
+      <div class="faq">
+        <details>
+          <summary>Is it really free?</summary>
+          <p>Yes. Listings, unlimited applications, tenant invites, repair requests and messages are free, forever. You pay <span data-price="RENTAL_FINANCIAL_PER_RENTAL_MONTHLY">$7</span> per rental, per month only once you turn on rent collection for that rental.</p>
+        </details>
+        <details>
+          <summary>Does NOHM take a cut of my rent?</summary>
+          <p>No. Tenants pay by bank, straight to your account. Each bank payment carries a <span data-price="ACH_RENT_FEE">$7</span> processing fee, and you choose whether you or your tenant covers it.</p>
+        </details>
+        <details>
+          <summary>Why does it ask for a card?</summary>
+          <p>A card on file is needed to add a rental, to keep NOHM safe from fraud. You&rsquo;re not charged on the Free plan.</p>
+        </details>
+        <details>
+          <summary>Can I bring the tenants I already have?</summary>
+          <p>Yes. Invite them from the app. They accept on their phone, or on the web at nohm.app, and you&rsquo;re connected.</p>
+        </details>
+        <details>
+          <summary>Who fixes things?</summary>
+          <p>Your tenant sends the repair with photos, and you approve it with a tap. It goes to a local NOHM pro, and you both see it happen. NOHM is available wherever local pros have joined, and grows as more sign on.</p>
+        </details>
+        <details>
+          <summary>What does Autopilot do?</summary>
+          <p>It answers your tenants and handles repairs within the limit you set, so you&rsquo;re basically 90% hands-off. It&rsquo;s optional: <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> per rental, per month.</p>
+        </details>
+        <details>
+          <summary>Can I use it on a computer?</summary>
+          <p>Yes. Sign in at <a href="https://business.nohm.app/">business.nohm.app</a> to see your rentals on a big screen.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="final">
+      <h2>Got rentals? NOHM it.</h2>
+      <p>Free to use. Pay only when you collect rent.</p>
+      <div class="actions">
+        <div class="store-cta store-cta--center store-cta--on-dark">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+          </ul>
+        </div>
+        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Or sign in on a computer</a>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM&trade; &copy; 2026</span>
+    <a href="/homeowners">Homeowners</a>
+    <a href="/landlords">Landlords</a>
+    <a href="/renters">Renters</a>
+    <a href="/local-pros">Local Pros</a>
+    <a href="/pros">For Pros</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+    <a href="tel:+18882306646">888-230-NOHM</a>
+  </footer>
+
+  <div class="dock">
+    <a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="132" height="44" alt="" /></a>
+    <a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a>
+  </div>
+
+  <script src="/for/live.js" defer></script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
