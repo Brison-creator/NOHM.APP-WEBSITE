@@ -4,7 +4,8 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd } from '../../public/pro/lib/form.js';
+import { existsSync } from 'node:fs';
+import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd, tradePhoto } from '../../public/pro/lib/form.js';
 import { cleanPrefill, savePrefill, readPrefill, clearPrefill } from '../../public/nohm/pro-prefill.js';
 import { profileFormFrom } from '../../public/join/lib/pro-flow.js';
 
@@ -49,6 +50,16 @@ test('a trade’s own link names the trade and picks it in the form', () => {
   assert.equal(tradeCrowd('house-cleaning'), 'House cleaners');
   assert.equal(tradeCrowd('nope'), '');
   assert.equal(tradeCrowd('constructor'), '', 'only the page’s own trades');
+});
+
+test('a trade’s link shows that trade’s photo, when there is one', () => {
+  assert.equal(tradePhoto('handyman'), '/img/services/handyman.jpg');
+  assert.equal(tradePhoto('house-cleaning'), '/img/services/house-cleaning.jpg');
+  assert.equal(tradePhoto('roofing'), '', 'no photo yet: the page keeps its own');
+  assert.equal(tradePhoto(''), '');
+  for (const slug of ['appliance', 'electrical', 'flooring', 'garage-door', 'gutters', 'handyman', 'house-cleaning', 'hvac', 'landscaping', 'locksmith', 'painting', 'pest-control', 'plumbing', 'pressure-washing', 'tree-service']) {
+    assert.ok(existsSync(new URL(`../../public${tradePhoto(slug)}`, import.meta.url)), `${slug}'s photo is on the site`);
+  }
 });
 
 test('a refusal is said plainly, with the number to call', () => {

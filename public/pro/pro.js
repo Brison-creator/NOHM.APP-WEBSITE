@@ -11,7 +11,7 @@ import { h, clear, field, button } from '../nohm/dom.js';
 import { humanCheck, TICK_FIRST } from '../nohm/human.js';
 import { addFormTrap } from '../nohm/form-traps.js';
 import { savePrefill } from '../nohm/pro-prefill.js';
-import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd } from './lib/form.js';
+import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd, tradePhoto } from './lib/form.js';
 
 const config = window.NOHM_BOOK;
 const root = document.getElementById('pro-form');
@@ -23,12 +23,21 @@ const webConfig = createWebConfig(api);
 const source = sourceFrom(location.search);
 
 // A trade's own link (?trade=handyman, for a "looking for a handyman" post)
-// speaks to that trade in the headline and picks it in the form.
+// speaks to that trade in the headline, shows that trade's photo, and picks
+// it in the form.
 const tradeSlug = tradeSlugFrom(location.search);
 const crowd = tradeCrowd(tradeSlug);
 if (crowd) {
   document.querySelector('.hero .kicker').textContent = `For ${crowd.toLowerCase()} · Limited spots`;
   document.querySelector('.hero h1').textContent = `${crowd}: stop paying for leads.`;
+  const photo = tradePhoto(tradeSlug);
+  if (photo) {
+    const pic = document.querySelector('.hero picture');
+    pic.querySelectorAll('source').forEach((s) => s.remove());
+    const img = pic.querySelector('img');
+    img.src = photo;
+    img.alt = 'A NOHM pro at work';
+  }
 }
 
 /** On to the full sign-up (a local test server's ?api= goes along). */

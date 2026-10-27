@@ -51,6 +51,17 @@ export function tradeCrowd(slug) {
   return Object.prototype.hasOwnProperty.call(CROWDS, slug) ? CROWDS[slug] : '';
 }
 
+// Trades with their own photo in img/services (the /services pages').
+const PHOTOS = new Set([
+  'appliance', 'electrical', 'flooring', 'garage-door', 'gutters', 'handyman', 'house-cleaning', 'hvac',
+  'landscaping', 'locksmith', 'painting', 'pest-control', 'plumbing', 'pressure-washing', 'tree-service',
+]);
+
+/** The trade's own hero photo (/img/services/handyman.jpg); '' when it has none. */
+export function tradePhoto(slug) {
+  return PHOTOS.has(slug) ? `/img/services/${slug}.jpg` : '';
+}
+
 /** POST /recruit/interest, less the human check's token. */
 export function interestBody(f, source) {
   const t = (s) => (s || '').replace(/\s+/g, ' ').trim();
