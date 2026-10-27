@@ -115,7 +115,15 @@
     .lead .b-btn { margin-top: 4px; }
     .lead-done { margin: 0; font-size: 20px; font-weight: var(--weight-ui-strong); line-height: 1.4; }
 
-    /* On phones, the download stays at hand (as the homepage's dock). */
+    /* Sign up free: Google first, one tap (/join/landlord). */
+    .btn--google { gap: 10px; min-width: 260px; height: 52px; font-weight: var(--weight-ui-strong); }
+    .btn--google .g { width: 20px; height: 20px; flex: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.2l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.2 5.6c4.2-3.9 7.1-9.6 7.1-17z'/%3E%3Cpath fill='%23FBBC05' d='M10.5 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.2C.9 16.6 0 20.2 0 24s.9 7.4 2.6 10.8l7.9-6.2z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.2-5.6c-2.2 1.5-5 2.4-8.7 2.4-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.2C6.6 42.6 14.6 48 24 48z'/%3E%3C/svg%3E") center / contain no-repeat; }
+    .hero .btn--google, .final .btn--google { margin-bottom: 14px; }
+    .lead .alt { margin: 18px 0 0; text-align: center; font-size: 15px; color: #6e6e73; }
+    .lead .alt a { color: #171a20; font-weight: var(--weight-ui-strong); }
+
+    /* On phones, the download stays at hand (as the homepage's dock):
+       Sign up free and the phone's own store (track.js hides the other). */
     .dock {
       --store-badge-h: min(44px, calc((100vw - 48px) / 6.7));
       position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
@@ -126,6 +134,8 @@
       border-top: 1px solid rgba(0, 0, 0, 0.06);
     }
     .dock .store-badge { flex: none; }
+    .dock .btn { min-width: 0; height: var(--store-badge-h); padding: 0 18px; font-size: 15px; font-weight: var(--weight-ui-strong); white-space: nowrap; }
+    html.android .dock .store-badge--app-store, html.ios .dock .store-badge--google-play { display: none; }
     body { padding-bottom: calc(68px + env(safe-area-inset-bottom) + 16px); }
     @media (min-width: 900px) {
       .dock { display: none; }
@@ -136,7 +146,7 @@
 <body>
   <header class="bar"><a href="/">NOHM</a></header>
   <main>
-    <section class="hero">
+    <section class="hero" data-seen="hero">
       <picture>
         <source type="image/webp" media="(max-width: 760px)" srcset="/img/landlord-960.webp" />
         <source type="image/webp" srcset="/img/landlord-1920.webp" />
@@ -148,18 +158,40 @@
         <p class="sub">Premium rental management, built on cutting-edge tech. Run every rental from anywhere in the world.</p>
         <p class="free">Free to use. Pay only when you collect rent.</p>
         <div class="actions">
+          <a class="btn btn--light btn--google" href="/join/landlord/?from=lp-hero"><span class="g" aria-hidden="true"></span>Sign up free with Google</a>
           <div class="store-cta store-cta--center store-cta--on-dark">
             <ul class="store-cta__badges">
               <li><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=lp-hero" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
               <li><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=lp-hero" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
             </ul>
           </div>
-          <a class="textlink" href="/get/?to=business&amp;from=lp-hero" style="color:#fff">Or sign in on a computer</a>
+          <a class="textlink" href="#email" style="color:#fff">Not ready? Email me the links</a>
         </div>
       </div>
     </section>
+    <script>
+      // The hero test (tools/ads/report.py counts it): "a" as written above,
+      // "b" the plain promise; half the visitors each, kept per phone. Set WIN
+      // to the winner once the report names one, and everyone sees it.
+      (function () {
+        var WIN = '';
+        var v = WIN;
+        if (!v) { try { v = localStorage.getItem('nohm:lp-v') || ''; } catch (e) { v = ''; } }
+        if (v !== 'a' && v !== 'b') {
+          v = Math.random() < 0.5 ? 'a' : 'b';
+          try { localStorage.setItem('nohm:lp-v', v); } catch (e) { /* no storage: this visit only */ }
+        }
+        document.documentElement.setAttribute('data-v', v);
+        // The dock shows this phone's store only.
+        document.documentElement.className += /Android/i.test(navigator.userAgent) ? ' android' : ' ios';
+        if (v !== 'b') return;
+        document.querySelector('.hero .kicker').textContent = 'For landlords';
+        document.querySelector('.hero h1').textContent = 'Rent in. Repairs handled. From your phone.';
+        document.querySelector('.hero .sub').textContent = 'Rent by bank straight to your account, repairs with a tap, and leases signed in the app. Run every rental from anywhere.';
+      })();
+    </script>
 
-    <section class="sec wrap">
+    <section class="sec wrap" data-seen="versus">
       <h2>Cheap software makes you do the work.<br />NOHM does it for you.</h2>
       <ul class="versus">
         <li class="side side--cheap">
@@ -185,7 +217,7 @@
       </ul>
     </section>
 
-    <section class="sec wrap">
+    <section class="sec wrap" data-seen="screens">
       <h2>Every rental. One screen.</h2>
       <div class="show">
         <div class="words">
@@ -204,7 +236,7 @@
           </picture>
         </div>
       </div>
-      <div class="show show--flip">
+      <div class="show show--flip" data-seen="tenant-app">
         <div class="words">
           <h3>Your tenants get an app too.</h3>
           <p>They pay rent, send repairs with photos, and follow the repair as it happens. You stop being the middleman.</p>
@@ -223,7 +255,7 @@
       </div>
     </section>
 
-    <section class="sec wrap">
+    <section class="sec wrap" data-seen="nohmie">
       <h2>Just ask NOHMie.</h2>
       <p class="lede">NOHM&rsquo;s assistant knows your rentals. Ask in plain words and it does the work.</p>
       <div class="ask" aria-label="An example conversation with NOHMie">
@@ -237,7 +269,7 @@
       <p class="ask-note">An example. NOHMie can message all your tenants or one, tell you who&rsquo;s paid and who&rsquo;s late, show open repairs, and record a cash or check payment.</p>
     </section>
 
-    <section class="auto">
+    <section class="auto" data-seen="autopilot">
       <span class="tag">NOHM Autopilot</span>
       <h2>Go 90% hands-off.</h2>
       <p>Turn on Autopilot and NOHM answers your tenants and handles repairs within the limit you set. You get the update. It does the work.</p>
@@ -249,7 +281,7 @@
       <p class="price-line">Optional. <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> per rental, per month.</p>
     </section>
 
-    <section class="sec wrap">
+    <section class="sec wrap" data-seen="anywhere">
       <h2>Run it from anywhere in the world.</h2>
       <ul class="anywhere">
         <li><b>On your phone.</b><span>Everything in one app, on iPhone and Android.</span></li>
@@ -258,7 +290,7 @@
       </ul>
     </section>
 
-    <section class="sec wrap">
+    <section class="sec wrap" data-seen="price">
       <h2>Free until you collect rent.</h2>
       <p class="lede">Listing, filling and running your rentals is free. Turn on rent collection when you&rsquo;re ready, one rental at a time.</p>
       <ul class="plans plans--3">
@@ -284,62 +316,64 @@
       <p class="fine">A card on file is needed to add a rental, to keep NOHM safe from fraud; you&rsquo;re not charged on the Free plan. No account fee for launch members. Bank rent payments carry a <span data-price="ACH_RENT_FEE">$7</span> processing fee per payment, and you choose who covers it.</p>
     </section>
 
-    <section class="sec wrap">
+    <section class="sec wrap" data-seen="steps">
       <h2>Start in minutes.</h2>
       <ol class="steps">
-        <li><div><b>Get the app.</b><span>Sign up as a landlord and add your rentals.</span></div></li>
+        <li><div><b>Sign up free.</b><span>One tap with Google, or in the app. Then add your rentals.</span></div></li>
         <li><div><b>List it or invite your tenant.</b><span>Fill a vacancy, or bring the tenant you already have.</span></div></li>
         <li><div><b>Let it run.</b><span>Rent comes in, repairs go out, and every unit&rsquo;s numbers add up.</span></div></li>
       </ol>
     </section>
 
-    <section class="sec wrap">
+    <section class="sec wrap" data-seen="faq">
       <h2>Questions, answered.</h2>
       <div class="faq">
-        <details>
+        <details data-q="free">
           <summary>Is it really free?</summary>
           <p>Yes. Listings, unlimited applications, tenant invites, repair requests and messages are free, forever. You pay <span data-price="RENTAL_FINANCIAL_PER_RENTAL_MONTHLY">$7</span> per rental, per month only once you turn on rent collection for that rental.</p>
         </details>
-        <details>
+        <details data-q="cut">
           <summary>Does NOHM take a cut of my rent?</summary>
           <p>No. Tenants pay by bank, straight to your account. Each bank payment carries a <span data-price="ACH_RENT_FEE">$7</span> processing fee, and you choose whether you or your tenant covers it.</p>
         </details>
-        <details>
+        <details data-q="card">
           <summary>Why does it ask for a card?</summary>
           <p>A card on file is needed to add a rental, to keep NOHM safe from fraud. You&rsquo;re not charged on the Free plan.</p>
         </details>
-        <details>
+        <details data-q="tenants">
           <summary>Can I bring the tenants I already have?</summary>
           <p>Yes. Invite them from the app. They accept on their phone, or on the web at nohm.app, and you&rsquo;re connected.</p>
         </details>
-        <details>
+        <details data-q="repairs">
           <summary>Who fixes things?</summary>
           <p>Your tenant sends the repair with photos, and you approve it with a tap. It goes to a local NOHM pro, and you both see it happen. NOHM is available wherever local pros have joined, and grows as more sign on.</p>
         </details>
-        <details>
+        <details data-q="autopilot">
           <summary>What does Autopilot do?</summary>
           <p>It answers your tenants and handles repairs within the limit you set, so you&rsquo;re basically 90% hands-off. It&rsquo;s optional: <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> per rental, per month.</p>
         </details>
-        <details>
+        <details data-q="computer">
           <summary>Can I use it on a computer?</summary>
           <p>Yes. Sign in at <a href="https://business.nohm.app/">business.nohm.app</a> to see your rentals on a big screen.</p>
         </details>
       </div>
     </section>
 
-    <section class="sec wrap lead" id="email">
+    <section class="sec wrap lead" id="email" data-seen="email">
       <h2>Not ready to download?</h2>
       <p class="lede">Leave your email and we&rsquo;ll send you the app&rsquo;s links, so you can set up your rentals when you have a minute.</p>
       <div class="b-main" id="lead-form">
         <p class="b-loading">Loading&hellip;</p>
         <noscript><p class="b-sub">Email <a href="mailto:admin@nohm.app">admin@nohm.app</a>, or call or text 888-230-NOHM, and we&rsquo;ll send you the links.</p></noscript>
       </div>
+      <p class="alt">Ready now? <a href="/join/landlord/?from=lp-email">Sign up free with Google</a></p>
     </section>
 
-    <section class="final">
+    <section class="final" data-seen="final">
       <h2>Got rentals? NOHM it.</h2>
       <p>Free to use. Pay only when you collect rent.</p>
       <div class="actions">
+        <a class="btn btn--light btn--google" href="/join/landlord/?from=lp-final"><span class="g" aria-hidden="true"></span>Sign up free with Google</a>
         <div class="store-cta store-cta--center store-cta--on-dark">
           <ul class="store-cta__badges">
             <li><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=lp-final" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
@@ -364,12 +398,14 @@
   </footer>
 
   <div class="dock">
+    <a class="btn" href="/join/landlord/?from=lp-dock">Sign up free</a>
     <a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=lp-dock" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="132" height="44" alt="" /></a>
     <a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=lp-dock" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a>
   </div>
 
   <script src="/book/config.js"></script>
   <script type="module" src="/go/landlords/email.js"></script>
+  <script src="/go/landlords/track.js" defer></script>
   <script src="/for/live.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>

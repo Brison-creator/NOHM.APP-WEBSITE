@@ -33,7 +33,7 @@ test('a refusal is said plainly, with the number to call', () => {
 
 test('the page has the form, its script and its settings', () => {
   const page = readFileSync(new URL('../../public/go/landlords/index.html', import.meta.url), 'utf8');
-  assert.match(page, /<section class="sec wrap lead" id="email">/);
+  assert.match(page, /<section class="sec wrap lead" id="email" data-seen="email">/);
   assert.match(page, /<div class="b-main" id="lead-form">/);
   assert.match(page, /<script src="\/book\/config\.js"><\/script>/);
   assert.match(page, /<script type="module" src="\/go\/landlords\/email\.js"><\/script>/);
