@@ -21,6 +21,36 @@ export function sourceFrom(search) {
   return /^[a-z0-9-]{1,30}$/.test(s) ? s : 'pro-page';
 }
 
+/** The trade a link names (?trade=handyman, ?trade=house-cleaning): its slug, or ''. */
+export function tradeSlugFrom(search) {
+  const s = new URLSearchParams(search || '').get('trade') || '';
+  return /^[a-z]+(-[a-z]+)*$/.test(s) && s.length <= 30 ? s : '';
+}
+
+/** That trade in GET /trades (HANDYMAN for handyman), or undefined. */
+export function tradeFor(slug, trades) {
+  if (!slug) return undefined;
+  const name = slug.toUpperCase().replace(/-/g, '_');
+  return (trades || []).find((t) => t.name === name);
+}
+
+// Who a trade's link speaks to, in the headline ("Handymen: stop paying for leads.").
+const CROWDS = {
+  hvac: 'HVAC pros', plumbing: 'Plumbers', electrical: 'Electricians', roofing: 'Roofers',
+  appliance: 'Appliance pros', 'make-ready': 'Make-ready pros', locksmith: 'Locksmiths',
+  'pressure-washing': 'Pressure washers', handyman: 'Handymen', landscaping: 'Lawn pros',
+  gutters: 'Gutter pros', 'garage-door': 'Garage door pros', 'pest-control': 'Pest control pros',
+  painting: 'Painters', flooring: 'Flooring pros', 'house-cleaning': 'House cleaners',
+  'tree-service': 'Tree pros', 'windows-doors': 'Window and door pros', siding: 'Siding pros',
+  fencing: 'Fence pros', 'decks-patios': 'Deck and patio pros', concrete: 'Concrete pros',
+  remodeling: 'Remodelers', insulation: 'Insulation pros', foundation: 'Foundation pros',
+};
+
+/** "Handymen" for handyman; '' for a trade the page doesn't know. */
+export function tradeCrowd(slug) {
+  return Object.prototype.hasOwnProperty.call(CROWDS, slug) ? CROWDS[slug] : '';
+}
+
 /** POST /recruit/interest, less the human check's token. */
 export function interestBody(f, source) {
   const t = (s) => (s || '').replace(/\s+/g, ' ').trim();

@@ -4,7 +4,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { interestProblems, interestBody, interestError, sourceFrom } from '../../public/pro/lib/form.js';
+import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd } from '../../public/pro/lib/form.js';
 import { cleanPrefill, savePrefill, readPrefill, clearPrefill } from '../../public/nohm/pro-prefill.js';
 import { profileFormFrom } from '../../public/join/lib/pro-flow.js';
 
@@ -32,6 +32,23 @@ test('where they came from: ?from=flyer, or the page itself', () => {
   assert.equal(sourceFrom(''), 'pro-page');
   assert.equal(sourceFrom('?from=<script>'), 'pro-page');
   assert.equal(sourceFrom(`?from=${'a'.repeat(31)}`), 'pro-page');
+});
+
+test('a trade’s own link names the trade and picks it in the form', () => {
+  assert.equal(tradeSlugFrom('?trade=handyman&from=mysaline'), 'handyman');
+  assert.equal(tradeSlugFrom('?trade=house-cleaning'), 'house-cleaning');
+  assert.equal(tradeSlugFrom(''), '');
+  assert.equal(tradeSlugFrom('?trade=<script>'), '');
+  assert.equal(tradeSlugFrom('?trade=HANDYMAN'), '', 'slugs are lowercase');
+  const trades = [{ id: 't-h', name: 'HANDYMAN' }, { id: 't-c', name: 'HOUSE_CLEANING' }];
+  assert.equal(tradeFor('handyman', trades).id, 't-h');
+  assert.equal(tradeFor('house-cleaning', trades).id, 't-c');
+  assert.equal(tradeFor('roofing', trades), undefined);
+  assert.equal(tradeFor('', trades), undefined);
+  assert.equal(tradeCrowd('handyman'), 'Handymen');
+  assert.equal(tradeCrowd('house-cleaning'), 'House cleaners');
+  assert.equal(tradeCrowd('nope'), '');
+  assert.equal(tradeCrowd('constructor'), '', 'only the page’s own trades');
 });
 
 test('a refusal is said plainly, with the number to call', () => {

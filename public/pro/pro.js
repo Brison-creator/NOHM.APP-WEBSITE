@@ -11,7 +11,7 @@ import { h, clear, field, button } from '../nohm/dom.js';
 import { humanCheck, TICK_FIRST } from '../nohm/human.js';
 import { addFormTrap } from '../nohm/form-traps.js';
 import { savePrefill } from '../nohm/pro-prefill.js';
-import { interestProblems, interestBody, interestError, sourceFrom } from './lib/form.js';
+import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd } from './lib/form.js';
 
 const config = window.NOHM_BOOK;
 const root = document.getElementById('pro-form');
@@ -21,6 +21,15 @@ const http = createHttp({ baseUrl: apiBase, session });
 const api = createApi(http, session);
 const webConfig = createWebConfig(api);
 const source = sourceFrom(location.search);
+
+// A trade's own link (?trade=handyman, for a "looking for a handyman" post)
+// speaks to that trade in the headline and picks it in the form.
+const tradeSlug = tradeSlugFrom(location.search);
+const crowd = tradeCrowd(tradeSlug);
+if (crowd) {
+  document.querySelector('.hero .kicker').textContent = `For ${crowd.toLowerCase()} · Limited spots`;
+  document.querySelector('.hero h1').textContent = `${crowd}: stop paying for leads.`;
+}
 
 /** On to the full sign-up (a local test server's ?api= goes along). */
 function joinUrl() {
@@ -32,6 +41,8 @@ function joinUrl() {
 
 function tradeSelect(trades) {
   const sel = h('select', { name: 'tradeId', id: 'f-tradeId' }, [h('option', { value: '' }, 'Pick one'), ...trades.map((t) => h('option', { value: t.id }, t.label))]);
+  const named = tradeFor(tradeSlug, trades);
+  if (named) sel.value = named.id;
   const err = h('span.b-err', { id: 'e-tradeId', role: 'alert' });
   const el = h('label.b-field', { htmlFor: 'f-tradeId' }, [h('span.b-label', 'Your main trade'), sel, err]);
   return { el, input: sel, get value() { return sel.value; }, setError(m) { err.textContent = m || ''; el.classList.toggle('bad', Boolean(m)); } };
