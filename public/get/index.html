@@ -19,10 +19,17 @@
       var ua = navigator.userAgent;
       // iPadOS reports a Mac; a touch screen gives it away.
       var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-      // An ad's utm_ tags go to Google Play as the install referrer (see /menu.js).
+      // A page's own badge names its store (?to=ios, ?to=android, ?to=business), so
+      // each tap passes through here and is counted in the access logs; with no
+      // ?to=, the phone picks.
+      var to = (location.search.match(/[?&]to=(ios|android|business)(&|$)/) || [])[1];
+      // An ad's utm_ tags go to Google Play as the install referrer: this link's
+      // own, or the ones /menu.js kept from the visit's landing page.
       var tags = location.search.slice(1).split('&').filter(function (p) { return /^utm_(source|medium|campaign|content)=./.test(p); }).join('&');
-      if (/Android/i.test(ua)) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app' + (tags ? '&referrer=' + encodeURIComponent(tags) : ''));
-      else if (ios) location.replace('https://apps.apple.com/us/app/nohm-app/id6761128513');
+      if (!tags) { try { tags = sessionStorage.getItem('nohm:utm') || ''; } catch (e) { tags = ''; } }
+      if (to === 'business') location.replace('https://business.nohm.app/');
+      else if (to === 'android' || (!to && /Android/i.test(ua))) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app' + (tags ? '&referrer=' + encodeURIComponent(tags) : ''));
+      else if (to === 'ios' || (!to && ios)) location.replace('https://apps.apple.com/us/app/nohm-app/id6761128513');
     })();
   </script>
   <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
