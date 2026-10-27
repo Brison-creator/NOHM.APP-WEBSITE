@@ -159,12 +159,20 @@ def build(rows):
                 'applied': any(r['cs-uri-stem'].startswith('/join') and 'from=pro' in up.unquote(r.get('cs-uri-query', '')) for r in after),
             })
         report[path] = visits
+    # The landlord page's email form says "sent" with a HEAD to the page
+    # (public/go/landlords/email.js): counted, never named.
+    report['leads'] = collections.Counter(
+        query(r).get('src', 'unknown') for r in rows
+        if r.get('cs-method') == 'HEAD' and page_of(r['cs-uri-stem']) == '/go/landlords' and query(r).get('lead') == 'sent')
     return report
 
 
 def summarize(report, label):
     lines = [f'NOHM ad report, {label}']
+    leads = report.get('leads') or collections.Counter()
     for path, visits in report.items():
+        if path == 'leads':
+            continue
         people = [v for v in visits if not v['robot']]
         robots = len(visits) - len(people)
         if not visits:
@@ -188,6 +196,7 @@ def summarize(report, label):
         if path == '/go/landlords':
             names = {'ios': 'App Store', 'android': 'Google Play', 'business': 'computer sign-in'}
             lines.append(f'  Tapped download: {tappers} of {len(people)}' + (' (' + ', '.join(f'{names.get(k, k)} {n}' for k, n in taps.items()) + ')' if taps else ''))
+            lines.append(f"  Left their email: {sum(leads.values())}" + (' (' + ', '.join(f'{k} {n}' for k, n in leads.items()) + ')' if leads else '') + ' (each one is in the admin@nohm.app inbox)')
         if path.startswith('/pro'):
             lines.append(f"  Sent the pro form (went on to sign-up): {sum(1 for v in people if v['applied'])}")
         went = collections.Counter(p for v in people for p in v['other'] if not p.startswith('/join'))

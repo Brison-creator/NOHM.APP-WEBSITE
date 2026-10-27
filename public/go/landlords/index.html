@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="/screens.css" />
   <link rel="stylesheet" href="/store-cta.css" />
   <link rel="stylesheet" href="/for/for.css" />
+  <link rel="stylesheet" href="/book/book.css" />
+  <link rel="stylesheet" href="/join/join.css" />
   <style>
     /* The landlord ad's page (owner, 2026-10-26: "a specific landlord landing
        page that sells the shit out of it"): the gift, the problem, the fix
@@ -105,6 +107,13 @@
     .faq summary::after { content: "+"; position: absolute; right: 4px; top: 16px; font-size: 26px; font-weight: 400; color: #6e6e73; }
     .faq details[open] summary::after { content: "\2212"; }
     .faq p { margin: 0 0 20px; font-size: 17px; line-height: 1.6; color: #393c41; }
+
+    /* Not ready to download: the app's links by email (email.js). */
+    .lead { max-width: 592px; margin: 0 auto; padding-left: 16px; padding-right: 16px; box-sizing: border-box; }
+    .lead .lede { margin: 12px 0 24px; font-size: 18px; line-height: 1.55; color: #393c41; }
+    .lead .b-main { max-width: none; min-height: 0; padding: 24px 20px 28px; border: 1px solid #e3e4e6; border-radius: 12px; }
+    .lead .b-btn { margin-top: 4px; }
+    .lead-done { margin: 0; font-size: 20px; font-weight: var(--weight-ui-strong); line-height: 1.4; }
 
     /* On phones, the download stays at hand (as the homepage's dock). */
     .dock {
@@ -318,6 +327,15 @@
       </div>
     </section>
 
+    <section class="sec wrap lead" id="email">
+      <h2>Not ready to download?</h2>
+      <p class="lede">Leave your email and we&rsquo;ll send you the app&rsquo;s links, so you can set up your rentals when you have a minute.</p>
+      <div class="b-main" id="lead-form">
+        <p class="b-loading">Loading&hellip;</p>
+        <noscript><p class="b-sub">Email <a href="mailto:admin@nohm.app">admin@nohm.app</a>, or call or text 888-230-NOHM, and we&rsquo;ll send you the links.</p></noscript>
+      </div>
+    </section>
+
     <section class="final">
       <h2>Got rentals? NOHM it.</h2>
       <p>Free to use. Pay only when you collect rent.</p>
@@ -350,6 +368,8 @@
     <a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=lp-dock" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a>
   </div>
 
+  <script src="/book/config.js"></script>
+  <script type="module" src="/go/landlords/email.js"></script>
   <script src="/for/live.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
