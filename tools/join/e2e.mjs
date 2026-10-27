@@ -411,5 +411,46 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await ctx.close();
 }
 
+// ── Landlord (the ad page's "Sign up free"): phone sign-up → the app ──
+{
+  await reset();
+  const { ctx, page } = await fresh();
+  const heads = [];
+  page.on('request', (r) => { if (r.method() === 'HEAD') heads.push(r.url()); });
+  await page.goto(`${BASE}/join/landlord/${api}&from=lp-hero`);
+  await page.waitForSelector('[data-key=phone-signup]');
+  assert.match(await page.textContent('main'), /Set up NOHM for your rentals/);
+  await snap(page, 'landlord-account');
+  await phoneSignUp(page);
+  await page.waitForFunction(() => document.body.textContent.includes('You’re in, Ray.'));
+  await snap(page, 'landlord-done');
+  const stores = await page.$$eval('.store-cta a', (as) => as.map((a) => a.getAttribute('href')));
+  assert.deepEqual(stores, ['/get/?to=ios&from=join-landlord', '/get/?to=android&from=join-landlord'], 'not an Android phone: the App Store first');
+  const calls = await log();
+  assert.equal(calls.find((c) => c.path === '/auth/phone-signup/verify-otp').body.role, 'PROPERTY_MANAGER');
+  await page.waitForTimeout(200);
+  assert.ok(heads.some((u) => u.endsWith('/join/landlord/?signup=done&src=web')), `the sign-up is counted: ${heads}`);
+  await page.reload();
+  await page.waitForFunction(() => document.body.textContent.includes('You’re in, Ray.'));
+  console.log('✓ Landlord: phone sign-up as PROPERTY_MANAGER → “You’re in” with the stores through /get, counted, survives reload');
+  await ctx.close();
+}
+
+// ── Landlord from the Facebook ad on Android: Google opens in Chrome ──
+{
+  await reset();
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-S918U) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/480.0.0.38.109;]' });
+  const page = await ctx.newPage();
+  page.on('pageerror', (e) => { throw new Error(`page error: ${e.message}`); });
+  await page.goto(`${BASE}/join/landlord/${api}&from=lp-hero&utm_source=facebook&utm_campaign=landlords`);
+  await page.waitForSelector('a.b-google-out');
+  await snap(page, 'landlord-facebook-android');
+  const href = await page.getAttribute('a.b-google-out', 'href');
+  assert.match(href, /^intent:\/\/localhost:\d+\/join\/landlord\/\?api=.*&from=lp-hero&utm_source=facebook&utm_campaign=landlords#Intent;scheme=https;package=com\.android\.chrome;/);
+  assert.match(await page.textContent('main'), /Opens in Chrome: Google doesn’t sign in inside the Facebook app\./);
+  console.log('✓ Landlord in Facebook’s browser on Android: “Continue with Google” opens this page in Chrome with the ad’s tags');
+  await ctx.close();
+}
+
 await browser.close();
 console.log('all join e2e runs passed');

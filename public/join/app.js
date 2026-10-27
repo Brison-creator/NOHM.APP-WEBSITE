@@ -1,11 +1,13 @@
-// /join (pros) and /join/renter (renters): the same NOHM sign-up the
-// app uses, then each role's onboarding against the server. Which one
-// runs comes from <body data-join="pro|renter">.
+// /join (pros), /join/renter (renters) and /join/landlord (landlords): the
+// same NOHM sign-up the app uses, then each role's onboarding against the
+// server. Which one runs comes from <body data-join="pro|renter|landlord">.
 //
 // Pro: account → invite code (optional, after sign-up) → profile (with trades) → documents → payouts (Stripe
 // Connect) → agreement → submit → status. The server's dashboard says
 // where a returning pro is; nothing is tracked here.
 // Renter: account → the landlord's invite code → a text code → done.
+// Landlord: account (Google or a phone, one tap from the ad page) → done,
+// which hands them to the app to add their rentals.
 
 import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
@@ -18,10 +20,11 @@ import { renterStepFor } from './lib/renter-flow.js';
 import { readPrefill, clearPrefill } from '../nohm/pro-prefill.js';
 import * as pro from './ui/pro-screens.js';
 import * as renter from './ui/renter-screens.js';
+import * as landlord from './ui/landlord-screens.js';
 
 const config = window.NOHM_BOOK;
-const MODE = document.body.dataset.join === 'renter' ? 'renter' : 'pro';
-const ROLE = MODE === 'pro' ? 'CONTRACTOR' : 'TENANT';
+const MODE = ['renter', 'landlord'].includes(document.body.dataset.join) ? document.body.dataset.join : 'pro';
+const ROLE = { pro: 'CONTRACTOR', renter: 'TENANT', landlord: 'PROPERTY_MANAGER' }[MODE];
 const root = document.getElementById('join');
 const toastEl = document.getElementById('join-toast');
 
@@ -54,6 +57,7 @@ const COPY = {
     },
   },
   renter: { signupTitle: 'Join NOHM as a renter', signupSub: 'Use the phone number your landlord has for you; the invite is matched to it.', signinSub: 'Sign in to accept your landlord’s invite.' },
+  landlord: { signupTitle: 'Set up NOHM for your rentals', signupSub: 'Free to use. One tap with Google, or your phone. Then add your rentals in the app.', signinSub: 'Sign in to your NOHM landlord account.' },
 };
 
 const a = {
@@ -106,6 +110,7 @@ const a = {
   },
   /** Reload the server's view of this person (dashboard or lease). */
   async refresh() {
+    if (MODE === 'landlord') return;
     if (MODE === 'pro') this.state.dashboard = await api.contractors.dashboard();
     else
       this.state.myProperty = await api.tenants.myProperty().catch((ex) => {
@@ -124,6 +129,7 @@ const a = {
       const signedUp = signingUp(a.state);
       session.setTokens(res);
       clearPending(a.state);
+      if (MODE === 'landlord' && signedUp) landlord.countSignup(location.search);
       try {
         await loadAccount();
       } catch (ex) {
@@ -173,6 +179,7 @@ async function loadAccount() {
 
 function firstStep() {
   if (a.state.wrongRole) return 'wrong-role';
+  if (MODE === 'landlord') return 'done';
   return MODE === 'pro' ? proStepFor(a.state.dashboard) : renterStepFor(a.state.myProperty);
 }
 
@@ -195,7 +202,9 @@ function render() {
     root.dataset.step = 'signed-out';
     return;
   }
-  const screens = MODE === 'pro'
+  const screens = MODE === 'landlord'
+    ? { account: (app) => accountScreen(app, { role: ROLE, ...COPY.landlord }), done: landlord.doneScreen }
+    : MODE === 'pro'
     ? { account: (app) => accountScreen(app, { role: ROLE, ...COPY.pro, prefill: app.state.prefill }), invite: pro.inviteScreen, profile: pro.profileScreen, documents: pro.documentsScreen, payouts: pro.payoutsScreen, agreement: pro.agreementScreen, review: pro.reviewScreen, status: pro.statusScreen, 'wrong-role': wrongRoleScreen }
     : { account: (app) => accountScreen(app, { role: ROLE, ...COPY.renter }), invite: renter.inviteScreen, confirm: renter.confirmScreen, done: renter.doneScreen, 'wrong-role': wrongRoleScreen };
   root.append((screens[a.step] || screens.account)(a));

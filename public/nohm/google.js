@@ -2,6 +2,29 @@
 // when the account screen shows and a client id is configured. Gives
 // back the ID token; the server verifies it (POST /auth/google/signin).
 
+/**
+ * The app whose built-in browser this page is open in ('facebook' or
+ * 'instagram'), or null. Google won't sign in inside those browsers
+ * (its "disallowed_useragent"), so the account screen sends them out.
+ */
+export function inAppBrowser(ua) {
+  if (/Instagram/.test(ua || '')) return 'instagram';
+  if (/FBAN|FBAV|FB_IAB|FB4A|FBIOS/.test(ua || '')) return 'facebook';
+  return null;
+}
+
+/**
+ * This page in Chrome, from an Android app's built-in browser (an intent
+ * link). `tags`, the visit's utm_ tags, ride along: Chrome starts a new tab.
+ */
+export function chromeLink(loc, tags) {
+  const q = new URLSearchParams(loc.search || '');
+  new URLSearchParams(tags || '').forEach((v, k) => { if (!q.has(k)) q.set(k, v); });
+  const qs = q.toString();
+  const path = `${loc.host}${loc.pathname}${qs ? `?${qs}` : ''}`;
+  return `intent://${path}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(`https://${path}`)};end`;
+}
+
 let gisLoad = null;
 
 function loadGis() {

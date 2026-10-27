@@ -8,7 +8,7 @@
 import { h, append, field, button, clear } from './dom.js';
 import { signupProblems, signupBody, phoneSignupProblems, phoneSignupStart, phoneSignupBody } from './signup.js';
 import { prettyPhone, toE164US } from './format.js';
-import { mountGoogleButton } from './google.js';
+import { mountGoogleButton, inAppBrowser, chromeLink } from './google.js';
 import { GOOGLE_UNAVAILABLE } from './web-config.js';
 import { isAccountStop } from './http.js';
 import { humanCheck, TICK_FIRST } from './human.js';
@@ -161,7 +161,23 @@ export function accountScreen(a, opts = {}) {
 
   // The client id is the server's (GET /config/web). Without it, or if
   // Google's script won't load, the row says so instead of a button.
+  // Inside Facebook's or Instagram's browser Google won't sign in: on
+  // Android the button opens this page in Chrome; on an iPhone it says how.
   function googleRow() {
+    const inApp = inAppBrowser(navigator.userAgent);
+    if (inApp) {
+      const app = inApp === 'instagram' ? 'Instagram' : 'Facebook';
+      if (/Android/i.test(navigator.userAgent)) {
+        let tags = '';
+        try { tags = sessionStorage.getItem('nohm:utm') || ''; } catch { /* no storage */ }
+        return h('div.b-googlerow', [
+          h('a.b-btn.sec.b-google-out', { href: chromeLink(location, tags) }, 'Continue with Google'),
+          h('p.b-small', `Opens in Chrome: Google doesn’t sign in inside the ${app} app.`),
+          h('p.b-or', 'or'),
+        ]);
+      }
+      return h('div.b-googlerow', [h('p.b-small.b-google-off', `Google doesn’t sign in inside the ${app} app. Tap ••• and “Open in browser” to use Google, or use your phone below.`), h('p.b-or', 'or')]);
+    }
     const host = h('div.b-google');
     const row = h('div.b-googlerow', [host, h('p.b-or', 'or')]);
     const off = () => { clear(row); row.append(h('p.b-small.b-google-off', GOOGLE_UNAVAILABLE)); };
