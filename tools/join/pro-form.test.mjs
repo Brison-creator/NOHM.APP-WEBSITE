@@ -73,6 +73,13 @@ test('the handyman has a hero of his own, on /pro/handyman/ and his link', () =>
   assert.match(page, /<body data-trade="handyman">/, 'the page picks Handyman in the form');
   assert.match(page, /\/img\/pro-handyman-hero-1600\.jpg/);
   assert.match(page, /og:image" content="https:\/\/nohm\.app\/img\/og-pro-handyman\.jpg"/);
+  // His video card: plays once (no loop, no autoplay attribute: promo.js starts it), silent.
+  assert.match(page, /<dialog class="promo" id="promo"/);
+  assert.match(page, /<video muted playsinline preload="auto" poster="\/video\/handyman-thunder-poster\.jpg">/);
+  assert.match(page, /<script src="\/pro\/promo\.js" defer><\/script>/);
+  for (const f of ['handyman-thunder-720.mp4', 'handyman-thunder-720.webm', 'handyman-thunder-poster.jpg']) {
+    assert.ok(existsSync(new URL(`../../public/video/${f}`, import.meta.url)), f);
+  }
 });
 
 test('a refusal is said plainly, with the number to call', () => {

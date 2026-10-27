@@ -10,6 +10,17 @@
 .hero--short.hero--handyman { height: min(92svh, 900px); min-height: 640px; }
 .hero--handyman img { object-position: 50% 26%; }
 @media (min-width: 761px) { .hero--handyman img { object-position: 50% 46%; } }
+
+/* /pro/handyman: his video in a card as the page opens, once a visit (promo.js). */
+.promo { padding: 0; border: 0; border-radius: 18px; overflow: hidden; width: min(92vw, 440px); max-height: 94svh; background: #000; color: #fff; }
+.promo::backdrop { background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(4px); }
+.promo video { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; max-height: calc(94svh - 80px); object-fit: cover; background: #000; }
+.promo-x {
+  position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border: 0; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 26px; line-height: 1; cursor: pointer;
+}
+.promo-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 16px; }
+.promo-close { background: none; border: 0; color: #fff; font: inherit; font-weight: var(--weight-ui); opacity: 0.85; cursor: pointer; padding: 12px 6px; }
 .hero--handyman::after { background: linear-gradient(to top, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.6) 28%, rgba(0, 0, 0, 0) 52%); }
 
 .facts { list-style: none; margin: 0 auto; padding: 0; max-width: 820px; display: grid; gap: 10px; }

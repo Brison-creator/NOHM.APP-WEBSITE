@@ -98,7 +98,16 @@
     <a href="/terms">Terms</a>
     <a href="/support">Support</a>
   </footer>
+  <dialog class="promo" id="promo" aria-label="Welcome to NOHM: master of all things Handy and Man">
+    <button class="promo-x" type="button" aria-label="Close">&times;</button>
+    <video muted playsinline preload="auto" poster="/video/handyman-thunder-poster.jpg"><source src="/video/handyman-thunder-720.mp4" type="video/mp4" /><source src="/video/handyman-thunder-720.webm" type="video/webm" /></video>
+    <div class="promo-actions">
+      <a class="btn" href="#start">Apply in a minute</a>
+      <button class="promo-close" type="button">Not now</button>
+    </div>
+  </dialog>
   <script type="module" src="/pro/pro.js"></script>
+  <script src="/pro/promo.js" defer></script>
   <script src="/menu.js" defer></script>
 </body>
 </html>
