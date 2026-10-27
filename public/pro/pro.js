@@ -11,7 +11,7 @@ import { h, clear, field, button } from '../nohm/dom.js';
 import { humanCheck, TICK_FIRST } from '../nohm/human.js';
 import { addFormTrap } from '../nohm/form-traps.js';
 import { savePrefill } from '../nohm/pro-prefill.js';
-import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd, tradePhoto } from './lib/form.js';
+import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd, tradePhoto, tradeHero } from './lib/form.js';
 
 const config = window.NOHM_BOOK;
 const root = document.getElementById('pro-form');
@@ -22,19 +22,29 @@ const api = createApi(http, session);
 const webConfig = createWebConfig(api);
 const source = sourceFrom(location.search);
 
-// A trade's own link (?trade=handyman, for a "looking for a handyman" post)
-// speaks to that trade in the headline, shows that trade's photo, and picks
-// it in the form.
-const tradeSlug = tradeSlugFrom(location.search);
-const crowd = tradeCrowd(tradeSlug);
+// A trade's own page (/pro/handyman/, <body data-trade>) is written for it and
+// only picks it in the form. A trade's own link (?trade=handyman, for a
+// "looking for a handyman" post) also speaks to that trade in the headline and
+// shows its hero or photo.
+const ownPage = document.body.dataset.trade || '';
+const tradeSlug = ownPage || tradeSlugFrom(location.search);
+const crowd = ownPage ? '' : tradeCrowd(tradeSlug);
 if (crowd) {
   document.querySelector('.hero .kicker').textContent = `For ${crowd.toLowerCase()} · Limited spots`;
   document.querySelector('.hero h1').textContent = `${crowd}: stop paying for leads.`;
+  const pic = document.querySelector('.hero picture');
+  const img = pic.querySelector('img');
+  const hero = tradeHero(tradeSlug);
   const photo = tradePhoto(tradeSlug);
-  if (photo) {
-    const pic = document.querySelector('.hero picture');
+  if (hero) {
+    const [small, large] = pic.querySelectorAll('source');
+    small.srcset = `${hero}-960.webp`;
+    large.srcset = `${hero}-1600.webp`;
+    img.src = `${hero}-1600.jpg`;
+    img.alt = 'A NOHM pro at work';
+    document.querySelector('.hero').classList.add(`hero--${tradeSlug}`);
+  } else if (photo) {
     pic.querySelectorAll('source').forEach((s) => s.remove());
-    const img = pic.querySelector('img');
     img.src = photo;
     img.alt = 'A NOHM pro at work';
   }

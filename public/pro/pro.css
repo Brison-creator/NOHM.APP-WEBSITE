@@ -5,6 +5,12 @@
 /* Read on a phone in a supply house: the form is one short scroll away. */
 .hero--short { height: min(62svh, 620px); min-height: 440px; }
 .hero--short img { object-position: 50% 35%; }
+/* The handyman's own hero (/pro/handyman/, ?trade=handyman): taller, darkened only
+   under the words, so his face, the hammer and the lightning stay in sight. */
+.hero--short.hero--handyman { height: min(92svh, 900px); min-height: 640px; }
+.hero--handyman img { object-position: 50% 26%; }
+@media (min-width: 761px) { .hero--handyman img { object-position: 50% 46%; } }
+.hero--handyman::after { background: linear-gradient(to top, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.6) 28%, rgba(0, 0, 0, 0) 52%); }
 
 .facts { list-style: none; margin: 0 auto; padding: 0; max-width: 820px; display: grid; gap: 10px; }
 .facts li { background: #f4f4f4; border-radius: 12px; padding: 18px 20px; }

@@ -4,8 +4,8 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
-import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd, tradePhoto } from '../../public/pro/lib/form.js';
+import { existsSync, readFileSync } from 'node:fs';
+import { interestProblems, interestBody, interestError, sourceFrom, tradeSlugFrom, tradeFor, tradeCrowd, tradePhoto, tradeHero } from '../../public/pro/lib/form.js';
 import { cleanPrefill, savePrefill, readPrefill, clearPrefill } from '../../public/nohm/pro-prefill.js';
 import { profileFormFrom } from '../../public/join/lib/pro-flow.js';
 
@@ -60,6 +60,19 @@ test('a trade’s link shows that trade’s photo, when there is one', () => {
   for (const slug of ['appliance', 'electrical', 'flooring', 'garage-door', 'gutters', 'handyman', 'house-cleaning', 'hvac', 'landscaping', 'locksmith', 'painting', 'pest-control', 'plumbing', 'pressure-washing', 'tree-service']) {
     assert.ok(existsSync(new URL(`../../public${tradePhoto(slug)}`, import.meta.url)), `${slug}'s photo is on the site`);
   }
+});
+
+test('the handyman has a hero of his own, on /pro/handyman/ and his link', () => {
+  assert.equal(tradeHero('handyman'), '/img/pro-handyman-hero');
+  assert.equal(tradeHero('roofing'), '');
+  assert.equal(tradeHero('constructor'), '');
+  for (const f of ['-960.webp', '-1600.webp', '-1600.jpg']) {
+    assert.ok(existsSync(new URL(`../../public${tradeHero('handyman')}${f}`, import.meta.url)), `handyman hero${f}`);
+  }
+  const page = readFileSync(new URL('../../public/pro/handyman/index.html', import.meta.url), 'utf8');
+  assert.match(page, /<body data-trade="handyman">/, 'the page picks Handyman in the form');
+  assert.match(page, /\/img\/pro-handyman-hero-1600\.jpg/);
+  assert.match(page, /og:image" content="https:\/\/nohm\.app\/img\/og-pro-handyman\.jpg"/);
 });
 
 test('a refusal is said plainly, with the number to call', () => {

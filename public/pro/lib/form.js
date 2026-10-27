@@ -62,6 +62,14 @@ export function tradePhoto(slug) {
   return PHOTOS.has(slug) ? `/img/services/${slug}.jpg` : '';
 }
 
+// Trades with a full hero of their own (-960.webp, -1600.webp, -1600.jpg), as on /pro/handyman/.
+const HEROES = { handyman: '/img/pro-handyman-hero' };
+
+/** The trade's own hero image set ('/img/pro-handyman-hero'); '' when it has none. */
+export function tradeHero(slug) {
+  return Object.prototype.hasOwnProperty.call(HEROES, slug) ? HEROES[slug] : '';
+}
+
 /** POST /recruit/interest, less the human check's token. */
 export function interestBody(f, source) {
   const t = (s) => (s || '').replace(/\s+/g, ' ').trim();
