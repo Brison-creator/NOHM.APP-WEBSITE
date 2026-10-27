@@ -93,7 +93,9 @@ def agent(r):
 
 
 def query(r):
-    return dict(up.parse_qsl(up.unquote(r.get('cs-uri-query', '') or '').replace('&amp;', '&')))
+    # The logs escape '=' as '\=' (seen\=hero&v\=b): the backslashes go first.
+    q = up.unquote(r.get('cs-uri-query', '') or '').replace('\\', '').replace('&amp;', '&')
+    return dict(up.parse_qsl(q))
 
 
 def page_of(stem):
@@ -152,7 +154,8 @@ def app_of(ua):
 
 def source(q, ua, ref):
     if q.get('utm_source'):
-        return q['utm_source'].lower()
+        s = q['utm_source'].lower()
+        return {'fb': 'facebook', 'ig': 'instagram'}.get(s, s)
     if 'fbclid' in q:
         return 'instagram' if 'Instagram' in ua else 'facebook'
     if q.get('from'):
@@ -209,7 +212,7 @@ def build(rows):
                 'scrolled': 'lp-tenant-phone' in stems if path == '/go/landlords' else None,
                 'taps': taps,
                 'other': list(dict.fromkeys(other)),
-                'applied': any(r['cs-uri-stem'].startswith('/join') and 'from=pro' in up.unquote(r.get('cs-uri-query', '')) for r in after),
+                'applied': any(r['cs-uri-stem'].startswith('/join') and query(r).get('from') == 'pro' for r in after),
                 'signup_opened': any(is_doc(r) and page_of(r['cs-uri-stem']) == '/join/landlord' for r in after) if path != '/join/landlord' else None,
                 'seen': seen,
                 'faq': faq,
@@ -274,8 +277,11 @@ def summarize(report, label):
         lines.append('  From: ' + ', '.join(f'{k} {n}' for k, n in src.most_common()))
         dev = collections.Counter(v['device'] for v in people)
         lines.append('  Phones: ' + ', '.join(f'{k} {n}' for k, n in dev.most_common()))
-        if path == '/go/landlords':
-            lines.append(f"  Scrolled down: {sum(1 for v in people if v['scrolled'])} of {len(people)}")
+        # Scrolled: what track.js counts (a part past the top seen). Before it
+        # ran, the lower phone picture loading stood in, but phones fetch it
+        # without anyone scrolling, so it is only shown for those days.
+        if path == '/go/landlords' and not any(v['seen'] for v in people):
+            lines.append(f"  Lower pictures loaded (not a sure sign of scrolling): {sum(1 for v in people if v['scrolled'])} of {len(people)}")
         taps = collections.Counter()
         for v in people:
             taps.update(v['taps'])
@@ -288,7 +294,9 @@ def summarize(report, label):
             counted = [v for v in people if v['seen']]
             if counted:
                 got = [(name, sum(1 for v in counted if key in v['seen'])) for key, name in PARTS]
-                lines.append(f'  How far down ({len(counted)} counted): ' + ', '.join(f'{name} {n}' for name, n in got))
+                lines.append(f"  Scrolled past the top: {sum(1 for v in counted if v['seen'] - {'hero'})} of {len(counted)} counted")
+                lines.append(f"  Looked 10 seconds or more: {sum(1 for v in counted if v['stay'] >= 10)} of {len(counted)}")
+                lines.append(f'  How far down: ' + ', '.join(f'{name} {n}' for name, n in got))
                 drops = [(got[i][1] - got[i + 1][1], got[i][0], got[i + 1][0]) for i in range(len(got) - 1)]
                 drop = max(drops)
                 if drop[0] > 0:

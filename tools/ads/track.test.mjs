@@ -56,6 +56,10 @@ seen, faq, stay, v, lead = r.beacons([row('/go/landlords/', 'seen=versus&v=b', '
     row('/go/landlords/', 'faq=card&v=b', 'HEAD'), row('/go/landlords/', 'lead=sent&src=fb-landlords', 'HEAD'), row('/go/landlords/', 'seen=final')], '/go/landlords')
 assert seen == {'versus'} and faq == {'card'} and stay == 30 and v == 'b' and lead, (seen, faq, stay, v, lead)
 assert not r.is_doc(row('/go/landlords/', 'seen=hero', 'HEAD')) and r.is_doc(row('/go/landlords/'))
+# As the access logs write it: each '=' escaped with a backslash.
+logged = r.beacons([row('/go/landlords/', 'seen\\\\=price&v\\\\=a', 'HEAD'), row('/go/landlords/', 'lead\\\\=sent&src\\\\=fb-landlords', 'HEAD')], '/go/landlords')
+assert logged == ({'price'}, set(), 0, 'a', True), logged
+assert r.query(row('/get/', 'to\\\\=android&from\\\\=lp-hero')) == {'to': 'android', 'from': 'lp-hero'}
 def visit(v, act):
     return {'robot': False, 'v': v, 'signup_opened': act, 'taps': collections.Counter(), 'lead': False}
 few = [visit('a', False)] * 50 + [visit('b', True)] * 50
