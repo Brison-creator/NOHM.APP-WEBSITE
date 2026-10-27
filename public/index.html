@@ -376,8 +376,9 @@
     }
     .card-dots button[aria-current="true"] { background: #171a20; }
 
-    /* Pinned to the bottom on phones: support chat on the left and both
-       store badges on the right (/store-cta.css). The badges are 44px tall
+    /* Pinned to the bottom on every screen (owner, 2026-10-27: the badges
+       come off the hero's photos and stay here): support chat on the left
+       and both store badges on the right (/store-cta.css). The badges are 44px tall
        when they fit and shrink together on narrower phones, never below
        40px; their clear space is a quarter of their height. Under 360px
        the chat button gives up its room (Support stays in the menu and
@@ -428,8 +429,6 @@
       .p-grid { grid-template-columns: repeat(4, 1fr); }
       .slide .narrow-only { display: none; }
       .slide .wide-only { display: block; }
-      .dock { display: none; }
-      body { padding-bottom: 0; }
     }
     .slide .copy.mid { margin: auto; width: 100%; max-width: 860px; box-sizing: border-box; padding: 20px 24px; }
     .slide .copy.mid h2 { font-size: clamp(26px, 3.4vw, 44px); }
@@ -454,10 +453,6 @@
             <p class="lede above">It&rsquo;s always something.</p>
             <h1 class="mark">NOHM it.</h1>
             <div class="store-cta store-cta--center store-cta--on-dark">
-              <ul class="store-cta__badges">
-                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
-                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
-              </ul>
               <a class="store-cta__more" href="/homeowners">Learn More</a>
             </div>
           </div>
@@ -474,10 +469,6 @@
             <h2>Handled.</h2>
             <p class="lede">A local pro fixed it. The repair is saved in your app.</p>
             <div class="store-cta store-cta--center store-cta--on-dark">
-              <ul class="store-cta__badges">
-                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
-                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
-              </ul>
               <a class="store-cta__more" href="/local-pros">Learn More</a>
             </div>
           </div>
@@ -498,10 +489,6 @@
             <h2>Need a home repair?</h2>
             <p class="lede">Find and book a local pro.</p>
             <div class="store-cta store-cta--center store-cta--on-dark">
-              <ul class="store-cta__badges">
-                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
-                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
-              </ul>
               <a class="store-cta__more" href="/local-pros">Learn More</a>
             </div>
           </div>
@@ -513,10 +500,6 @@
             <h2>NOHM is reinventing how we manage our homes for the 21st century and beyond.</h2>
             <p class="lede">Putting power back into the hands of homeowners and contractors while bypassing Google, paid ads, lead sellers, and every other middleman standing between you and the help you need.</p>
             <div class="store-cta store-cta--center store-cta--on-dark">
-              <ul class="store-cta__badges">
-                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
-                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
-              </ul>
               <a class="store-cta__more" href="/homeowners">Learn More</a>
             </div>
           </div>
