@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Welcome to NOHM | NOHM</title>
+  <meta name="description" content="Sign up for NOHM free: landlords, homeowners, local pros and renters." />
+  <!-- The handout card's QR (tools/ads/report.py counts the scans): kept out of search, like /go/landlords. -->
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/favicon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
+  <style>
+    /* The universal handout card's page (owner, 2026-10-27: "a universal
+       business card to hand out for signups"): who are you, then one tap
+       to that sign-up. Every link says it came from the card. */
+    html, body { margin: 0; background: #fff; }
+    body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #171a20; }
+    .start { max-width: 560px; margin: 0 auto; padding: 40px 16px 56px; }
+    .start h1 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-hero); font-size: clamp(36px, 8vw, 52px); line-height: 1.04; letter-spacing: var(--tracking-headline); }
+    .start .lede { margin: 12px 0 28px; font-size: 18px; line-height: 1.5; color: #393c41; }
+    .who { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .who a { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px; padding: 20px 20px; border: 1px solid #e3e4e6; border-radius: 12px; color: inherit; text-decoration: none; }
+    .who a:hover { border-color: #356CA3; }
+    .who b { font-family: var(--font-display); font-weight: var(--weight-heading); font-size: 22px; letter-spacing: var(--tracking-headline); }
+    .who span { grid-column: 1; font-size: 16px; line-height: 1.45; color: #393c41; }
+    .who i { grid-column: 2; grid-row: 1 / span 2; font-style: normal; font-size: 15px; font-weight: var(--weight-ui-strong); color: #fff; background: #356CA3; border-radius: 4px; padding: 10px 14px; white-space: nowrap; }
+    .or { margin: 32px 0 12px; text-align: center; font-size: 15px; color: #6e6e73; }
+    .help { margin: 28px 0 0; text-align: center; font-size: 15px; color: #6e6e73; }
+    .help a { color: #171a20; font-weight: var(--weight-ui-strong); }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main class="start">
+    <h1>Welcome to NOHM.</h1>
+    <p class="lede">Free to sign up. Pick what fits you, and you&rsquo;re in within a minute.</p>
+    <ul class="who">
+      <li><a href="/join/landlord/?from=card"><b>Landlord</b><span>Rent by bank, repairs with a tap, leases signed in the app.</span><i>Sign up</i></a></li>
+      <li><a href="/get/?from=card-home"><b>Homeowner</b><span>Book local pros and keep your home&rsquo;s history.</span><i>Get the app</i></a></li>
+      <li><a href="/pro/?from=card"><b>Local pro</b><span>Real jobs from homeowners. No paying for leads.</span><i>Join</i></a></li>
+      <li><a href="/join/renter/?from=card"><b>Renter</b><span>Pay rent and send repairs. Use your landlord&rsquo;s invite.</span><i>Sign up</i></a></li>
+    </ul>
+    <p class="or">Or get the NOHM app</p>
+    <div class="store-cta store-cta--center">
+      <ul class="store-cta__badges">
+        <li><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=card" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+        <li><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=card" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+      </ul>
+    </div>
+    <p class="help">Questions? Call or text <a href="tel:+18882306646">888-230-NOHM</a>.</p>
+  </main>
+  <footer>
+    <span>NOHM&trade; &copy; 2026</span>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+  <script src="/menu.js" defer></script>
+</body>
+</html>

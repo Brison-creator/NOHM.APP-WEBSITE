@@ -69,3 +69,15 @@ print('ok')
 `;
   assert.equal(execFileSync('python3', ['-c', py], { encoding: 'utf8' }).trim(), 'ok');
 });
+
+test('nohm.app/start, the handout card’s page: four sign-ups, all marked as from the card, kept out of search', () => {
+  const start = readFileSync(new URL('../../public/start/index.html', import.meta.url), 'utf8');
+  for (const href of ['/join/landlord/?from=card', '/get/?from=card-home', '/pro/?from=card', '/join/renter/?from=card', '/get/?to=ios&amp;from=card', '/get/?to=android&amp;from=card']) {
+    assert.ok(start.includes(`href="${href}"`), href);
+  }
+  assert.match(start, /<meta name="robots" content="noindex, follow" \/>/);
+  assert.doesNotMatch(start, /rel="canonical"/);
+  assert.match(start, /<script src="\/menu\.js" defer><\/script>/);
+  assert.doesNotMatch(readFileSync(new URL('../../public/sitemap.xml', import.meta.url), 'utf8'), /\/start\//);
+  assert.match(report, /'\/start': 'Handout card page'/);
+});
