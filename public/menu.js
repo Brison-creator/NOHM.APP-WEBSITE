@@ -2,6 +2,28 @@
 // Its download link goes to Google Play on Android, the App Store otherwise.
 (function () {
   var android = /android/i.test(navigator.userAgent);
+  var PLAY = 'https://play.google.com/store/apps/details?id=com.nohm.app';
+
+  // Where a visitor came from (an ad's or a post's utm_ tags) rides along
+  // to Google Play as its install referrer, so the Play Console counts the
+  // installs by campaign. Kept for the tab, so a badge tapped two pages
+  // later still counts. Apple's campaign links need NOHM's provider token
+  // (App Store Connect), so App Store links are left as they are.
+  var tags = '';
+  try {
+    var q = new URLSearchParams(location.search);
+    var found = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].filter(function (k) { return q.get(k); })
+      .map(function (k) { return k + '=' + encodeURIComponent(q.get(k)); }).join('&');
+    if (found) sessionStorage.setItem('nohm:utm', found);
+    tags = found || sessionStorage.getItem('nohm:utm') || '';
+  } catch (e) { tags = ''; }
+  function playLink(href) {
+    return tags && href === PLAY ? PLAY + '&referrer=' + encodeURIComponent(tags) : href;
+  }
+  if (tags) {
+    var plays = document.querySelectorAll('a[href="' + PLAY + '"]');
+    for (var p = 0; p < plays.length; p++) plays[p].href = playLink(PLAY);
+  }
 
   var bar = document.querySelector('.bar');
   if (!bar) return;
@@ -15,7 +37,7 @@
   bar.appendChild(btn);
 
   var store = android
-    ? 'https://play.google.com/store/apps/details?id=com.nohm.app'
+    ? playLink(PLAY)
     : 'https://apps.apple.com/us/app/nohm-app/id6761128513';
   var menu = document.createElement('nav');
   menu.id = 'site-menu';

@@ -19,7 +19,9 @@
       var ua = navigator.userAgent;
       // iPadOS reports a Mac; a touch screen gives it away.
       var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-      if (/Android/i.test(ua)) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app');
+      // An ad's utm_ tags go to Google Play as the install referrer (see /menu.js).
+      var tags = location.search.slice(1).split('&').filter(function (p) { return /^utm_(source|medium|campaign|content)=./.test(p); }).join('&');
+      if (/Android/i.test(ua)) location.replace('https://play.google.com/store/apps/details?id=com.nohm.app' + (tags ? '&referrer=' + encodeURIComponent(tags) : ''));
       else if (ios) location.replace('https://apps.apple.com/us/app/nohm-app/id6761128513');
     })();
   </script>
