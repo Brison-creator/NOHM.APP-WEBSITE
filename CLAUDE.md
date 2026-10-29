@@ -2,6 +2,12 @@
 
 Static site. Amplify serves `public/` as-is (see `amplify.yml`); there is no build step.
 
+## Money rule (owner, 2026-10-29)
+
+"We don't ever lose money when we make decisions ok we may make 0 but never ever lose."
+
+Every price, fee, free offer, credit, refund, reimbursement and payment setup must leave NOHM at $0 or better on that transaction, after every cost it causes: Stripe processing, Connect payout and monthly account fees, returned-payment and dispute fees, Plaid, Certn, text messages, AI. A change that can make NOHM pay more than it collects doesn't ship. Find who covers the cost, or don't let it happen. Write the worst case in dollars in the commit message or the doc.
+
 ## Rules for every page
 
 - **Layout copies tesla.com.** Homepage: full-screen photo carousel with the title and the App Store and Google Play badges (with a quiet Learn More link) over the photo, the bar clear over the photo until you scroll (then white), gray cards below, and on phones the visitor's store badge pinned to the bottom beside the support chat.
