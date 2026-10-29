@@ -6,8 +6,8 @@
 //   <span data-fee="express">$30</span>   the fee, in whole dollars
 var NOHM_PRICING = {
   express: 30,             // NOHM Express: a pro today
-  now: 60,                 // NOHM NOW, "60 for 60": a pro heads your way within
-                           // 60 minutes of accepting, or no NOW fee
+  now: 60,                 // NOHM NOW, "60 for 60": a pro at your door within
+                           // 60 minutes of booking, or no NOW fee
   standardLeadHours: 48,   // Standard: no fee, 48 hours or more after booking
   // Rentals (set in the NOHM admin; keep these in step with it). Free for
   // the first 10,000 landlords, NOHM Founding Partners, numbered in sign-up

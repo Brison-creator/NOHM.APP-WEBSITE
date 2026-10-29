@@ -334,7 +334,7 @@
     if (j.status !== 'RELEASED') h += progress(j);
     h += '<div class="d-card"><h3>' + esc(j.pause ? 'Paused until your card goes through.' : statusLine(j)) + '</h3>';
     if (j.status === 'OFFERED' && j.tier === 'EXPRESS') h += '<p><span class="d-timer" data-offer="' + j.offerEnds + '">' + clock(j.offerEnds - now()) + '</span></p>';
-    if (j.tier === 'NOW' && j.arriveBy && STEP_OF[j.status] < 3) h += '<p>Arriving by <b>' + timeOfDay(j.arriveBy) + '</b>. NOHM NOW is 60 for 60, counted from when your pro accepted.</p>';
+    if (j.tier === 'NOW' && j.arriveBy && STEP_OF[j.status] < 3) h += '<p>Arriving by <b>' + timeOfDay(j.arriveBy) + '</b>. NOHM NOW is 60 for 60: within 60 minutes of booking.</p>';
     if (j.status !== 'MATCHING' && j.status !== 'OFFERED') h += '<p class="d-muted">' + esc(pro.name) + ' · ' + esc(pro.biz) + ' · ★ ' + pro.rating + '</p>';
     h += '</div>';
 
@@ -458,7 +458,7 @@
     h += '<h2 class="d-h2">How soon?</h2>';
     [['STANDARD', 'Standard', (P.standardLeadHours || 48) + ' hours or more after you book. No NOHM fee.'],
       ['EXPRESS', 'Express · ' + money(fee('express')), 'A pro today. Goes straight to the closest pro.'],
-      ['NOW', 'NOHM NOW · ' + money(fee('now')), '60 for 60: a pro heads your way within 60 minutes of accepting, or no NOW fee.']
+      ['NOW', 'NOHM NOW · ' + money(fee('now')), '60 for 60: a pro at your door within 60 minutes of booking, or no NOW fee.']
     ].forEach(function (o) {
       h += '<button class="d-choice ' + (d.tier === o[0] ? 'on' : '') + '" data-act="tier" data-v="' + o[0] + '"><b>' + o[1] + '</b><p class="d-muted" style="margin:2px 0 0">' + o[2] + '</p></button>';
     });

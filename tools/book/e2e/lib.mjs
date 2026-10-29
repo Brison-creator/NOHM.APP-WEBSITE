@@ -118,7 +118,7 @@ export async function describeAndSpeed(page, tier, text) {
   assert.equal(await page.$('#book s'), null, 'no struck-through price');
   assert.doesNotMatch(await page.textContent('#book'), /launch|promo|half off|save \$|regular/i);
   assert.match(await page.textContent('[data-tier=STANDARD]'), /Scheduled \d+ hours or more after you book\./, 'the server’s lead time, 48 by default');
-  assert.match(await page.textContent('[data-tier=NOW]'), /60 for 60: a pro heads your way within 60 minutes of accepting/);
+  assert.match(await page.textContent('[data-tier=NOW]'), /60 for 60: a pro at your door within 60 minutes of booking/);
   await page.click(`[data-tier=${tier}]`);
 }
 

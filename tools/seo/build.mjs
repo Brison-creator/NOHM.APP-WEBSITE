@@ -365,7 +365,7 @@ const SPEEDS = `      <ul class="plans plans--3">
           <p class="name">NOHM NOW</p>
           <p class="price"><span data-fee="now">$60</span></p>
           <p class="per">NOHM fee</p>
-          <p>60 for 60: a pro heads your way within 60 minutes of accepting, or you don&rsquo;t pay the NOW fee.</p>
+          <p>60 for 60: a pro at your door within 60 minutes of booking, or you don&rsquo;t pay the NOW fee.</p>
         </li>
       </ul>
       <p class="fine">Plus the pro&rsquo;s own charges, which you see and approve. Express and NOHM NOW need a pro who&rsquo;s ready near you.</p>`;
@@ -556,7 +556,7 @@ function readyNowPage() {
     section('How Ready Now works.', steps([
       ['Turn on Ready Now.', 'You’re live for four hours, ready to leave right away.'],
       ['Take a NOHM NOW call.', 'Homeowners who need it within the hour book the pros who are live.'],
-      ['Be there within 60 minutes.', 'NOHM NOW is 60 for 60: the clock starts when you accept. Paid through Stripe.'],
+      ['Be there within 60 minutes.', 'NOHM NOW is 60 for 60: the clock starts when you&rsquo;re booked. Paid through Stripe.'],
     ])),
     section('Built for pros.', cards([
       ['No lead fees. No ads.', 'A lead is the hope of a job. On NOHM, one request goes to one pro, and NOHM only earns when you get paid.'],
@@ -568,7 +568,7 @@ function readyNowPage() {
     final('Your next job is on NOHM.', 'Free to join. Pay only when you get paid.', `<a class="btn btn--light" href="/join">Join as a pro</a>\n        ${BADGES(true)}`),
   ].join('\n\n');
   const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
-  return [url, page({ url, title: 'Same-Day Home Repair Jobs for Pros: Ready Now | NOHM', desc: 'Turn on Ready Now for four hours and take NOHM NOW calls from homeowners nearby: within 60 minutes of accepting. No lead fees. Free to join.', ogImage: '/img/pro-now-1122.jpg', ogAlt: 'A NOHM pro heading out to a NOHM NOW job', ld, body, scripts: [] })];
+  return [url, page({ url, title: 'Same-Day Home Repair Jobs for Pros: Ready Now | NOHM', desc: 'Turn on Ready Now for four hours and take NOHM NOW calls from homeowners nearby: within 60 minutes of being booked. No lead fees. Free to join.', ogImage: '/img/pro-now-1122.jpg', ogAlt: 'A NOHM pro heading out to a NOHM NOW job', ld, body, scripts: [] })];
 }
 
 // The links each hub page carries to its topic pages, between markers.

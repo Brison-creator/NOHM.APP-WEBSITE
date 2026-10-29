@@ -155,7 +155,7 @@ test('Standard’s lead time: the server’s standardLeadHours, else 48', () => 
   assert.equal(leadLine(), 'Scheduled 48 hours or more after you book.');
   assert.equal(leadLine(72), 'Scheduled 72 hours or more after you book.');
   assert.equal(TIERS.STANDARD.line, leadLine());
-  assert.match(TIERS.NOW.line, /^60 for 60: a pro heads your way within 60 minutes of accepting/);
+  assert.match(TIERS.NOW.line, /^60 for 60: a pro at your door within 60 minutes of booking/);
   assert.doesNotMatch(Object.values(TIERS).map((t) => t.line).join(' '), /day or two|tomorrow|same day/i);
   // A job body counts the days with the server's lead time.
   const d = readyDraft('STANDARD');

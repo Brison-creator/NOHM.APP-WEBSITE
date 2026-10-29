@@ -20,7 +20,7 @@ export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'accou
 export const TIERS = {
   STANDARD: { key: 'STANDARD', name: 'Standard', line: leadLine(), feeKey: null },
   EXPRESS: { key: 'EXPRESS', name: 'NOHM Express', line: 'A pro today. Goes straight to the closest pro.', feeKey: 'EXPRESS_PRIORITY_FEE' },
-  NOW: { key: 'NOW', name: 'NOHM NOW', line: '60 for 60: a pro heads your way within 60 minutes of accepting, or you don’t pay the NOW fee.', feeKey: 'NOHM_NOW_FEE' },
+  NOW: { key: 'NOW', name: 'NOHM NOW', line: '60 for 60: a pro at your door within 60 minutes of booking, or you don’t pay the NOW fee.', feeKey: 'NOHM_NOW_FEE' },
 };
 
 /** "Scheduled 48 hours or more after you book.": Standard's lead time, said one way everywhere. */
