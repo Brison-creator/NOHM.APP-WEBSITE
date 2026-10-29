@@ -29,10 +29,20 @@ test('public rental pricing: free for landlords, the tenant’s bank fee and the
   assert.doesNotMatch(pricing, /achRatePercent|achCap/);
 });
 
+// Free goes to the first 10,000 landlords, NOHM Founding Partners (owner,
+// 2026-10-29), numbered by the server. There are almost no landlords yet,
+// so no page ever shows a count or the spots left.
+const FOUNDERS = /For the first 10,000 landlords: NOHM Founding Partners\. Your rentals are free for good/;
+const COUNT = /spots? (left|remaining)|\d[\d,]* (left|remaining)|of 10,000 (taken|claimed|left)|data-(founding|partners?)-(count|left)|foundingPartnerCount|\/rentals\/plans/i;
+
 test('every landlord page says free and how, with no old plan price', () => {
   for (const [name, page] of [['/landlords', landlords], ['/go/landlords', ad], ['/for/landlords', role]]) {
     assert.doesNotMatch(page, OLD_PLAN, name);
-    assert.match(page, /Free for landlords\.<br \/>Here&rsquo;s how\./, name);
+    assert.match(page, /Free for Founding Partners\.<br \/>Here&rsquo;s how\./, name);
+    assert.match(page, FOUNDERS, name);
+    assert.match(page, /you get a direct line to the founder with suggestions\./, name);
+    assert.doesNotMatch(page, COUNT, name);
+    assert.doesNotMatch(page, /Free for landlords\./, name);
     assert.match(page, /No spam\. No ads\. Nothing\./, name);
     // The two ways NOHM is paid, said plainly; the landlord may cover the bank fee.
     assert.match(page, /Your tenant pays/, name);
@@ -53,8 +63,22 @@ test('the landlord topic pages (tools/seo/build.mjs) carry no old plan price', a
   for (const slug of ['rent-collection', 'tenant-screening', 'lease-signing', 'rental-listings', 'maintenance', 'accounting', 'autopilot']) {
     const page = await read(`landlords/${slug}/index.html`);
     assert.doesNotMatch(page, OLD_PLAN, slug);
-    assert.match(page, /Free for landlords\. No spam\. No ads\. Nothing\./, slug);
+    assert.doesNotMatch(page, COUNT, slug);
+    assert.match(page, /Free for the first 10,000 landlords\. No spam\. No ads\. Nothing\./, slug);
   }
+  for (const slug of ['rent-collection', 'accounting', 'autopilot']) {
+    const page = await read(`landlords/${slug}/index.html`);
+    assert.match(page, /<h2>Free for Founding Partners\.<\/h2>/, slug);
+    assert.match(page, FOUNDERS, slug);
+  }
+});
+
+test('the ad page: Founding Partners in the hero and the questions, Autopilot free for them', () => {
+  assert.match(ad, /<p class="free">Free for the first 10,000 landlords: NOHM Founding Partners\. <a href="#free">Here&rsquo;s how<\/a><\/p>/);
+  assert.match(ad, /<details data-q="founding">/);
+  assert.match(ad, /One of the first 10,000 landlords to sign up for NOHM\. Your rentals are free for good, and you get a direct line to the founder with suggestions\./);
+  assert.match(ad, /Optional, and free for Founding Partners\./);
+  assert.match(role, /<p class="sub">Free for the first 10,000 landlords: NOHM Founding Partners\.<\/p>/);
 });
 
 test('the ad page: free and how right under the hero, counted by track.js', () => {

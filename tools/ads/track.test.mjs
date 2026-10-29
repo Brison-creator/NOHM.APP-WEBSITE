@@ -28,7 +28,7 @@ test('every part the report names is marked on the page, in the same order', () 
   const marked = [...page.matchAll(/data-seen="([a-z-]+)"/g)].map((m) => m[1]);
   const named = [...report.matchAll(/\('([a-z-]+)', '[^']+'\)/g)].map((m) => m[1]).filter((k) => marked.includes(k) || ['hero'].includes(k));
   assert.deepEqual(marked, named);
-  assert.equal(marked.length, 12);
+  assert.equal(marked.length, 13);
 });
 
 test('the hero test: two headlines, kept per phone, and a winner switch', () => {

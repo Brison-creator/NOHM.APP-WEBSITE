@@ -47,11 +47,12 @@ PAGES = {
 }
 # The landlord page's parts, top to bottom (data-seen in its HTML). 'free'
 # (free, and how, under the hero) took the place of the old 'price' part
-# lower down on 2026-10-29.
+# lower down on 2026-10-29. 'vent' is the Vent to us box: only that it was
+# seen is counted, never what anyone writes in it.
 PARTS = [
     ('hero', 'Top'), ('free', 'Free, and how'), ('versus', 'Cheap vs NOHM'), ('screens', 'Every rental'), ('tenant-app', 'Tenant app'),
     ('nohmie', 'NOHMie'), ('autopilot', 'Autopilot'), ('anywhere', 'Anywhere'),
-    ('steps', 'Start in minutes'), ('faq', 'Questions'), ('email', 'Email form'), ('final', 'Last button'),
+    ('steps', 'Start in minutes'), ('faq', 'Questions'), ('email', 'Email form'), ('vent', 'Vent to us'), ('final', 'Last button'),
 ]
 STAYS = (10, 30, 60, 120, 300)
 # The hero test's rule (owner, 2026-10-27: "what you will change automatic"):

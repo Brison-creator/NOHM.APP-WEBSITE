@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Landlord App: Rent Collection, Leases &amp; Repairs | NOHM</title>
-  <meta name="description" content="Free landlord app: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. No plan, no monthly fee." />
+  <meta name="description" content="Landlord app, free for the first 10,000 landlords: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. No plan, no monthly fee." />
   <link rel="canonical" href="https://nohm.app/landlords/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NOHM" />
   <meta property="og:title" content="Landlord App: Rent Collection, Leases &amp; Repairs | NOHM" />
-  <meta property="og:description" content="Free landlord app: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. No plan, no monthly fee." />
+  <meta property="og:description" content="Landlord app, free for the first 10,000 landlords: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. No plan, no monthly fee." />
   <meta property="og:url" content="https://nohm.app/landlords/" />
   <meta property="og:image" content="https://nohm.app/img/q-hero-1536.jpg" />
   <meta property="og:image:width" content="1536" />
@@ -105,6 +105,7 @@
 
     /* Fees, like Tesla's big-number stats. */
     .fees { max-width: 1200px; margin: 0 auto; padding: 48px 24px 8px; }
+    .fees-lede { margin: -4px 0 16px; max-width: 680px; font-size: 17px; line-height: 1.55; color: #393c41; }
     .launch { display: inline-block; margin: 0 0 16px; padding: 6px 12px; border-radius: 999px; background: #171a20; color: #fff; font-size: 13px; font-weight: var(--weight-ui); }
     .fee-grid { display: grid; gap: 12px; }
     .fee { background: #f4f4f4; border-radius: 12px; padding: 24px 22px; }
@@ -286,7 +287,7 @@
         <p>Edited pay stubs, W-2s and bank statements are sold online, and they look real. NOHM never asks applicants for paperwork: Certn runs the background check, and if you want proof of income, the NOHM Income Check reads it from the applicant&rsquo;s own bank through Plaid.</p>
         <div class="screening-tiers" aria-label="Screening prices">
           <div class="screening-tier"><b>Background check · <span data-rental="application">$50</span></b><span>Paid by the applicant. Credit, criminal and identity.</span></div>
-          <div class="screening-tier"><b>NOHM Income Check · Free</b><span>Optional, and free for you. Their income against the rent, never where it comes from.</span></div>
+          <div class="screening-tier"><b>NOHM Income Check · Free</b><span>Optional, and free for Founding Partners. Their income against the rent, never where it comes from.</span></div>
         </div>
         <ol class="screening-steps" aria-label="How it works">
           <li><b>Send the application.</b> They apply and pay for the background check.</li>
@@ -362,7 +363,7 @@
           <li>Applications sent by text</li>
           <li>Background check <span data-rental="application">$50</span>, paid by the applicant where allowed</li>
           <li>Certn identity, credit &amp; criminal checks</li>
-          <li>Optional NOHM Income Check from the applicant&rsquo;s bank, free</li>
+          <li>Optional NOHM Income Check from the applicant&rsquo;s bank, free for Founding Partners</li>
           <li>No W-2s or bank statements to fake</li>
           <li>Local fee limits applied before checkout</li>
           <li>Approve with lease terms</li>
@@ -418,13 +419,14 @@
 
 
     <section class="fees">
-      <h2>Free for landlords.<br />Here&rsquo;s how.</h2>
+      <h2>Free for Founding Partners.<br />Here&rsquo;s how.</h2>
+      <p class="fees-lede">For the first 10,000 landlords: NOHM Founding Partners. Your rentals are free for good, and you get a direct line to the founder with suggestions.</p>
       <p class="launch">No spam. No ads. Nothing.</p>
       <div class="fee-grid">
         <div class="fee">
           <h3>You pay</h3>
           <div class="price"><b data-rental="free">$0</b></div>
-          <p>For every rental, every month. Listings, applications, tenant invites, leases, repair requests, messages, rent collection, the books, reminders, late fees, reports and NOHM Autopilot. No plan, no monthly fee.</p>
+          <p>For every rental, for good. Listings, applications, tenant invites, leases, repair requests, messages, rent collection, the books, reminders, late fees, reports and NOHM Autopilot. No plan, no monthly fee.</p>
         </div>
         <div class="fee">
           <h3>Your tenant pays</h3>
@@ -461,8 +463,8 @@
           <tbody>
             <tr class="nohm-row">
               <td>NOHM</td>
-              <td>Free: every rental, rent collection, the books and Autopilot included</td>
-              <td>$0 for the background check (applicant-paid; local law controls the charge); optional Income Check free</td>
+              <td>Free for the first 10,000 landlords (NOHM Founding Partners): every rental, rent collection, the books and Autopilot</td>
+              <td>$0 for the background check (applicant-paid; local law controls the charge); optional Income Check free for Founding Partners</td>
               <td>$0 when the tenant pays the <span data-rental="achFee">$7</span> bank payment fee; you can cover it for them</td>
             </tr>
             <tr>
@@ -509,12 +511,12 @@
 
     <section class="faq">
       <h2>Questions.</h2>
-      <details><summary>How much does NOHM cost for landlords?</summary><p>Nothing. Every rental gets everything: listings, applications, tenant invites, leases, repairs, messages, rent collection, the books and NOHM Autopilot. No plan, no monthly fee. If you book a pro for a repair or a NOHM walkthrough (<span data-rental="walkthrough">$79</span>), you pay for that work, and you see the price before you book. We ask for a card on file to keep fake accounts out. It&rsquo;s only charged for work you book.</p></details>
+      <details><summary>How much does NOHM cost for landlords?</summary><p>Nothing, for NOHM Founding Partners: the first 10,000 landlords to sign up. Their rentals get everything, for good: listings, applications, tenant invites, leases, repairs, messages, rent collection, the books and NOHM Autopilot. No plan, no monthly fee. Founding Partners also get a direct line to the founder with suggestions. If you book a pro for a repair or a NOHM walkthrough (<span data-rental="walkthrough">$79</span>), you pay for that work, and you see the price before you book. We ask for a card on file to keep fake accounts out. It&rsquo;s only charged for work you book.</p></details>
       <details><summary>So how does NOHM make money?</summary><p>Two ways. When your tenant pays rent by bank, they pay a <span data-rental="achFee">$7</span> fee (or you can cover it for them): about $5 is the bank processor&rsquo;s cost, and NOHM keeps about $2. And applicants pay for their background check, where the law allows. No spam, no ads.</p></details>
       <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Rent goes straight to your connected payout account. Your tenant pays the <span data-rental="achFee">$7</span> bank payment fee, or you can cover it for them.</p></details>
       <details><summary>What does NOHM Autopilot actually do?</summary><p>It answers tenant messages from your house notes, books repairs, reviews estimates, relists the unit after move-out and sends you a weekly summary. Emergencies always come straight to you.</p></details>
       <details><summary>What is a NOHM Walkthrough?</summary><p>A move-in or move-out condition report done in person by a trained local specialist. Every room is rated and photographed, both sides sign it, and it&rsquo;s saved as a signed PDF. You can also do it yourself in the app for free.</p></details>
-      <details><summary>Who screens my applicants?</summary><p>Certn runs the background check: identity, credit and criminal. It is <span data-rental="application">$50</span>, paid by the applicant, where local law permits; NOHM applies local limits before checkout. If you want proof of income, ask for the NOHM Income Check: the applicant connects their bank through Plaid and you see their income against the rent. It&rsquo;s free. NOHM never asks for W-2s or bank statements, which can be faked. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
+      <details><summary>Who screens my applicants?</summary><p>Certn runs the background check: identity, credit and criminal. It is <span data-rental="application">$50</span>, paid by the applicant, where local law permits; NOHM applies local limits before checkout. If you want proof of income, ask for the NOHM Income Check: the applicant connects their bank through Plaid and you see their income against the rent. It&rsquo;s free for Founding Partners. NOHM never asks for W-2s or bank statements, which can be faked. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
       <details><summary>Can I use my own lease?</summary><p>Yes. Upload your lease as a PDF and you and your tenant e-sign it in the app. NOHM keeps a signing certificate with it.</p></details>
       <details><summary>How do deposits work at move-out?</summary><p>Set the move-out date and NOHM tracks the deposit deadline. Itemize any deductions next to the move-in report, send the statement and mark the refund paid. Reminders go out before the deadline.</p></details>
       <details><summary>Can I see profit for each unit?</summary><p>Yes. Money &amp; Taxes shows income, costs and profit per rental, sorted into IRS Schedule E categories, with a year-end report you can email to your accountant.</p></details>
