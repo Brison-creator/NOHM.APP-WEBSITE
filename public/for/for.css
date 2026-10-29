@@ -45,7 +45,7 @@ body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color
   font-family: var(--font-display); font-weight: var(--weight-heading);
   letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
 }
-.sec .lede { margin: -10px auto 28px; max-width: 620px; padding: 0 12px; text-align: center; font-size: 18px; line-height: 1.5; color: #393c41; }
+.sec .lede { margin: -10px auto 28px; max-width: 620px; padding: 0 12px; text-align: center; font-size: 18px; line-height: 1.5; color: #393c41; text-wrap: balance; }
 
 /* The reasons: short, bold, one line each. */
 .reasons { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
@@ -79,6 +79,14 @@ body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color
   .plans--3 { grid-template-columns: repeat(3, 1fr); }
   .plans--2 { grid-template-columns: repeat(2, 1fr); max-width: 820px; margin: 0 auto; }
 }
+
+/* The landlord promise under the price (owner, 2026-10-29): one line on black. */
+.promise { margin: 12px 0 0; padding: 32px 24px; border-radius: 12px; background: #171a20; color: #fff; text-align: center; }
+.promise b {
+  display: block; font-size: clamp(28px, 3.4vw, 44px); line-height: 1.06;
+  font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
+}
+.promise span { display: block; margin: 10px auto 0; max-width: 560px; font-size: 17px; line-height: 1.5; color: #d0d1d2; }
 
 /* Three steps to start. */
 .steps { list-style: none; margin: 0 auto; padding: 0; max-width: 820px; counter-reset: step; }

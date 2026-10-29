@@ -45,10 +45,12 @@ PAGES = {
     '/pro': 'Pro sign-up page',
     '/ig': 'Instagram link page',
 }
-# The landlord page's parts, top to bottom (data-seen in its HTML).
+# The landlord page's parts, top to bottom (data-seen in its HTML). 'free'
+# (free, and how, under the hero) took the place of the old 'price' part
+# lower down on 2026-10-29.
 PARTS = [
-    ('hero', 'Top'), ('versus', 'Cheap vs NOHM'), ('screens', 'Every rental'), ('tenant-app', 'Tenant app'),
-    ('nohmie', 'NOHMie'), ('autopilot', 'Autopilot'), ('anywhere', 'Anywhere'), ('price', 'Price'),
+    ('hero', 'Top'), ('free', 'Free, and how'), ('versus', 'Cheap vs NOHM'), ('screens', 'Every rental'), ('tenant-app', 'Tenant app'),
+    ('nohmie', 'NOHMie'), ('autopilot', 'Autopilot'), ('anywhere', 'Anywhere'),
     ('steps', 'Start in minutes'), ('faq', 'Questions'), ('email', 'Email form'), ('final', 'Last button'),
 ]
 STAYS = (10, 30, 60, 120, 300)

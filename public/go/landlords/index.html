@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Landlords: NOHM is finally in your area | NOHM</title>
-  <meta name="description" content="Premium rental management, built on cutting-edge tech. Rent by bank straight to your account, repairs with a tap, leases signed in the app, and Autopilot to go hands-off. Free to use. Pay only when you collect rent." />
+  <meta name="description" content="Premium rental management, built on cutting-edge tech. Rent by bank straight to your account, repairs with a tap, leases signed in the app, and Autopilot to go hands-off. Free for landlords: no plan, no card, no monthly fee." />
   <!-- The Facebook ad's page: kept out of search and the menu, like /try. -->
   <meta name="robots" content="noindex, follow" />
   <meta name="theme-color" content="#ffffff" />
@@ -23,15 +23,17 @@
   <link rel="stylesheet" href="/join/join.css" />
   <style>
     /* The landlord ad's page (owner, 2026-10-26: "a specific landlord landing
-       page that sells the shit out of it"): the gift, the problem, the fix
-       with the real app, NOHMie, Autopilot, the price, the questions, and the
+       page that sells the shit out of it"): the gift, why it's free (owner,
+       2026-10-29: "explain on the link how we offer it free"), the problem,
+       the fix with the real app, NOHMie, Autopilot, the questions, and the
        download at every turn. Built on the role pages' parts (/for/for.css). */
     .hero { height: min(92svh, 820px); }
     .hero img { object-position: 50% 40%; }
     .hero .kicker { display: inline-block; padding: 7px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); opacity: 1; }
     .hero h1 { max-width: 900px; margin: 0 auto; }
     .hero .sub { max-width: 640px; }
-    .hero .free { margin: 14px auto 0; font-size: 15px; font-weight: var(--weight-ui-strong); letter-spacing: 0.02em; }
+    .hero .free { margin: 14px auto 0; max-width: 560px; font-size: 15px; line-height: 1.45; font-weight: var(--weight-ui-strong); letter-spacing: 0.02em; }
+    .hero .free a { color: #fff; text-underline-offset: 3px; white-space: nowrap; }
 
     /* Cheap software on the left, NOHM on the right. */
     .versus { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
@@ -156,7 +158,7 @@
         <p class="kicker">A gift for landlords</p>
         <h1>NOHM is finally in your area.</h1>
         <p class="sub">Premium rental management, built on cutting-edge tech. Run every rental from anywhere in the world.</p>
-        <p class="free">Free to use. Pay only when you collect rent.</p>
+        <p class="free">Free for landlords. No plan, no card, no monthly fee. <a href="#free">Here&rsquo;s how</a></p>
         <div class="actions">
           <a class="btn btn--light btn--google" href="/join/landlord/?from=lp-hero"><span class="g" aria-hidden="true"></span>Sign up free with Google</a>
           <div class="store-cta store-cta--center store-cta--on-dark">
@@ -190,6 +192,33 @@
         document.querySelector('.hero .sub').textContent = 'Rent by bank straight to your account, repairs with a tap, and leases signed in the app. Run every rental from anywhere.';
       })();
     </script>
+
+    <section class="sec wrap" id="free" data-seen="free">
+      <h2>Free for landlords.<br />Here&rsquo;s how.</h2>
+      <p class="lede">Every rental gets everything, Autopilot too. No plan, no card, no monthly fee.</p>
+      <ul class="plans plans--3">
+        <li class="plan plan--lead">
+          <p class="name">You pay</p>
+          <p class="price">$0</p>
+          <p class="per">for every rental, every month</p>
+          <p>Listings, applications, tenant invites, leases, repair requests, messages, rent collection, the books, reminders, late fees, reports and NOHM Autopilot.</p>
+        </li>
+        <li class="plan">
+          <p class="name">Your tenant pays</p>
+          <p class="price"><span data-price="ACH_RENT_FEE">$7</span></p>
+          <p class="per">when they pay rent by bank</p>
+          <p>About $5 of it is the bank processor&rsquo;s cost. NOHM keeps about $2.</p>
+        </li>
+        <li class="plan">
+          <p class="name">Applicants pay</p>
+          <p class="price"><span data-price="RENTAL_APPLICATION_FEE">$50</span></p>
+          <p class="per">for the background check</p>
+          <p>Where the law allows. NOHM makes money on the application.</p>
+        </li>
+      </ul>
+      <div class="promise"><b>No spam. No ads. Nothing.</b><span>NOHM shows you no ads, and we don&rsquo;t spam you.</span></div>
+      <p class="fine">If you book a pro for a repair or a NOHM walkthrough, you pay for that work, and you see the price before you book.</p>
+    </section>
 
     <section class="sec wrap" data-seen="versus">
       <h2>Cheap software makes you do the work.<br />NOHM does it for you.</h2>
@@ -278,7 +307,7 @@
         <li><b>Repairs get handled</b><span>Within the limit you set, Autopilot handles the repair so you don&rsquo;t have to.</span></li>
         <li><b>You stay in charge</b><span>You set the limit, and you see every repair and every answer.</span></li>
       </ul>
-      <p class="price-line">Optional. <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> per rental, per month.</p>
+      <p class="price-line">Optional, and free. Turn it on for any rental.</p>
     </section>
 
     <section class="sec wrap" data-seen="anywhere">
@@ -288,32 +317,6 @@
         <li><b>On a computer.</b><span>Sign in at business.nohm.app and see the same rentals on a big screen.</span></li>
         <li><b>On the road.</b><span>Rent comes in and repairs get handled while you&rsquo;re away. You get the alert, not the hassle.</span></li>
       </ul>
-    </section>
-
-    <section class="sec wrap" data-seen="price">
-      <h2>Free until you collect rent.</h2>
-      <p class="lede">Listing, filling and running your rentals is free. Turn on rent collection when you&rsquo;re ready, one rental at a time.</p>
-      <ul class="plans plans--3">
-        <li class="plan">
-          <p class="name">Free</p>
-          <p class="price"><span data-price="RENTAL_PLANS_BASE_MONTHLY">$0</span></p>
-          <p class="per">forever</p>
-          <p>Listings, unlimited applications, tenant invites, repair requests and messages.</p>
-        </li>
-        <li class="plan plan--lead">
-          <p class="name">Financial Management</p>
-          <p class="price"><span data-price="RENTAL_FINANCIAL_PER_RENTAL_MONTHLY">$7</span></p>
-          <p class="per">per rental, per month, once you collect rent</p>
-          <p>Rent collection, autopay, reminders, late fees, ledgers and reports.</p>
-        </li>
-        <li class="plan">
-          <p class="name">Autopilot</p>
-          <p class="price"><span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span></p>
-          <p class="per">per rental, per month</p>
-          <p>Everything in Financial Management, plus NOHM Autopilot: it answers tenants and handles repairs within your limit.</p>
-        </li>
-      </ul>
-      <p class="fine">A card on file is needed to add a rental, to keep NOHM safe from fraud; you&rsquo;re not charged on the Free plan. No account fee for launch members. Bank rent payments carry a <span data-price="ACH_RENT_FEE">$7</span> processing fee per payment, and you choose who covers it.</p>
     </section>
 
     <section class="sec wrap" data-seen="steps">
@@ -330,15 +333,15 @@
       <div class="faq">
         <details data-q="free">
           <summary>Is it really free?</summary>
-          <p>Yes. Listings, unlimited applications, tenant invites, repair requests and messages are free, forever. You pay <span data-price="RENTAL_FINANCIAL_PER_RENTAL_MONTHLY">$7</span> per rental, per month only once you turn on rent collection for that rental.</p>
+          <p>Yes. Every rental gets everything: listings, applications, tenant invites, leases, repairs, messages, rent collection, the books and Autopilot. No plan, no card, no monthly fee. If you book a pro for a repair or a NOHM walkthrough, you pay for that work, and you see the price before you book.</p>
+        </details>
+        <details data-q="money">
+          <summary>So how does NOHM make money?</summary>
+          <p>Two ways, and you pay neither. When your tenant pays rent by bank, they pay a <span data-price="ACH_RENT_FEE">$7</span> fee: about $5 is the bank processor&rsquo;s cost, and NOHM keeps about $2. And applicants pay for their background check, where the law allows. No spam, no ads.</p>
         </details>
         <details data-q="cut">
           <summary>Does NOHM take a cut of my rent?</summary>
-          <p>No. Tenants pay by bank, straight to your account. Each bank payment carries a <span data-price="ACH_RENT_FEE">$7</span> processing fee, and you choose whether you or your tenant covers it.</p>
-        </details>
-        <details data-q="card">
-          <summary>Why does it ask for a card?</summary>
-          <p>A card on file is needed to add a rental, to keep NOHM safe from fraud. You&rsquo;re not charged on the Free plan.</p>
+          <p>No. Tenants pay by bank, straight to your account. The <span data-price="ACH_RENT_FEE">$7</span> bank payment fee is your tenant&rsquo;s, not yours.</p>
         </details>
         <details data-q="tenants">
           <summary>Can I bring the tenants I already have?</summary>
@@ -350,7 +353,7 @@
         </details>
         <details data-q="autopilot">
           <summary>What does Autopilot do?</summary>
-          <p>It answers your tenants and handles repairs within the limit you set, so you&rsquo;re basically 90% hands-off. It&rsquo;s optional: <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> per rental, per month.</p>
+          <p>It answers your tenants and handles repairs within the limit you set, so you&rsquo;re basically 90% hands-off. It&rsquo;s optional, and free: turn it on for any rental.</p>
         </details>
         <details data-q="computer">
           <summary>Can I use it on a computer?</summary>
@@ -371,7 +374,7 @@
 
     <section class="final" data-seen="final">
       <h2>Got rentals? NOHM it.</h2>
-      <p>Free to use. Pay only when you collect rent.</p>
+      <p>Free for landlords. No spam. No ads. Nothing.</p>
       <div class="actions">
         <a class="btn btn--light btn--google" href="/join/landlord/?from=lp-final"><span class="g" aria-hidden="true"></span>Sign up free with Google</a>
         <div class="store-cta store-cta--center store-cta--on-dark">

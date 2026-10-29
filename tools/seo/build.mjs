@@ -59,7 +59,7 @@ const LANDLORD = [
   {
     slug: 'rent-collection',
     title: 'Online Rent Collection for Landlords | NOHM',
-    desc: 'Collect rent online by bank transfer, straight to your own account. Autopay, reminders and late fees run themselves. $7 per rental a month, only when you turn it on.',
+    desc: 'Collect rent online by bank transfer, straight to your own account. Autopay, reminders and late fees run themselves. Free for landlords: no plan, no card, no monthly fee.',
     h1: 'Collect rent online.',
     sub: 'Tenants pay by bank, straight to your account. Autopay, reminders and late fees run themselves.',
     img: ['renter', 1448, 1086, '50% 30%', 'A renter on his couch paying rent and sending a repair request from his phone'],
@@ -91,7 +91,7 @@ const LANDLORD = [
     img: ['door', 1536, 864, '60% 30%', 'A NOHM pro walking up to a rental’s front door'],
     cards: [
       ['Background check.', 'Certn runs identity, credit and criminal checks. <span data-rental="application">$50</span>, paid by the applicant where the law allows.'],
-      ['Income, from the bank.', 'The optional NOHM Income Check reads income from the applicant’s own bank through Plaid. <span data-rental="incomeCheck">$20</span>, paid by you, only if they connect.'],
+      ['Income, from the bank.', 'The optional NOHM Income Check reads income from the applicant’s own bank through Plaid. Free for you.'],
       ['Local limits, applied.', 'Where a state or city sets less, the applicant pays less. NOHM applies the limit before checkout.'],
       ['Notices sent for you.', 'Adverse-action notices go out for you when you decline.'],
     ],
@@ -488,41 +488,44 @@ function landlordPage(t) {
       <p class="lede">${text(t.specsLede)}</p>
     </section>`);
   if (t.speeds) parts.push(section(t.specsTitle, SPEEDS));
+  // Free for landlords (owner, 2026-10-29), and how: the tenant's bank fee
+  // and the application, as /landlords says it.
   if (t.price === 'rent' || t.price === 'books') {
-    parts.push(section('Free until you collect rent.', `      <ul class="plans plans--2">
-        <li class="plan">
-          <p class="name">Free</p>
-          <p class="price"><span data-rental="free">$0</span></p>
-          <p class="per">forever</p>
-          <p>Listings, unlimited applications, tenant invites, repair requests and messages.</p>
-        </li>
+    parts.push(section('Free for landlords.', `      <ul class="plans plans--2">
         <li class="plan plan--lead">
-          <p class="name">Financial Management</p>
-          <p class="price"><span data-rental="plan">$7</span></p>
-          <p class="per">per rental, per month, only on rentals you enroll</p>
-          <p>Rent collection, autopay, reminders, late fees, ledgers and reports.</p>
+          <p class="name">You pay</p>
+          <p class="price"><span data-rental="free">$0</span></p>
+          <p class="per">for every rental, every month</p>
+          <p>Rent collection, autopay, reminders, late fees, the books and reports. No plan, no card, no monthly fee.</p>
+        </li>
+        <li class="plan">
+          <p class="name">Your tenant pays</p>
+          <p class="price"><span data-rental="achFee">$7</span></p>
+          <p class="per">when they pay rent by bank</p>
+          <p>About $5 of it is the bank processor&rsquo;s cost. NOHM keeps about $2.</p>
         </li>
       </ul>
-      <p class="fine">Each bank rent payment carries a <span data-rental="achFee">$7</span> processing fee, and you choose whether the tenant pays it or you absorb it. NOHM takes no cut of rent. <a href="/landlords/">See every plan</a>.</p>`));
+      <p class="fine">NOHM takes no cut of rent. No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`));
   }
   if (t.price === 'autopilot') {
-    parts.push(section('One price per rental.', `      <ul class="plans plans--2">
+    parts.push(section('Free on every rental.', `      <ul class="plans plans--2">
         <li class="plan plan--lead">
           <p class="name">NOHM Autopilot</p>
-          <p class="price"><span data-rental="autopilot">$19.99</span></p>
-          <p class="per">per rental, per month</p>
-          <p>Everything in Financial Management, plus Autopilot on that rental.</p>
-        </li>
-        <li class="plan">
-          <p class="name">Free</p>
           <p class="price"><span data-rental="free">$0</span></p>
-          <p class="per">every other rental</p>
+          <p class="per">on any rental you choose</p>
           <p>Turn Autopilot on only for the units you want handled.</p>
         </li>
-      </ul>`));
+        <li class="plan">
+          <p class="name">Everything else</p>
+          <p class="price"><span data-rental="free">$0</span></p>
+          <p class="per">for every rental, every month</p>
+          <p>Listings, leases, repairs, rent collection and the books. No plan, no card, no monthly fee.</p>
+        </li>
+      </ul>
+      <p class="fine">No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`));
   }
   parts.push(more('Everything else for landlords.', LANDLORD.filter((o) => o !== t).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])));
-  parts.push(final('Got rentals? NOHM it.', 'Free to use. Pay only when you collect rent.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`));
+  parts.push(final('Got rentals? NOHM it.', 'Free for landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`));
   const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
   const scripts = ['/pricing.js'];
   if (t.soon) scripts.push('/for/live.js');
