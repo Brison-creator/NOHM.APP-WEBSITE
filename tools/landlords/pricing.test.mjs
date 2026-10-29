@@ -11,8 +11,11 @@ const role = await read('for/landlords/index.html');
 
 // Free for landlords (owner, 2026-10-29: "It's absolutely free to the
 // landlord. No spam no ads nothing."). NOHM is paid by the tenant's bank
-// payment fee and by the application; the landlord pays only for work they book.
-const OLD_PLAN = /Financial Management|19\.99|per rental, per month|\/rental\/mo|card on file|Pay only when you collect rent|Free until you collect rent|data-rental="(plan|autopilot|incomeCheck)"|RENTAL_(FINANCIAL|AUTOPILOT)_PER_RENTAL_MONTHLY|RENTAL_PLANS_BASE_MONTHLY/;
+// payment fee (which a landlord may cover) and by the application; the
+// landlord pays only for work they book. Adding a rental still asks for a
+// card on file (the owner's rule against fake accounts), so no page says "no card".
+const OLD_PLAN = /Financial Management|19\.99|per rental, per month|\/rental\/mo|no card|Pay only when you collect rent|Free until you collect rent|data-rental="(plan|autopilot|incomeCheck)"|RENTAL_(FINANCIAL|AUTOPILOT)_PER_RENTAL_MONTHLY|RENTAL_PLANS_BASE_MONTHLY/i;
+const CARD_LINE = /We ask for a card on file to keep fake accounts out\. It&rsquo;s only charged for work you book\./;
 
 test('public rental pricing: free for landlords, the tenant’s bank fee and the application', () => {
   assert.match(pricing, /free:\s*0/);
@@ -31,13 +34,16 @@ test('every landlord page says free and how, with no old plan price', () => {
     assert.doesNotMatch(page, OLD_PLAN, name);
     assert.match(page, /Free for landlords\.<br \/>Here&rsquo;s how\./, name);
     assert.match(page, /No spam\. No ads\. Nothing\./, name);
-    // The two ways NOHM is paid, said plainly.
+    // The two ways NOHM is paid, said plainly; the landlord may cover the bank fee.
     assert.match(page, /Your tenant pays/, name);
+    assert.match(page, /when they pay rent by bank \(or you can cover it for them\)/i, name);
     assert.match(page, /About \$5 of it is the bank processor&rsquo;s cost\. NOHM keeps about \$2\./, name);
+    assert.doesNotMatch(page, /you pay neither|not yours/, name);
     assert.match(page, /Applicants pay/, name);
     assert.match(page, /NOHM makes money on the application\./, name);
     // Work the landlord books is still theirs to pay, priced first.
     assert.match(page, /If you book a pro for a repair or a NOHM walkthrough, you pay for that work, and you see the price before you book[.:]/, name);
+    assert.match(page, CARD_LINE, name);
     // Only what's true: no data promise the owner didn't make.
     assert.doesNotMatch(page, /never sell|don&rsquo;t sell|do not sell/i, name);
   }
@@ -68,7 +74,7 @@ test('landlord page shows customer prices and comparison sources', () => {
   assert.match(landlords, /data-rental="application">\$50/);
   assert.match(landlords, /data-rental="walkthrough">\$79/);
   assert.doesNotMatch(landlords, /0\.8%|data-rental="membership"|data-rental="manager"/);
-  assert.match(landlords, /The <span data-rental="achFee">\$7<\/span> bank payment fee is your tenant&rsquo;s, not yours\./);
+  assert.match(landlords, /Your tenant pays the <span data-rental="achFee">\$7<\/span> bank payment fee, or you can cover it for them\./);
   assert.match(landlords, /Landlord cost comparison/);
   for (const name of ['RentRedi', 'TurboTenant', 'Zillow Rental Manager']) {
     assert.match(landlords, new RegExp(name));
@@ -88,7 +94,19 @@ test('renter page shows the one background check, a free Income Check and the ba
   assert.match(renters, /the background check is <span data-rental="application">/);
   assert.match(renters, /NOHM Income Check costs you nothing\./);
   assert.doesNotMatch(renters, /your landlord pays for it/);
-  assert.match(renters, /<span data-rental="achFee">\$7<\/span> bank payment fee/);
+  assert.match(renters, /<span data-rental="achFee">\$7<\/span> bank payment fee, shown before you pay; your landlord may cover it\./);
+  assert.match(renters, /Applying is free unless your landlord asks for a background check\./);
   assert.doesNotMatch(renters, /Instant Income|applicationIncome|applicationPremium/);
   assert.doesNotMatch(renters, /wholesale cost|platform margin/i);
+});
+
+test('renter pages: a free app, with the bank fee and the background check said where they apply', async () => {
+  for (const f of ['renters/index.html', 'for/renters/index.html', 'invite/renter/index.html']) {
+    const page = await read(f);
+    // The app costs nothing; paying rent by bank and a background check have fees.
+    assert.doesNotMatch(page, /Free for renters|NOHM costs renters nothing|Applying is free\.|Always\.</, f);
+  }
+  const role = await read('for/renters/index.html');
+  assert.match(role, /Applying is free unless your landlord asks for a background check/);
+  assert.match(role, /<span data-price="ACH_RENT_FEE">\$7<\/span> bank payment fee, shown before you pay; your landlord may cover it\./);
 });

@@ -59,7 +59,7 @@ const LANDLORD = [
   {
     slug: 'rent-collection',
     title: 'Online Rent Collection for Landlords | NOHM',
-    desc: 'Collect rent online by bank transfer, straight to your own account. Autopay, reminders and late fees run themselves. Free for landlords: no plan, no card, no monthly fee.',
+    desc: 'Collect rent online by bank transfer, straight to your own account. Autopay, reminders and late fees run themselves. Free for landlords: no plan, no monthly fee.',
     h1: 'Collect rent online.',
     sub: 'Tenants pay by bank, straight to your account. Autopay, reminders and late fees run themselves.',
     img: ['renter', 1448, 1086, '50% 30%', 'A renter on his couch paying rent and sending a repair request from his phone'],
@@ -496,12 +496,12 @@ function landlordPage(t) {
           <p class="name">You pay</p>
           <p class="price"><span data-rental="free">$0</span></p>
           <p class="per">for every rental, every month</p>
-          <p>Rent collection, autopay, reminders, late fees, the books and reports. No plan, no card, no monthly fee.</p>
+          <p>Rent collection, autopay, reminders, late fees, the books and reports. No plan, no monthly fee.</p>
         </li>
         <li class="plan">
           <p class="name">Your tenant pays</p>
           <p class="price"><span data-rental="achFee">$7</span></p>
-          <p class="per">when they pay rent by bank</p>
+          <p class="per">when they pay rent by bank (or you can cover it for them)</p>
           <p>About $5 of it is the bank processor&rsquo;s cost. NOHM keeps about $2.</p>
         </li>
       </ul>
@@ -519,7 +519,7 @@ function landlordPage(t) {
           <p class="name">Everything else</p>
           <p class="price"><span data-rental="free">$0</span></p>
           <p class="per">for every rental, every month</p>
-          <p>Listings, leases, repairs, rent collection and the books. No plan, no card, no monthly fee.</p>
+          <p>Listings, leases, repairs, rent collection and the books. No plan, no monthly fee.</p>
         </li>
       </ul>
       <p class="fine">No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`));
