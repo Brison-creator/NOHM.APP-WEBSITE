@@ -362,7 +362,7 @@ const SPEEDS = `      <ul class="plans plans--3">
           <p class="name">NOHM NOW</p>
           <p class="price"><s data-fee-regular="now" hidden>$60</s><span data-fee="now">$30</span></p>
           <p class="per">NOHM fee</p>
-          <p>Within 60 minutes of the pro accepting.</p>
+          <p>Within 60 minutes of booking.</p>
         </li>
       </ul>
       <p class="fine">Plus the pro&rsquo;s own charges, which you see and approve. Express and NOHM NOW need a pro who&rsquo;s ready near you.</p>`;
@@ -428,7 +428,7 @@ function proPage(s) {
     ['Paid through Stripe.', 'Payouts go straight to your bank. Tips are 100% yours.'],
     ['Your business, your way.', 'Your schedule, your rates, your team. NOHM handles the booking and the payment.'],
   ];
-  if (quotes) reasons.splice(3, 0, ['Win the big ones.', `Quote replacements of ${quotes} with Three Quotes. You set the full price, and pay 5% only on jobs you win.`]);
+  if (quotes) reasons.splice(3, 0, ['Win the big ones.', `Quote replacements of ${quotes} with Three Quotes. You set the full price, and pay <span data-rate="threeQuotesFeeRate">5%</span> only on jobs you win.`]);
   const body = [
     opening({
       trail,
@@ -448,11 +448,11 @@ function proPage(s) {
         </li>
         <li class="plan plan--lead">
           <p class="name">Per job</p>
-          <p class="price">7.9%</p>
+          <p class="price"><span data-rate="platformFeeRate">7.9%</span></p>
           <p class="per">of what you&rsquo;re paid</p>
           <p>Only on jobs you complete. Card processing is its own line, and tips are 100% yours.</p>
         </li>
-      </ul>${quotes ? '\n      <p class="fine">Three Quotes jobs: a 5% service fee on jobs you win, deducted from your funds, never added to the homeowner&rsquo;s price.</p>' : ''}`),
+      </ul>${quotes ? '\n      <p class="fine">Three Quotes jobs: a <span data-rate="threeQuotesFeeRate">5%</span> service fee on jobs you win, deducted from your funds, never added to the homeowner&rsquo;s price.</p>' : ''}`),
     section('Get on NOHM.', steps([
       ['Sign up and pick your trades.', 'On the web or in the app, in a few minutes.'],
       ['Add your license, insurance and payouts.', 'Snap your documents and connect your bank through Stripe.'],
@@ -462,7 +462,7 @@ function proPage(s) {
     final('Your next job is on NOHM.', 'Free to join. Pay only when you get paid.', `<a class="btn btn--light" href="/join">Join as a pro</a>\n        ${BADGES(true)}`),
   ].join('\n\n');
   const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
-  return [url, page({ url, title: `${titleCase(s.jobs)} for Pros, No Lead Fees | NOHM`, desc, ogImage: '/img/crew-1672.jpg', ogAlt: 'Local pros on NOHM', ld, body, scripts: [] })];
+  return [url, page({ url, title: `${titleCase(s.jobs)} for Pros, No Lead Fees | NOHM`, desc, ogImage: '/img/crew-1672.jpg', ogAlt: 'Local pros on NOHM', ld, body, scripts: ['/for/live.js'] })];
 }
 
 function landlordPage(t) {
@@ -543,7 +543,7 @@ function readyNowPage() {
     section('How Ready Now works.', steps([
       ['Turn on Ready Now.', 'You’re live for four hours, ready to leave right away.'],
       ['Take a NOHM NOW call.', 'Homeowners who need it within the hour book the pros who are live.'],
-      ['Be there within 60 minutes.', 'NOHM NOW is within 60 minutes of you accepting. Paid through Stripe.'],
+      ['Be there within 60 minutes.', 'NOHM NOW is within 60 minutes of being booked. Paid through Stripe.'],
     ])),
     section('Built for pros.', cards([
       ['No lead fees. No ads.', 'A lead is the hope of a job. On NOHM, one request goes to one pro, and NOHM only earns when you get paid.'],
@@ -555,7 +555,7 @@ function readyNowPage() {
     final('Your next job is on NOHM.', 'Free to join. Pay only when you get paid.', `<a class="btn btn--light" href="/join">Join as a pro</a>\n        ${BADGES(true)}`),
   ].join('\n\n');
   const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
-  return [url, page({ url, title: 'Same-Day Home Repair Jobs for Pros: Ready Now | NOHM', desc: 'Turn on Ready Now for four hours and take NOHM NOW calls from homeowners nearby: within 60 minutes of accepting. No lead fees. Free to join.', ogImage: '/img/pro-now-1122.jpg', ogAlt: 'A NOHM pro heading out to a NOHM NOW job', ld, body, scripts: [] })];
+  return [url, page({ url, title: 'Same-Day Home Repair Jobs for Pros: Ready Now | NOHM', desc: 'Turn on Ready Now for four hours and take NOHM NOW calls from homeowners nearby: within 60 minutes of being booked. No lead fees. Free to join.', ogImage: '/img/pro-now-1122.jpg', ogAlt: 'A NOHM pro heading out to a NOHM NOW job', ld, body, scripts: [] })];
 }
 
 // The links each hub page carries to its topic pages, between markers.

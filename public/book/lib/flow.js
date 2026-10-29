@@ -16,7 +16,7 @@ export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'accou
 export const TIERS = {
   STANDARD: { key: 'STANDARD', name: 'Standard', line: 'A pro in a day or two.', feeKey: null },
   EXPRESS: { key: 'EXPRESS', name: 'NOHM Express', line: 'Same day. Goes straight to the closest pro.', feeKey: 'EXPRESS_PRIORITY_FEE' },
-  NOW: { key: 'NOW', name: 'NOHM NOW', line: 'A pro within 60 minutes of accepting.', feeKey: 'NOHM_NOW_FEE' },
+  NOW: { key: 'NOW', name: 'NOHM NOW', line: 'A pro within 60 minutes of booking.', feeKey: 'NOHM_NOW_FEE' },
 };
 
 export const LIMITS = { title: 200, description: 2000, issueSummaryMin: 10, issueSummaryMax: 500, photos: 5, photoBytes: 10 * 1024 * 1024 };
