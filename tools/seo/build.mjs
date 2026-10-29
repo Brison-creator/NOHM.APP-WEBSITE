@@ -509,22 +509,27 @@ function landlordPage(t) {
       </ul>
       <p class="fine">NOHM takes no cut of rent. No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`, FOUNDERS));
   }
+  // NOHM Autopilot is optional and priced per rental for everyone, Founding
+  // Partners included (owner, 2026-10-29: "Wait Nohm autopilot cost still
+  // ok"), set against a property manager's cut; the price and its share of
+  // a $1,500 rent come from /pricing.js.
   if (t.price === 'autopilot') {
-    parts.push(section('Free for Founding Partners.', `      <ul class="plans plans--2">
+    parts.push(section('One price per rental.', `      <ul class="plans plans--2">
         <li class="plan plan--lead">
           <p class="name">NOHM Autopilot</p>
-          <p class="price"><span data-rental="free">$0</span></p>
-          <p class="per">on any rental you choose</p>
-          <p>Turn Autopilot on only for the units you want handled.</p>
+          <p class="price"><span data-rental="autopilot">$19.99</span></p>
+          <p class="per">a month per rental, on the rentals you choose</p>
+          <p>Optional, and it runs the rental for you.</p>
         </li>
         <li class="plan">
           <p class="name">Everything else</p>
           <p class="price"><span data-rental="free">$0</span></p>
           <p class="per">for every rental, for good</p>
-          <p>Listings, leases, repairs, rent collection and the books. No plan, no monthly fee.</p>
+          <p>Listings, leases, repairs, rent collection and the books, for NOHM Founding Partners: the first 10,000 landlords. No plan, no monthly fee.</p>
         </li>
       </ul>
-      <p class="fine">No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`, FOUNDERS));
+      <p class="pm-line">A property manager takes about 10% of the rent: $150 a month on a $1,500 home. Autopilot is <span data-rental="autopilot">$19.99</span>, about <span data-rental-share="autopilot" data-share-of="1500">1.3%</span>.</p>
+      <p class="fine">No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`));
   }
   parts.push(more('Everything else for landlords.', LANDLORD.filter((o) => o !== t).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])));
   parts.push(final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`));

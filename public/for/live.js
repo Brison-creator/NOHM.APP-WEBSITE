@@ -7,6 +7,10 @@
 //                                             fraction (platformFeeRate, NOHM's fee on
 //                                             a pro's job; threeQuotesFeeRate)
 //   <s data-price-was="KEY" hidden>$40</s>    its regular price, shown only while discounted
+//   <span data-price-share="KEY" data-share-of="150000">1.3%</span>
+//                                             the key's price as a share of that many
+//                                             cents, to one decimal (Autopilot
+//                                             against a $1,500 rent)
 //   <x data-feature-on="name" hidden>         shown once GET /config/features says name: true
 //   <x data-feature-off="name">               hidden once it says true
 (function () {
@@ -32,7 +36,12 @@
     return Math.floor(bps / 100) + (part ? '.' + part : '') + '%';
   }
 
-  if (document.querySelector('[data-price], [data-price-was], [data-rate]')) {
+  // 19.99 of 1,500 → "1.3%": one decimal, no trailing ".0".
+  function share(cents, ofCents) {
+    return Math.round((cents / ofCents) * 1000) / 10 + '%';
+  }
+
+  if (document.querySelector('[data-price], [data-price-was], [data-rate], [data-price-share]')) {
     get('/config/pricing').then(function (prices) {
       document.querySelectorAll('[data-rate]').forEach(function (el) {
         var r = prices[el.getAttribute('data-rate')];
@@ -47,6 +56,11 @@
         if (!p) return;
         el.textContent = money(p.baseAmountCents);
         el.hidden = !p.hasLiveDiscount;
+      });
+      document.querySelectorAll('[data-price-share]').forEach(function (el) {
+        var p = prices[el.getAttribute('data-price-share')];
+        var of = Number(el.getAttribute('data-share-of'));
+        if (p && typeof p.currentAmountCents === 'number' && of > 0) el.textContent = share(p.currentAmountCents, of);
       });
     }).catch(function () {});
   }

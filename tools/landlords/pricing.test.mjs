@@ -14,12 +14,14 @@ const role = await read('for/landlords/index.html');
 // payment fee (which a landlord may cover) and by the application; the
 // landlord pays only for work they book. Adding a rental still asks for a
 // card on file (the owner's rule against fake accounts), so no page says "no card".
-const OLD_PLAN = /Financial Management|19\.99|per rental, per month|\/rental\/mo|no card|Pay only when you collect rent|Free until you collect rent|data-rental="(plan|autopilot|incomeCheck)"|RENTAL_(FINANCIAL|AUTOPILOT)_PER_RENTAL_MONTHLY|RENTAL_PLANS_BASE_MONTHLY/i;
+const OLD_PLAN = /Financial Management|per rental, per month|\/rental\/mo|no card|Pay only when you collect rent|Free until you collect rent|data-rental="(plan|incomeCheck)"|RENTAL_FINANCIAL_PER_RENTAL_MONTHLY|RENTAL_PLANS_BASE_MONTHLY/i;
 const CARD_LINE = /We ask for a card on file to keep fake accounts out\. It&rsquo;s only charged for work you book\./;
 
 test('public rental pricing: free for landlords, the tenant’s bank fee and the application', () => {
   assert.match(pricing, /free:\s*0/);
-  assert.doesNotMatch(pricing, /\bplan:|autopilot:|incomeCheck:|membership|manager:/);
+  assert.doesNotMatch(pricing, /\bplan:|incomeCheck:|membership|manager:/);
+  // Autopilot: optional, per rental per month, for everyone (owner, 2026-10-29).
+  assert.match(pricing, /autopilot:\s*19\.99/);
   assert.match(pricing, /walkthrough:\s*79/);
   assert.match(pricing, /application:\s*50/);
   // One background check: the old tiers are gone everywhere.
@@ -66,7 +68,7 @@ test('the landlord topic pages (tools/seo/build.mjs) carry no old plan price', a
     assert.doesNotMatch(page, COUNT, slug);
     assert.match(page, /Free for the first 10,000 landlords\. No spam\. No ads\. Nothing\./, slug);
   }
-  for (const slug of ['rent-collection', 'accounting', 'autopilot']) {
+  for (const slug of ['rent-collection', 'accounting']) {
     const page = await read(`landlords/${slug}/index.html`);
     assert.match(page, /<h2>Free for Founding Partners\.<\/h2>/, slug);
     assert.match(page, FOUNDERS, slug);
@@ -77,7 +79,7 @@ test('the ad page: Founding Partners in the hero and the questions, Autopilot fr
   assert.match(ad, /<p class="free">Free for the first 10,000 landlords: NOHM Founding Partners\. <a href="#free">Here&rsquo;s how<\/a><\/p>/);
   assert.match(ad, /<details data-q="founding">/);
   assert.match(ad, /One of the first 10,000 landlords to sign up for NOHM\. Your rentals are free for good, and you get a direct line to the founder with suggestions\./);
-  assert.match(ad, /Optional, and free for Founding Partners\./);
+  assert.match(ad, /<p class="price-line">Optional: <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">\$19\.99<\/span> a month per rental, and it runs the rental for you\.<\/p>/);
   assert.match(role, /<p class="sub">Free for the first 10,000 landlords: NOHM Founding Partners\.<\/p>/);
 });
 
@@ -133,4 +135,42 @@ test('renter pages: a free app, with the bank fee and the background check said 
   const role = await read('for/renters/index.html');
   assert.match(role, /Applying is free unless your landlord asks for a background check/);
   assert.match(role, /<span data-price="ACH_RENT_FEE">\$7<\/span> bank payment fee, shown before you pay; your landlord may cover it\./);
+});
+
+// NOHM Autopilot is not free: $19.99 a month per rental for everyone,
+// Founding Partners included (owner, 2026-10-29: "Wait Nohm autopilot cost
+// still ok"), shown beside what a property manager takes (about 10%).
+const AUTOPILOT_FREE = /Autopilot too|and (NOHM )?Autopilot\.|the books and (NOHM )?Autopilot|Autopilot[^<.]{0,40}\b(free|included)\b|free for Founding Partners: turn it on|Optional, and free for Founding Partners\. Turn it on/i;
+const PM = (price, share) => new RegExp(`A property manager takes about 10% of the rent: \\$150 a month on a \\$1,500 home\\. Autopilot is ${price}, about ${share}\\.`);
+
+test('Autopilot is priced, never free, with the property manager line beside it', async () => {
+  const autopilotTopic = await read('landlords/autopilot/index.html');
+  for (const [name, page] of [['/landlords', landlords], ['/go/landlords', ad], ['/for/landlords', role], ['/landlords/autopilot', autopilotTopic]]) {
+    assert.doesNotMatch(page, AUTOPILOT_FREE, name);
+    assert.doesNotMatch(page, /15%/, name);
+  }
+  // The live pages take the price and its share from the server's key...
+  const live = PM('<span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">\\$19\\.99<\\/span>', '<span data-price-share="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY" data-share-of="150000">1\\.3%<\\/span>');
+  assert.match(ad, live);
+  assert.match(role, live);
+  // ...the others from /pricing.js.
+  const local = PM('<span data-rental="autopilot">\\$19\\.99<\\/span>', '<span data-rental-share="autopilot" data-share-of="1500">1\\.3%<\\/span>');
+  assert.match(landlords, local);
+  assert.match(autopilotTopic, local);
+  assert.match(landlords, /<h3>NOHM Autopilot<\/h3>\s*<div class="price"><b data-rental="autopilot">\$19\.99<\/b><\/div>/);
+  // The $0 card keeps the rest and says Autopilot is optional at its price.
+  for (const page of [ad, role]) {
+    assert.match(page, /late fees and reports\. No plan, no monthly fee\. NOHM Autopilot is optional: <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">\$19\.99<\/span> a month per rental, and it runs the rental for you\./);
+  }
+  assert.match(landlords, /late fees and reports\. No plan, no monthly fee\. NOHM Autopilot is optional, priced below\./);
+});
+
+test('the typed fallbacks match /pricing.js: $19.99 and its share of $1,500', () => {
+  const autopilot = Number(pricing.match(/autopilot:\s*([\d.]+)/)[1]);
+  const share = `${Math.round((autopilot / 1500) * 1000) / 10}%`;
+  assert.equal(share, '1.3%');
+  for (const page of [landlords, ad, role]) {
+    for (const m of page.matchAll(/data-(?:rental|price)="(?:autopilot|RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY)">([^<]+)</g)) assert.equal(m[1], `$${autopilot}`);
+    for (const m of page.matchAll(/data-(?:rental|price)-share="[^"]+" data-share-of="\d+">([^<]+)</g)) assert.equal(m[1], share);
+  }
 });
