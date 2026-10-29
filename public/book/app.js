@@ -12,7 +12,7 @@ import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
 import { rememberSignupRef, signupRef } from '../nohm/ref.js';
 import { createWebConfig } from '../nohm/web-config.js';
-import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction, homeZones, homeTimeZone } from './lib/flow.js';
+import { STEPS, emptyDraft, restoreDraft, persistableDraft, nextStep, prevStep, stepProblem, tradeForSlug, jobBody, nowDispatchBody, bookingErrorAction, homeZones, homeTimeZone, standardLeadHours } from './lib/flow.js';
 import { randomId, zoneShortName, browserTimeZone } from '../nohm/format.js';
 import { uploadEach } from './lib/photos.js';
 import { h, clear } from '../nohm/dom.js';
@@ -62,6 +62,14 @@ const a = {
   timeZone() {
     return homeTimeZone(this.draft, this.state.zones);
   },
+  /** How far out Standard starts, in hours: the server's, else 48. */
+  leadHours() {
+    return standardLeadHours(this.state.pricing);
+  },
+  /** What the step still needs, on the home's clock and Standard's lead time. */
+  problem(step) {
+    return stepProblem(step, this.draft, new Date(), this.timeZone(), this.leadHours());
+  },
   /** Read the homes' time zones again (after a home is added): GET /auth/me. */
   async refreshZones() {
     try {
@@ -90,11 +98,12 @@ const a = {
   },
   go(step) {
     // A day picked before the home was known was counted on the browser's
-    // clock; at review it's checked again at the home (Standard is never
-    // same day there), and sent back to the schedule if it no longer fits.
+    // clock; at review it's checked again at the home (Standard is 48
+    // hours or more out there), and sent back to the schedule if it no
+    // longer fits.
     if (step === 'review' && this.draft.tier === 'STANDARD') {
       const tz = this.timeZone();
-      const p = stepProblem('schedule', this.draft, new Date(), tz);
+      const p = this.problem('schedule');
       if (p) {
         step = 'schedule';
         const clock = tz && tz !== browserTimeZone() ? zoneShortName(tz) : '';
@@ -105,7 +114,7 @@ const a = {
     render();
   },
   next() {
-    const p = stepProblem(this.step, this.draft, new Date(), this.timeZone());
+    const p = this.problem(this.step);
     if (p) return this.toast(p);
     // After a detour (re-adding photos lost on reload), return to where the draft was.
     const target = this.resumeTo;
@@ -390,8 +399,8 @@ async function boot() {
     try { await loadAccount(); } catch { session.clear(); }
   }
   if (a.draft.trade && a.draft.trade.id && !a.state.trades.some((x) => x.id === a.draft.trade.id)) a.draft = emptyDraft();
-  // A day that has passed, or a window that closed, can't be booked.
-  if (a.draft.tier === 'STANDARD' && a.draft.day && stepProblem('schedule', a.draft, new Date(), a.timeZone())) a.setDraft({ day: null, window: null });
+  // A day or window that's now under 48 hours away can't be booked.
+  if (a.draft.tier === 'STANDARD' && a.draft.day && a.problem('schedule')) a.setDraft({ day: null, window: null });
   if (a.state.wrongRole) a.step = 'wrong-role';
   else if (!a.draft.trade) a.step = 'service';
   else if (fresh) a.step = 'issue';
@@ -408,7 +417,7 @@ async function boot() {
 function firstUnfinished() {
   for (const s of STEPS.slice(0, STEPS.indexOf('account'))) {
     if (s === 'schedule' && a.draft.tier !== 'STANDARD') continue;
-    if (stepProblem(s, a.draft, new Date(), a.timeZone())) return s;
+    if (a.problem(s)) return s;
   }
   let s = nextStep('speed', a.draft, a.ctx());
   if (s === 'schedule') s = nextStep('schedule', a.draft, a.ctx());

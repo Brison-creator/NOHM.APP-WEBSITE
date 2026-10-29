@@ -2,11 +2,12 @@
 // price changed in the admin panel is right here too. The page's own text is
 // already today's, and stays if the server can't be reached.
 //
-//   <span data-price="KEY">$7</span>          the key's current price
+//   <span data-price="KEY">$7</span>          the key's current price, shown alone: never
+//                                             a struck-through regular price beside it
+//                                             (owner, 2026-10-29: "no discounts now its confusing")
 //   <span data-rate="platformFeeRate">7.9%</span>  a rate the server sends as a
 //                                             fraction (platformFeeRate, NOHM's fee on
 //                                             a pro's job; threeQuotesFeeRate)
-//   <s data-price-was="KEY" hidden>$40</s>    its regular price, shown only while discounted
 //   <span data-price-share="KEY" data-share-of="150000">1.3%</span>
 //                                             the key's price as a share of that many
 //                                             cents, to one decimal (Autopilot
@@ -41,7 +42,7 @@
     return Math.round((cents / ofCents) * 1000) / 10 + '%';
   }
 
-  if (document.querySelector('[data-price], [data-price-was], [data-rate], [data-price-share]')) {
+  if (document.querySelector('[data-price], [data-rate], [data-price-share]')) {
     get('/config/pricing').then(function (prices) {
       document.querySelectorAll('[data-rate]').forEach(function (el) {
         var r = prices[el.getAttribute('data-rate')];
@@ -50,12 +51,6 @@
       document.querySelectorAll('[data-price]').forEach(function (el) {
         var p = prices[el.getAttribute('data-price')];
         if (p && typeof p.currentAmountCents === 'number') el.textContent = money(p.currentAmountCents);
-      });
-      document.querySelectorAll('[data-price-was]').forEach(function (el) {
-        var p = prices[el.getAttribute('data-price-was')];
-        if (!p) return;
-        el.textContent = money(p.baseAmountCents);
-        el.hidden = !p.hasLiveDiscount;
       });
       document.querySelectorAll('[data-price-share]').forEach(function (el) {
         var p = prices[el.getAttribute('data-price-share')];

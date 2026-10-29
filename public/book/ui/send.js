@@ -16,7 +16,7 @@ export function reviewScreen(a) {
   const win = WINDOWS.find((w) => w.key === d.window);
   // The day and window are the home's (its time zone, from the server).
   const tz = a.timeZone();
-  const day = bookableDays(new Date(), 7, tz).find((x) => x.iso === d.day);
+  const day = bookableDays(new Date(), 7, tz, a.leadHours()).find((x) => x.iso === d.day);
   const terms = h('p.b-small', '…');
   a.api.jobs.cancellationTerms(cancellationTermsQuery(d, tz)).then((t) => (terms.textContent = (t && t.disclosure) || '')).catch(() => (terms.textContent = ''));
 
@@ -48,7 +48,7 @@ export function reviewScreen(a) {
       d.tier === 'STANDARD' ? row('When', `${day ? day.label : d.day}, ${win ? `${win.name.toLowerCase()} ${win.range}` : ''}${homeClock(tz, d.day)}`, 'schedule') : null,
       row('Home', a.state.property ? a.state.property.formattedAddress : '', 'home'),
       row('Card', a.state.card ? `${a.state.card.brand || 'Card'} •••• ${a.state.card.last4}` : 'On file'),
-      h('div.b-row.b-total', [h('span', 'NOHM fee'), h('span', [fee && fee.discounted ? h('s', money(fee.base)) : null, ' ', fee ? (fee.current ? money(fee.current) : 'None') : '…'])]),
+      h('div.b-row.b-total', [h('span', 'NOHM fee'), h('span', fee ? (fee.current ? money(fee.current) : 'None') : '…')]),
       win && win.premium ? h('div.b-row', [h('span.b-muted', 'Late afternoon premium'), h('span', premiumText(a) || 'Applies')]) : null,
     ]),
     credits,

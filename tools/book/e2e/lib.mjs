@@ -112,7 +112,13 @@ export async function describeAndSpeed(page, tier, text) {
   await page.waitForSelector('[data-tier]');
   await snap(page, 'speed');
   assert.equal(await page.textContent('[data-tier=STANDARD] .b-price'), 'No NOHM fee');
-  assert.match(await page.textContent('[data-tier=EXPRESS] .b-price'), /\$40\s*\$20/);
+  // One price per speed, the server's: nothing struck through, no promo line.
+  assert.equal(await page.textContent('[data-tier=EXPRESS] .b-price'), '$30');
+  assert.equal(await page.textContent('[data-tier=NOW] .b-price'), '$60');
+  assert.equal(await page.$('#book s'), null, 'no struck-through price');
+  assert.doesNotMatch(await page.textContent('#book'), /launch|promo|half off|save \$|regular/i);
+  assert.match(await page.textContent('[data-tier=STANDARD]'), /Scheduled \d+ hours or more after you book\./, 'the server’s lead time, 48 by default');
+  assert.match(await page.textContent('[data-tier=NOW]'), /60 for 60: a pro heads your way within 60 minutes of accepting/);
   await page.click(`[data-tier=${tier}]`);
 }
 

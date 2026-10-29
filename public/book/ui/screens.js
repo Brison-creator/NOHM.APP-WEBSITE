@@ -3,7 +3,7 @@
 // what the server and lib/flow.js say; they decide nothing themselves.
 
 import { h, field, button, money, clear } from '../../nohm/dom.js';
-import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, stepProblem, lateAfternoonPremium } from '../lib/flow.js';
+import { TIERS, LIMITS, feeFor, offeredTiers, bookableTrades, stepProblem, lateAfternoonPremium, leadLine } from '../lib/flow.js';
 import { issuesForTrade } from '../lib/issues.js';
 import { WINDOWS, bookableDays, windowOpenOn, prettyPhone } from '../../nohm/format.js';
 import { preparePhoto, splitToLimit, overLimitText } from '../lib/photos.js';
@@ -102,13 +102,12 @@ export function serviceScreen(a) {
     return h('section.b-screen', [head('Online booking isn’t open yet.', 'The NOHM app has every service. Get it, and we’ll see you there.'), h('a.b-btn', { href: a.storeUrl() }, 'Get NOHM'), h('p.b-small', [h('a', { href: '/services' }, 'See every service')])]);
   }
 
-  const promo = a.state.pricing && feeFor('EXPRESS', a.state.pricing);
   return h('section.b-screen', [
     head("What's going on at home?", 'Pick a service. A local pro comes to you.'),
     h('div.b-searchwrap', [svg('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4'), q]),
     matches,
     grid,
-    h('p.b-line', [h('b', 'Standard has no NOHM fee.'), ' A pro in a day or two. ', promo && promo.discounted && promo.promoLabel ? h('span', promo.promoLabel) : null]),
+    h('p.b-line', [h('b', 'Standard has no NOHM fee.'), ` ${leadLine(a.leadHours())}`]),
     a.state.user ? h('p.b-small', ['Signed in as ', h('b', a.state.user.email || prettyPhone(a.state.user.phone)), ' · ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]) : null,
     h('p.b-small', ["Don't see your trade? ", h('a', { href: '/services' }, 'See every service'), ' and ', h('a', { href: 'mailto:admin@nohm.app?subject=Service request' }, 'tell us what you need'), '.']),
   ]);
@@ -190,10 +189,11 @@ export function speedScreen(a) {
   const pricing = a.state.pricing;
   for (const tier of offeredTiers(pricing)) {
     const fee = feeFor(tier.key, pricing);
+    // One price per speed, the server's: never a struck-through one beside it.
     const price = !tier.feeKey
       ? h('span.b-price', 'No NOHM fee')
       : fee
-        ? h('span.b-price', [fee.discounted ? h('s', money(fee.base)) : null, ' ', money(fee.current)])
+        ? h('span.b-price', money(fee.current))
         : h('span.b-price.b-muted', '…');
     const on = a.draft.tier === tier.key;
     list.append(h('button.b-choice.b-tier', { type: 'button', class: on ? 'on' : '', disabled: Boolean(tier.feeKey) && !fee, dataset: { tier: tier.key }, onClick: () => {
@@ -202,13 +202,11 @@ export function speedScreen(a) {
       const p = stepProblem('details', a.draft);
       if (p) { a.notice = p; return a.go('details'); }
       a.next();
-    } }, [h('span', [h('b', tier.name), h('small', tier.line)]), price]));
+    } }, [h('span', [h('b', tier.name), h('small', tier.key === 'STANDARD' ? leadLine(a.leadHours()) : tier.line)]), price]));
   }
-  const promo = feeFor('EXPRESS', pricing);
   return h('section.b-screen', [
     head('How soon?', 'The fee is NOHM’s. The pro’s own price comes as an estimate you approve before work starts.'),
     list,
-    promo && promo.discounted && (promo.promoLabel || promo.promoDescription) ? h('p.b-small', [promo.promoLabel, promo.promoLabel && promo.promoDescription ? ': ' : '', promo.promoDescription].filter(Boolean).join('')) : null,
     h('p.b-small', `${TIERS.EXPRESS.name} and ${TIERS.NOW.name}: ${HOLD.charAt(0).toLowerCase()}${HOLD.slice(1)}`),
     footer(a, null),
   ]);
@@ -218,9 +216,11 @@ export function speedScreen(a) {
 
 export function scheduleScreen(a) {
   // Days and windows at the home, in its time zone once the server has
-  // said which home (lib/flow.js homeTimeZone); "Tomorrow" is the home's.
+  // said which home (lib/flow.js homeTimeZone). Only windows that open
+  // 48 hours or more from now (the server's lead time) can be picked.
   const tz = a.timeZone();
-  const days = bookableDays(new Date(), 7, tz);
+  const lead = a.leadHours();
+  const days = bookableDays(new Date(), 7, tz, lead);
   const dayRow = h('div.b-chips');
   const winList = h('div.b-list');
   const err = h('p.b-err');
@@ -231,26 +231,26 @@ export function scheduleScreen(a) {
   function drawWindows() {
     clear(winList);
     for (const w of WINDOWS) {
-      const open = windowOpenOn(day, w.key, new Date(), tz);
+      const open = windowOpenOn(day, w.key, new Date(), tz, lead);
       const on = win === w.key && open;
-      winList.append(h('button.b-choice', { type: 'button', class: on ? 'on' : '', disabled: !open, dataset: { window: w.key }, onClick: () => { win = w.key; drawWindows(); err.textContent = ''; } }, [h('span', [h('b', w.name), h('small', open ? w.range : `${w.range} · passed`)]), w.premium && premiumText(a) ? h('span.b-price', premiumText(a)) : null]));
+      winList.append(h('button.b-choice', { type: 'button', class: on ? 'on' : '', disabled: !open, dataset: { window: w.key }, onClick: () => { win = w.key; drawWindows(); err.textContent = ''; } }, [h('span', [h('b', w.name), h('small', open ? w.range : `${w.range} · under ${lead} hours away`)]), w.premium && premiumText(a) ? h('span.b-price', premiumText(a)) : null]));
     }
   }
   function drawDays() {
     clear(dayRow);
-    for (const d of days) dayRow.append(h('button.b-chip', { type: 'button', class: d.iso === day ? 'on' : '', dataset: { day: d.iso }, onClick: () => { day = d.iso; if (win && !windowOpenOn(day, win, new Date(), tz)) win = null; drawDays(); drawWindows(); } }, d.label));
+    for (const d of days) dayRow.append(h('button.b-chip', { type: 'button', class: d.iso === day ? 'on' : '', dataset: { day: d.iso }, onClick: () => { day = d.iso; if (win && !windowOpenOn(day, win, new Date(), tz, lead)) win = null; drawDays(); drawWindows(); } }, d.label));
   }
   drawDays();
   drawWindows();
   const go = () => {
     a.setDraft({ day, window: win });
-    const p = stepProblem('schedule', a.draft, new Date(), tz);
+    const p = a.problem('schedule');
     if (p) return (err.textContent = p);
     a.next();
   };
   const premium = lateAfternoonPremium(a.state.pricing);
   return h('section.b-screen', [
-    head('When should the pro come?', `Pick a day from tomorrow on and an arrival window. Need a pro today? Go back and choose ${TIERS.EXPRESS.name}. The cancellation terms are on the last step.`),
+    head('When should the pro come?', `Standard is ${lead} hours or more after you book, never sooner. Pick a day and an arrival window. Need a pro today? Go back and choose ${TIERS.EXPRESS.name}. The cancellation terms are on the last step.`),
     dayRow,
     winList,
     clock ? h('p.b-small.b-clock', `Days and arrival windows are the home’s time (${clock}).`) : null,

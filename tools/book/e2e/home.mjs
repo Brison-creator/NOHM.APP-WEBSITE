@@ -56,6 +56,7 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await page.click('.b-choice');
   await describeAndSpeed(page, 'STANDARD', 'Breaker for the kitchen trips every hour.');
   await page.waitForSelector('[data-window]');
+  await page.click('[data-day]:nth-child(2)'); // every window 48 hours or more away
   await page.click('[data-window=MORNING]');
   await page.click('[data-key=next]');
   await page.waitForSelector('[data-property=p-1]');
@@ -70,10 +71,12 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
 }
 
 // ── Run 13: a browser on Honolulu time books a home in Chicago ─────
-// 06:30 UTC on Oct 16: 8:30 PM on Oct 15 in Honolulu, 1:30 AM on Oct 16
-// at the home. The browser's "tomorrow" (Oct 16) is today at the home.
+// 17:00 UTC on Oct 16: 7 AM in Honolulu, noon at the home in Chicago.
+// 48 hours on, 8 AM on Oct 18 is still ahead in Honolulu but already
+// past in Chicago: a Morning picked on the browser's clock is too soon
+// at the home.
 {
-  const now = '2026-10-16T06:30:00Z';
+  const now = '2026-10-16T17:00:00Z';
   await reset();
   await fetch(`${BASE}/__now?t=${now}`);
   const { ctx, page } = await fresh({ timezoneId: 'Pacific/Honolulu', now });
@@ -82,35 +85,65 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await page.click('.b-choice:nth-child(2)');
   await describeAndSpeed(page, 'STANDARD', 'Kitchen sink drains slowly and gurgles.');
   await page.waitForSelector('[data-window]');
-  // No home yet: the browser's clock stands in, so "Tomorrow" is Oct 16 here.
-  assert.equal(await page.$eval('[data-day]:nth-child(1)', (b) => b.dataset.day), '2026-10-16');
+  // No home yet: the browser's clock stands in. Oct 18 is the first day, every window open.
+  assert.equal(await page.$eval('[data-day]:nth-child(1)', (b) => `${b.dataset.day} ${b.textContent}`), '2026-10-18 Sun, Oct 18');
+  assert.equal(await page.$('[data-day="2026-10-16"]'), null, 'never today');
+  assert.equal(await page.$('[data-day="2026-10-17"]'), null, 'never under 48 hours');
   await page.click('[data-day]:nth-child(1)');
-  await page.click('[data-window=MIDDAY]');
+  await page.click('[data-window=MORNING]');
   await page.click('[data-key=next]');
   await signUp(page);
   await addHome(page);
-  // The home is in Chicago, where Oct 16 is already today: back to the days, with why.
+  // The home is in Chicago, where 8 AM on Oct 18 is 45 hours away: back to the days, with why.
   await page.waitForSelector('[data-window]');
-  await page.waitForFunction(() => /Standard starts tomorrow\. Pick another day\. Days and arrival windows are the home’s time \(CDT\)\./.test(document.getElementById('book-toast').textContent));
+  await page.waitForFunction(() => /Standard is 48 hours or more after you book\. Pick a later window\. Days and arrival windows are the home’s time \(CDT\)\./.test(document.getElementById('book-toast').textContent));
   await snap(page, 'schedule-home-clock');
-  assert.equal(await page.$eval('[data-day]:nth-child(1)', (b) => `${b.dataset.day} ${b.textContent}`), '2026-10-17 Tomorrow');
-  assert.equal(await page.$('[data-day="2026-10-16"]'), null, 'today at the home isn’t offered');
+  assert.equal(await page.$eval('[data-day]:nth-child(1)', (b) => `${b.dataset.day} ${b.textContent}`), '2026-10-18 Sun, Oct 18');
+  assert.equal(await page.$eval('[data-window=MORNING]', (b) => b.disabled), true);
+  assert.equal(await page.$eval('[data-window=MIDDAY]', (b) => b.disabled), true, '11 AM at the home is 47 hours away');
+  assert.equal(await page.$eval('[data-window=AFTERNOON]', (b) => b.disabled), false);
+  assert.match(await page.textContent('[data-window=MORNING]'), /under 48 hours away/);
   assert.equal(await page.textContent('.b-clock'), 'Days and arrival windows are the home’s time (CDT).');
-  await page.click('[data-day]:nth-child(1)');
-  await page.click('[data-window=MIDDAY]');
+  await page.click('[data-window=AFTERNOON]');
   await page.click('[data-key=next]');
   await page.waitForSelector('[data-key=confirm]');
-  assert.match(await page.textContent('.b-card'), /Tomorrow, midday 11 AM–2 PM CDT/);
+  assert.match(await page.textContent('.b-card'), /Sun, Oct 18, afternoon 2–5 PM CDT/);
   await page.waitForFunction(() => document.body.textContent.includes('Free to cancel up to 24 hours'));
   await page.click('[data-key=confirm]');
   await page.waitForSelector('[data-contractor=c-1]');
   const calls = await log();
   const job = calls.find((c) => c.path === '/jobs' && c.method === 'POST').body;
-  // Midnight at the home (CDT): with the window the server makes it 11 AM in Chicago.
-  assert.equal(job.scheduledDate, '2026-10-17T00:00:00-05:00');
-  assert.equal(job.scheduledTimeWindow, 'MIDDAY');
+  // Midnight at the home (CDT): with the window the server makes it 2 PM in Chicago.
+  assert.equal(job.scheduledDate, '2026-10-18T00:00:00-05:00');
+  assert.equal(job.scheduledTimeWindow, 'AFTERNOON');
   const terms = calls.filter((c) => c.path.startsWith('/jobs/cancellation-terms')).pop();
   assert.equal(new URL(terms.path, BASE).searchParams.get('scheduledDate'), job.scheduledDate, 'the terms are asked for the same moment');
-  console.log('✓ Home’s clock: a Honolulu browser booking a Chicago home: the day is re-checked at the home, "Tomorrow" is the home’s, and 2026-10-17T00:00:00-05:00 is sent');
+  console.log('✓ Home’s clock: a Honolulu browser booking a Chicago home: the 48 hours are re-checked at the home, a window under 48 hours there is refused, and 2026-10-18T00:00:00-05:00 is sent');
   await ctx.close();
+}
+
+// ── Run 13b: the server's standardLeadHours sets how far out Standard starts ──
+// 17:00 UTC on Oct 16 in a UTC browser: 48 hours on is Oct 18 at 5 PM, 72 is Oct 19 at 5 PM.
+{
+  const now = '2026-10-16T17:00:00Z';
+  await reset();
+  for (const [h, first] of [[null, '2026-10-18'], [72, '2026-10-19']]) {
+    await fetch(`${BASE}/__lead${h ? `?h=${h}` : ''}`);
+    const { ctx, page } = await fresh({ timezoneId: 'UTC', now });
+    await page.goto(`${PAGE}&trade=plumbing`);
+    await page.waitForSelector('.b-choice');
+    await page.click('.b-choice:nth-child(2)');
+    await describeAndSpeed(page, 'STANDARD', 'Kitchen sink drains slowly and gurgles.');
+    await page.waitForSelector('[data-window]');
+    const lead = h || 48;
+    assert.equal(await page.$eval('[data-day]:nth-child(1)', (b) => b.dataset.day), first, `${lead} hours`);
+    assert.deepEqual(await page.$$eval('[data-window]', (bs) => bs.filter((b) => !b.disabled).map((b) => b.dataset.window)), ['LATE_AFTERNOON'], 'only 5 PM is far enough out');
+    assert.match(await page.textContent('.b-sub'), new RegExp(`Standard is ${lead} hours or more after you book`));
+    await page.goBack(); // to the speeds
+    await page.waitForSelector('[data-tier=STANDARD]');
+    assert.match(await page.textContent('[data-tier=STANDARD]'), new RegExp(`Scheduled ${lead} hours or more after you book\\.`));
+    await ctx.close();
+  }
+  await fetch(`${BASE}/__lead?h=48`);
+  console.log('✓ Standard’s lead time: 48 hours with no standardLeadHours from the server, the server’s 72 when it sends it');
 }

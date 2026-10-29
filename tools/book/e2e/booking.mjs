@@ -25,10 +25,16 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await describeAndSpeed(page, 'STANDARD', 'Kitchen sink drains slowly and gurgles.');
   await page.waitForSelector('[data-window]');
   await snap(page, 'schedule');
-  // Standard is never same day: the first day offered is tomorrow.
-  assert.equal(await page.$eval('[data-day]:nth-child(1)', (b) => b.textContent), 'Tomorrow');
-  assert.equal(await page.$$eval('[data-day]', (bs) => bs.filter((b) => b.textContent === 'Today').length), 0);
-  await page.click('[data-day]:nth-child(1)'); // tomorrow: every window open
+  // Standard is 48 hours or more out: no today, no tomorrow; the first
+  // day is two or three days away, and only its windows 48 hours out show.
+  assert.equal(await page.$$eval('[data-day]', (bs) => bs.filter((b) => b.textContent === 'Today' || b.textContent === 'Tomorrow').length), 0);
+  const firstDay = await page.$eval('[data-day]:nth-child(1)', (b) => b.dataset.day);
+  const inTwoDays = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date(Date.now() + 2 * 86400000));
+  assert.ok(firstDay >= inTwoDays, `the first day (${firstDay}) is two or more days out`);
+  assert.match(await page.textContent('.b-sub'), /Standard is 48 hours or more after you book, never sooner\./);
+  await page.click('[data-day]:nth-child(2)'); // the second day: every window 48 hours or more away
+  const dayLabel = await page.$eval('[data-day]:nth-child(2)', (b) => b.textContent);
+  assert.equal(await page.$$eval('[data-window]', (bs) => bs.filter((b) => b.disabled).length), 0);
   await page.click('[data-window=MIDDAY]');
   await page.click('[data-key=next]');
 
@@ -39,7 +45,7 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await snap(page, 'review');
   const review = await page.textContent('.b-card');
   assert.match(review, /Plumbing · Clogged drain/);
-  assert.match(review, /Tomorrow, midday 11 AM–2 PM/);
+  assert.ok(review.includes(`${dayLabel}, midday 11 AM–2 PM`), review);
   assert.match(review, /visa •••• 4242/);
   assert.match(review, /NOHM fee\s*None/);
   // The terms shown are the server's, asked for the same date the booking sends.
@@ -97,7 +103,7 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await addHome(page);
   await page.waitForSelector('.b-cardhost');
   await snap(page, 'card');
-  assert.match(await page.textContent('.b-sub'), /\$20 fee is held/);
+  assert.match(await page.textContent('.b-sub'), /\$30 fee is held/);
   // The card form gets the key the server published (GET /config/web), not one kept in the site.
   await page.waitForSelector('.b-cardhost[data-stripe-mounted]');
   assert.equal(await page.evaluate(() => window.__stripeKey), 'pk_test_stubFromServer123');
@@ -114,20 +120,21 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await addHome(page);
   await page.waitForSelector('[data-key=confirm]');
   assert.match(await page.textContent('[data-key=confirm]'), /closest pro/);
-  assert.match(await page.textContent('.b-card'), /\$40\s*\$20/);
+  assert.match(await page.textContent('.b-total'), /^NOHM fee\$30$/);
+  assert.equal(await page.$('.b-card s'), null, 'no struck-through price');
   // The server says there are 15 spendable credits: the opt-in shows, off; ticking it sends only the opt-in.
   await page.waitForSelector('#f-credits');
   assert.equal(await page.isChecked('#f-credits'), false);
   assert.match(await page.textContent('.b-check'), /You have 15/);
   await page.check('#f-credits');
-  assert.match(await page.textContent('.b-card'), /\$40\s*\$20/, 'the fee shown is still the server’s');
+  assert.match(await page.textContent('.b-total'), /^NOHM fee\$30$/, 'the fee shown is still the server’s');
   await page.click('[data-key=confirm]');
   await page.waitForFunction(() => document.body.textContent.includes('The closest pro gets it first'));
   await snap(page, 'done-express');
   const calls = await log();
   const job = calls.find((c) => c.path === '/jobs').body;
   assert.equal(job.isExpress, true);
-  assert.equal(job.shownFeeCents, 2000);
+  assert.equal(job.shownFeeCents, 3000);
   assert.equal(job.useCreditsForExpressFee, true);
   assert.ok(calls.some((c) => c.method === 'GET' && c.path === '/nohmcredit/balance'));
   assert.equal(job.scheduledDate, undefined);
@@ -163,7 +170,7 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await snap(page, 'done-now');
   const calls = await log();
   const d = calls.find((c) => c.path === '/now/dispatch').body;
-  assert.deepEqual(d, { availabilityId: 'av-1', propertyId: 'p-1', tradeId: 't-plumb', issueSummary: 'Sewage coming up in the downstairs shower.', shownFeeCents: 3000 });
+  assert.deepEqual(d, { availabilityId: 'av-1', propertyId: 'p-1', tradeId: 't-plumb', issueSummary: 'Sewage coming up in the downstairs shower.', shownFeeCents: 6000 });
   assert.ok(!calls.some((c) => c.path === '/jobs' && c.method === 'POST'), 'NOW never goes through POST /jobs');
   console.log('✓ NOW: sign-in with password, live list, dispatch body');
   await ctx.close();
@@ -189,7 +196,7 @@ import { BASE, PAGE, reset, log, snap, fresh, describeAndSpeed, signUp, addHome 
   await fetch(`${BASE}/__express-price?cents=4000`);
   await page.click('[data-key=confirm]');
   await page.waitForFunction(() => document.querySelector('#book-toast') && !document.querySelector('#book-toast').hidden && /fee just changed/.test(document.querySelector('#book-toast').textContent));
-  await page.waitForFunction(() => /\$40/.test(document.querySelector('.b-total').textContent) && !/\$20/.test(document.querySelector('.b-total').textContent));
+  await page.waitForFunction(() => /\$40/.test(document.querySelector('.b-total').textContent) && !/\$30/.test(document.querySelector('.b-total').textContent));
   let calls = await log();
   const firstKey = calls.filter((c) => c.path === '/jobs' && c.method === 'POST').pop().body.idempotencyKey;
 

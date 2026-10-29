@@ -23,9 +23,13 @@ const TRADES = [
   { id: 't-appl', name: 'APPLIANCE', label: 'Appliance', isActive: true, bookable: true, sortOrder: 5, licenseRequired: false, enabledByMarket: true },
   { id: 't-make', name: 'MAKE_READY', label: 'Make Ready', isActive: true, bookable: false, sortOrder: 6 },
 ];
+// Owner, 2026-10-29: Express $30 and NOHM NOW $60 for good, no discount;
+// Standard 48 hours or more out (standardLeadHours, being added to the
+// server's GET /config/pricing).
 let PRICING = {
-  EXPRESS_PRIORITY_FEE: { key: 'EXPRESS_PRIORITY_FEE', baseAmountCents: 4000, currentAmountCents: 2000, hasLiveDiscount: true, savingsCents: 2000, promoLabel: 'Launch pricing' },
-  NOHM_NOW_FEE: { key: 'NOHM_NOW_FEE', baseAmountCents: 6000, currentAmountCents: 3000, hasLiveDiscount: true, savingsCents: 3000, promoLabel: 'Launch pricing' },
+  EXPRESS_PRIORITY_FEE: { key: 'EXPRESS_PRIORITY_FEE', baseAmountCents: 3000, currentAmountCents: 3000, hasLiveDiscount: false, savingsCents: 0, promoLabel: null, promoDescription: null, promoEndsAt: null },
+  NOHM_NOW_FEE: { key: 'NOHM_NOW_FEE', baseAmountCents: 6000, currentAmountCents: 6000, hasLiveDiscount: false, savingsCents: 0, promoLabel: null, promoDescription: null, promoEndsAt: null },
+  standardLeadHours: 48,
 };
 // A made-up test key: the page must use whatever the server publishes.
 const STUB_STRIPE_KEY = 'pk_test_stubFromServer123';
@@ -403,7 +407,7 @@ function api(method, url, body, req) {
   if (p === '/now/demand') return [201, { pinged: 3 }];
   if (p === '/now/dispatch') {
     if (!world.hasCard) return [400, { code: 'PAYMENT_METHOD_REQUIRED', message: 'Add a card to book.' }];
-    if (body.shownFeeCents !== 3000) return [400, { code: 'PRICE_CHANGED', amountCents: 3000, message: 'Price changed' }];
+    if (body.shownFeeCents !== PRICING.NOHM_NOW_FEE.currentAmountCents) return [400, { code: 'PRICE_CHANGED', amountCents: PRICING.NOHM_NOW_FEE.currentAmountCents, message: 'Price changed' }];
     const id = `j-${++world.seq}`;
     const job = { id, jobNumber: `NOHM-${world.seq}`, status: 'DISPATCHED', priority: 'NOW', ...body, photos: [] };
     world.jobs[id] = job;
@@ -416,11 +420,13 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 2000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = true; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; world.legacy = false; world.preferred = false; world.now = null; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 3000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = false; PRICING.standardLeadHours = 48; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; world.legacy = false; world.preferred = false; world.now = null; return json(res, 200, { ok: true }); }
   // /__now?t=<ISO>: the server's clock, for a run whose browser clock is set too (none: the real time).
   if (url.pathname === '/__now') { const t = url.searchParams.get('t'); world.now = t ? Date.parse(t) : null; return json(res, 200, { ok: true }); }
   // /__preferred?on=1: the home has a Preferred Pro for every trade, so a new Standard or Express job goes to them first.
   if (url.pathname === '/__preferred') { world.preferred = url.searchParams.get('on') !== '0'; return json(res, 200, { ok: true, preferred: world.preferred }); }
+  // /__lead?h=72: the server's standardLeadHours (none: leave it out, as a server without it does).
+  if (url.pathname === '/__lead') { const h = url.searchParams.get('h'); if (h) PRICING.standardLeadHours = Number(h); else delete PRICING.standardLeadHours; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__express-price') { const c = Number(url.searchParams.get('cents')); PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = c; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = c < PRICING.EXPRESS_PRIORITY_FEE.baseAmountCents; return json(res, 200, { ok: true }); }
   if (url.pathname === '/__conflicts') { world.conflicts = Number(url.searchParams.get('n') || 0); return json(res, 200, { ok: true }); }
   if (url.pathname === '/__photo-fail') { world.photoFailAt = Number(url.searchParams.get('nth') || 0); world.photoPosts = 0; return json(res, 200, { ok: true }); }

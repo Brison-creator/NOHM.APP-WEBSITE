@@ -1,11 +1,14 @@
-// NOHM fees shown on the website. The app has its own admin setting for the
-// launch threshold; the site can't see the user count, so flip `launch` to
-// false here when NOHM reaches its launch target and every page updates.
+// NOHM fees shown on the website. One price each, always: no launch
+// pricing, no discount, no struck-through "regular" price (owner,
+// 2026-10-29: "make now permantly 60 for 60 no discounts now its confusing
+// and also express is 30 now standard is 48 hours out no sooner no matter
+// what"). Keep these in step with the NOHM admin.
+//   <span data-fee="express">$30</span>   the fee, in whole dollars
 var NOHM_PRICING = {
-  launch: true,            // 50% off until 1,000 activated homeowners
-  launchTarget: 1000,
-  express: { launch: 20, regular: 40 },
-  now: { launch: 30, regular: 60 },
+  express: 30,             // NOHM Express: a pro today
+  now: 60,                 // NOHM NOW, "60 for 60": a pro heads your way within
+                           // 60 minutes of accepting, or no NOW fee
+  standardLeadHours: 48,   // Standard: no fee, 48 hours or more after booking
   // Rentals (set in the NOHM admin; keep these in step with it). Free for
   // the first 10,000 landlords, NOHM Founding Partners, numbered in sign-up
   // order by the server (owner, 2026-10-29: "It's absolutely free to the
@@ -35,13 +38,7 @@ var NOHM_PRICING = {
 
 (function (p) {
   document.querySelectorAll('[data-fee]').forEach(function (el) {
-    var fee = p[el.getAttribute('data-fee')];
-    el.textContent = '$' + (p.launch ? fee.launch : fee.regular);
-  });
-  document.querySelectorAll('[data-fee-regular]').forEach(function (el) {
-    var fee = p[el.getAttribute('data-fee-regular')];
-    el.textContent = '$' + fee.regular;
-    el.hidden = !p.launch;
+    el.textContent = '$' + p[el.getAttribute('data-fee')];
   });
   document.querySelectorAll('[data-rental]').forEach(function (el) {
     el.textContent = '$' + p.rentals[el.getAttribute('data-rental')];
@@ -52,9 +49,5 @@ var NOHM_PRICING = {
     var part = p.rentals[el.getAttribute('data-rental-share')];
     var whole = Number(el.getAttribute('data-share-of'));
     if (typeof part === 'number' && whole > 0) el.textContent = Math.round((part / whole) * 1000) / 10 + '%';
-  });
-  document.querySelectorAll('[data-launch-only]').forEach(function (el) { el.hidden = !p.launch; });
-  document.querySelectorAll('[data-launch-target]').forEach(function (el) {
-    el.textContent = p.launchTarget.toLocaleString('en-US');
   });
 })(NOHM_PRICING);

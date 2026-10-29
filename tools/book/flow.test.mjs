@@ -5,10 +5,10 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers, homeZones, homeTimeZone, offerState } from '../../public/book/lib/flow.js';
+import { STEPS, emptyDraft, nextStep, prevStep, stepProblem, jobBody, nowDispatchBody, feeFor, tradeForSlug, bookableTrades, bookingErrorAction, restoreDraft, persistableDraft, cancellationTermsQuery, lateAfternoonPremium, offeredTiers, homeZones, homeTimeZone, offerState, standardLeadHours, leadLine, TIERS } from '../../public/book/lib/flow.js';
 import { signupProblems, signupBody } from '../../public/nohm/signup.js';
 import { issuesForTrade, ISSUES_FALLBACK, jobTitle } from '../../public/book/lib/issues.js';
-import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, randomId, prettyPhone, zoneShortName } from '../../public/nohm/format.js';
+import { toE164US, money, scheduledDateIso, bookableDays, windowOpenOn, windowOpensAt, randomId, prettyPhone, zoneShortName, STANDARD_LEAD_HOURS } from '../../public/nohm/format.js';
 import { execFileSync } from 'node:child_process';
 import { createSession } from '../../public/nohm/session.js';
 import { createHttp, ApiError } from '../../public/nohm/http.js';
@@ -19,15 +19,15 @@ const TRADES = [
   { id: 't-hvac', name: 'HVAC', label: 'HVAC', bookable: true, isActive: true },
   { id: 't-make', name: 'MAKE_READY', label: 'Make Ready', bookable: false, isActive: true },
 ];
+// Owner, 2026-10-29: Express $30, NOHM NOW $60, no discount.
 const PRICING = {
-  EXPRESS_PRIORITY_FEE: { baseAmountCents: 4000, currentAmountCents: 2000, hasLiveDiscount: true, promoLabel: 'Launch' },
-  NOHM_NOW_FEE: { baseAmountCents: 6000, currentAmountCents: 3000, hasLiveDiscount: true },
+  EXPRESS_PRIORITY_FEE: { baseAmountCents: 3000, currentAmountCents: 3000, hasLiveDiscount: false, promoLabel: null },
+  NOHM_NOW_FEE: { baseAmountCents: 6000, currentAmountCents: 6000, hasLiveDiscount: false },
 };
 
-function tomorrowIso() {
-  const t = new Date();
-  const d = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+/** A Standard day every window of which is 48 hours or more away: the second one offered. */
+function standardDayIso() {
+  return bookableDays(new Date())[1].iso;
 }
 
 function readyDraft(tier = 'STANDARD') {
@@ -36,7 +36,7 @@ function readyDraft(tier = 'STANDARD') {
   d.issue = issuesForTrade('PLUMBING')[1];
   d.description = 'Kitchen sink drains slowly and gurgles.';
   d.tier = tier;
-  d.day = tomorrowIso();
+  d.day = standardDayIso();
   d.window = 'MORNING';
   d.propertyId = 'p1';
   d.idempotencyKey = 'k1';
@@ -78,19 +78,27 @@ test('each step says what it still needs', () => {
   d.photos = [];
   d.tier = 'STANDARD';
   assert.equal(stepProblem('schedule', d), 'Pick a day.');
+  // 9 AM on Oct 2: 48 hours on is 9 AM on Oct 4.
   const now = new Date(2026, 9, 2, 9);
-  d.day = '2026-10-03';
+  d.day = '2026-10-04';
   assert.equal(stepProblem('schedule', d, now), 'Pick an arrival window.');
   d.window = 'MIDDAY';
   assert.equal(stepProblem('schedule', d, now), null);
-  d.day = '2026-10-01';
-  assert.match(stepProblem('schedule', d, now), /Standard starts tomorrow/);
-  // Owner, 2026-10-09: "Standard service isn't allowed to be booked same
-  // day". Today is refused at any hour, every window still open.
-  d.day = '2026-10-02';
-  d.window = 'AFTERNOON';
-  assert.equal(stepProblem('schedule', d, now), 'Standard starts tomorrow. Pick another day.');
+  // Owner, 2026-10-29: "standard is 48 hours out no sooner no matter what".
+  d.window = 'MORNING';
+  assert.equal(stepProblem('schedule', d, now), 'Standard is 48 hours or more after you book. Pick a later window.', '8 AM on Oct 4 is 47 hours away');
   d.day = '2026-10-03';
+  d.window = 'LATE_AFTERNOON';
+  assert.equal(stepProblem('schedule', d, now), 'Standard is 48 hours or more after you book. Pick another day.', 'tomorrow, any window');
+  d.day = '2026-10-02';
+  assert.equal(stepProblem('schedule', d, now), 'Standard is 48 hours or more after you book. Pick another day.', 'today, any window');
+  d.day = '2026-10-01';
+  assert.match(stepProblem('schedule', d, now), /Pick another day/);
+  // The server's lead time wins when it sends one.
+  d.day = '2026-10-04';
+  d.window = 'LATE_AFTERNOON';
+  assert.equal(stepProblem('schedule', d, now, null, 72), 'Standard is 72 hours or more after you book. Pick another day.');
+  d.day = '2026-10-04';
   d.window = 'MIDDAY';
   d.tier = 'EXPRESS';
   assert.equal(stepProblem('schedule', d), null, 'Express has no schedule');
@@ -104,13 +112,13 @@ test('POST /jobs body: Standard carries the window, Express the shown fee, never
   assert.equal(std.scheduledTimeWindow, 'MORNING');
   // Local midnight: the server adds the window's start hour itself
   // (time-window.util.ts windowOpensAt), as it does for the app.
-  assert.match(std.scheduledDate, new RegExp(`^${tomorrowIso()}T00:00:00[+-]\\d{2}:\\d{2}$`));
+  assert.match(std.scheduledDate, new RegExp(`^${standardDayIso()}T00:00:00[+-]\\d{2}:\\d{2}$`));
   assert.equal(std.isExpress, undefined);
   assert.equal(std.shownFeeCents, undefined);
 
   const exp = jobBody(readyDraft('EXPRESS'), PRICING);
   assert.equal(exp.isExpress, true);
-  assert.equal(exp.shownFeeCents, 2000, 'the launch price, not the base');
+  assert.equal(exp.shownFeeCents, 3000, 'the one Express price');
   assert.equal(exp.scheduledDate, undefined);
   assert.equal(exp.scheduledTimeWindow, undefined);
 
@@ -123,16 +131,38 @@ test('POST /jobs body: Standard carries the window, Express the shown fee, never
 
 test('POST /now/dispatch body carries the live pro, the summary and the shown NOW fee', () => {
   const b = nowDispatchBody(readyDraft('NOW'), 'avail-9', PRICING);
-  assert.deepEqual(b, { availabilityId: 'avail-9', propertyId: 'p1', tradeId: 't-plumb', issueSummary: 'Kitchen sink drains slowly and gurgles.', shownFeeCents: 3000 });
+  assert.deepEqual(b, { availabilityId: 'avail-9', propertyId: 'p1', tradeId: 't-plumb', issueSummary: 'Kitchen sink drains slowly and gurgles.', shownFeeCents: 6000 });
   assert.throws(() => nowDispatchBody(readyDraft('NOW'), null, PRICING), /Pick a pro/);
 });
 
-test('fees come from the pricing map; a promo shows the base struck through; nothing is guessed', () => {
-  assert.deepEqual(feeFor('STANDARD', PRICING), { current: 0, base: 0, discounted: false });
-  assert.equal(feeFor('EXPRESS', PRICING).current, 2000);
-  assert.equal(feeFor('EXPRESS', PRICING).discounted, true);
-  assert.equal(feeFor('NOW', { NOHM_NOW_FEE: { baseAmountCents: 6000, currentAmountCents: 6000, hasLiveDiscount: false } }).discounted, false);
+test('fees come from the pricing map, one price each, never a struck-through base or a promo; nothing is guessed', () => {
+  assert.deepEqual(feeFor('STANDARD', PRICING), { current: 0 });
+  assert.deepEqual(feeFor('EXPRESS', PRICING), { current: 3000 });
+  assert.deepEqual(feeFor('NOW', PRICING), { current: 6000 });
+  // A server still sending a discount: only what is charged comes through.
+  const promo = { EXPRESS_PRIORITY_FEE: { baseAmountCents: 4000, currentAmountCents: 2000, hasLiveDiscount: true, promoLabel: 'Launch pricing', promoDescription: 'Launch pricing until NOHM reaches 1,000 homeowners' } };
+  assert.deepEqual(feeFor('EXPRESS', promo), { current: 2000 });
   assert.equal(feeFor('NOW', {}), null);
+});
+
+test('Standard’s lead time: the server’s standardLeadHours, else 48', () => {
+  assert.equal(STANDARD_LEAD_HOURS, 48);
+  assert.equal(standardLeadHours(null), 48);
+  assert.equal(standardLeadHours(PRICING), 48, 'a server that doesn’t send it yet');
+  assert.equal(standardLeadHours({ ...PRICING, standardLeadHours: 72 }), 72);
+  assert.equal(standardLeadHours({ standardLeadHours: '48' }), 48);
+  for (const bad of [0, -5, null, 'soon', {}]) assert.equal(standardLeadHours({ standardLeadHours: bad }), 48, `${JSON.stringify(bad)} is not a lead time`);
+  assert.equal(leadLine(), 'Scheduled 48 hours or more after you book.');
+  assert.equal(leadLine(72), 'Scheduled 72 hours or more after you book.');
+  assert.equal(TIERS.STANDARD.line, leadLine());
+  assert.match(TIERS.NOW.line, /^60 for 60: a pro heads your way within 60 minutes of accepting/);
+  assert.doesNotMatch(Object.values(TIERS).map((t) => t.line).join(' '), /day or two|tomorrow|same day/i);
+  // A job body counts the days with the server's lead time.
+  const d = readyDraft('STANDARD');
+  d.day = bookableDays(new Date(), 7, null, 48)[0].iso;
+  d.window = 'LATE_AFTERNOON';
+  assert.doesNotThrow(() => jobBody(d, PRICING));
+  assert.throws(() => jobBody(d, { ...PRICING, standardLeadHours: 24 * 9 }), /Standard is 216 hours or more after you book/);
 });
 
 test('website slugs map to bookable server trades only', () => {
@@ -185,17 +215,23 @@ test('format helpers', () => {
   assert.equal(scheduledDateIso('2026-10-03', 'America/Chicago'), '2026-10-03T00:00:00-05:00');
   assert.equal(scheduledDateIso('2026-10-03', 'Asia/Kolkata'), '2026-10-03T00:00:00+05:30');
   assert.equal(scheduledDateIso('bad'), null);
-  // Standard is never same day: tomorrow through a week out.
+  // Standard is 48 hours or more out: 9 AM on Oct 2 offers Oct 4 (from
+  // Midday) through a week of days, never today or tomorrow.
   const days = bookableDays(new Date(2026, 9, 2, 9));
   assert.equal(days.length, 7);
-  assert.deepEqual(days[0], { iso: '2026-10-03', label: 'Tomorrow' });
-  assert.equal(days[6].iso, '2026-10-09');
-  assert.ok(!days.some((d) => d.iso === '2026-10-02' || d.label === 'Today'), 'no today');
-  assert.deepEqual(bookableDays(new Date(2026, 9, 31, 23, 59))[0], { iso: '2026-11-01', label: 'Tomorrow' });
-  assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 9)), true);
-  assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 10, 30)), true, 'offered until the window ends');
-  assert.equal(windowOpenOn('2026-10-02', 'MORNING', new Date(2026, 9, 2, 11)), false, 'not once it has ended');
-  assert.equal(windowOpenOn('2026-10-03', 'MORNING', new Date(2026, 9, 2, 23)), true);
+  assert.deepEqual(days[0], { iso: '2026-10-04', label: 'Sun, Oct 4' });
+  assert.equal(days[6].iso, '2026-10-10');
+  assert.ok(!days.some((d) => d.iso === '2026-10-02' || d.iso === '2026-10-03' || d.label === 'Today' || d.label === 'Tomorrow'), 'no today, no tomorrow');
+  // After 5 PM, two days out has no window left: the first day is three out.
+  assert.equal(bookableDays(new Date(2026, 9, 2, 17, 1))[0].iso, '2026-10-05');
+  assert.equal(bookableDays(new Date(2026, 9, 31, 23, 59))[0].iso, '2026-11-03');
+  assert.equal(windowOpenOn('2026-10-04', 'MORNING', new Date(2026, 9, 2, 9)), false, '47 hours away');
+  assert.equal(windowOpenOn('2026-10-04', 'MIDDAY', new Date(2026, 9, 2, 9)), true, '50 hours away');
+  assert.equal(windowOpenOn('2026-10-04', 'MIDDAY', new Date(2026, 9, 2, 11)), true, 'exactly 48 hours away');
+  assert.equal(windowOpenOn('2026-10-04', 'MIDDAY', new Date(2026, 9, 2, 11, 1)), false, 'a minute under 48 hours');
+  assert.equal(windowOpenOn('2026-10-02', 'LATE_AFTERNOON', new Date(2026, 9, 2, 9)), false, 'never today');
+  assert.equal(windowOpenOn('2026-10-03', 'MORNING', new Date(2026, 9, 2, 7), null, 24), true, 'the lead time is a parameter');
+  assert.equal(windowOpenOn('2026-10-04', 'NOT_A_WINDOW', new Date(2026, 9, 2, 9)), false);
   assert.match(randomId(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 });
 
@@ -330,7 +366,7 @@ test('NOHM Credits: only the Express opt-in is sent, and only when ticked; the s
   assert.equal('useCreditsForExpressFee' in plain, false);
   const opted = jobBody({ ...readyDraft('EXPRESS'), useCredits: true }, PRICING);
   assert.equal(opted.useCreditsForExpressFee, true);
-  assert.equal(opted.shownFeeCents, 2000, 'the shown fee is the server’s, untouched by credits');
+  assert.equal(opted.shownFeeCents, 3000, 'the shown fee is the server’s, untouched by credits');
   assert.equal(Object.keys(opted).some((k) => /credit/i.test(k) && k !== 'useCreditsForExpressFee'), false, 'no amount is sent');
   const standard = jobBody({ ...readyDraft('STANDARD'), useCredits: true }, PRICING);
   assert.equal('useCreditsForExpressFee' in standard, false, 'never on Standard');
@@ -367,34 +403,42 @@ test('scheduledDate is midnight at the home with the home’s offset, whatever t
   }
 });
 
-test('"Tomorrow" is the home’s tomorrow: the days and the same-day rule count at the home', () => {
-  // 06:30 UTC on Oct 16: still Oct 15 in Honolulu, already Oct 16 in Chicago.
-  const at = new Date('2026-10-16T06:30:00Z');
-  assert.deepEqual(bookableDays(at, 7, 'America/Chicago')[0], { iso: '2026-10-17', label: 'Tomorrow' });
-  assert.deepEqual(bookableDays(at, 7, 'Pacific/Honolulu')[0], { iso: '2026-10-16', label: 'Tomorrow' });
-  assert.equal(bookableDays(at, 7, 'America/Chicago')[1].label, 'Sun, Oct 18');
-  assert.equal(bookableDays(at, 7, 'America/Chicago')[6].iso, '2026-10-23');
-  // Oct 16 is today at a Chicago home: refused there, fine for a Honolulu one.
-  const d = { ...emptyDraft(), tier: 'STANDARD', day: '2026-10-16', window: 'MIDDAY' };
-  assert.equal(stepProblem('schedule', d, at, 'America/Chicago'), 'Standard starts tomorrow. Pick another day.');
+test('the 48 hours count on the home’s clock: its days and its windows', () => {
+  // 23:30 UTC on Oct 16: 6:30 PM in Chicago, 1:30 PM in Honolulu. 48
+  // hours on, Oct 18's last window (5 PM) has opened in Chicago but not
+  // the Afternoon one (2 PM) in Honolulu.
+  const at = new Date('2026-10-16T23:30:00Z');
+  assert.deepEqual(bookableDays(at, 7, 'America/Chicago')[0], { iso: '2026-10-19', label: 'Mon, Oct 19' });
+  assert.deepEqual(bookableDays(at, 7, 'Pacific/Honolulu')[0], { iso: '2026-10-18', label: 'Sun, Oct 18' });
+  assert.equal(bookableDays(at, 7, 'America/Chicago')[6].iso, '2026-10-25');
+  const d = { ...emptyDraft(), tier: 'STANDARD', day: '2026-10-18', window: 'AFTERNOON' };
+  assert.equal(stepProblem('schedule', d, at, 'America/Chicago'), 'Standard is 48 hours or more after you book. Pick another day.');
   assert.equal(stepProblem('schedule', d, at, 'Pacific/Honolulu'), null);
-  // A window closes on the home's clock: 10:30 AM in Chicago is 15:30 UTC.
-  assert.equal(windowOpenOn('2026-10-16', 'MORNING', new Date('2026-10-16T15:30:00Z'), 'America/Chicago'), true);
-  assert.equal(windowOpenOn('2026-10-16', 'MORNING', new Date('2026-10-16T16:00:00Z'), 'America/Chicago'), false);
+  // A window counts from its start on the home's clock: 8 AM CDT on Oct 18 is 13:00 UTC.
+  assert.equal(windowOpensAt('2026-10-18', 'MORNING', 'America/Chicago').toISOString(), '2026-10-18T13:00:00.000Z');
+  assert.equal(windowOpenOn('2026-10-18', 'MORNING', new Date('2026-10-16T13:00:00Z'), 'America/Chicago'), true, 'exactly 48 hours');
+  assert.equal(windowOpenOn('2026-10-18', 'MORNING', new Date('2026-10-16T13:01:00Z'), 'America/Chicago'), false);
+  // Clocks go back at 2 AM on Nov 1: 8 AM CST is 14:00 UTC, the home's
+  // midnight (CDT) plus 8 hours is 13:00 UTC. The earlier one counts.
+  assert.equal(windowOpensAt('2026-11-01', 'MORNING', 'America/Chicago').toISOString(), '2026-11-01T13:00:00.000Z');
+  assert.equal(windowOpensAt('2026-11-02', 'MORNING', 'America/Chicago').toISOString(), '2026-11-02T14:00:00.000Z');
+  assert.equal(windowOpensAt('bad', 'MORNING', 'America/Chicago'), null);
   assert.equal(zoneShortName('America/Chicago', at), 'CDT');
 });
 
 test('POST /jobs and the terms carry the home’s midnight', () => {
   const tz = 'America/Chicago';
   const d = readyDraft('STANDARD');
-  d.day = bookableDays(new Date(), 7, tz)[0].iso;
+  d.day = bookableDays(new Date(), 7, tz)[1].iso;
   const body = jobBody(d, PRICING, tz);
   assert.equal(body.scheduledDate, scheduledDateIso(d.day, tz));
   assert.match(body.scheduledDate, new RegExp(`^${d.day}T00:00:00-0[56]:00$`));
   assert.deepEqual(cancellationTermsQuery(d, tz), { scheduledDate: body.scheduledDate, scheduledTimeWindow: 'MORNING' });
-  // A day that's today at the home isn't sent.
+  // Today and tomorrow at the home aren't sent: under 48 hours.
   d.day = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date());
-  assert.throws(() => jobBody(d, PRICING, tz), /Standard starts tomorrow/);
+  assert.throws(() => jobBody(d, PRICING, tz), /Standard is 48 hours or more after you book/);
+  d.day = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(Date.now() + 86400000));
+  assert.throws(() => jobBody(d, PRICING, tz), /Standard is 48 hours or more after you book/);
 });
 
 test('the home’s zone comes from the server: /auth/me’s homes, the chosen one first', () => {

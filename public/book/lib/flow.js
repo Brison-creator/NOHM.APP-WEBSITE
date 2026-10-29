@@ -8,16 +8,34 @@
 // keeps the person from sending something the server would refuse.
 
 import { jobTitle } from './issues.js';
-import { scheduledDateIso, windowByKey, bookableDays, windowOpenOn, isTimeZone } from '../../nohm/format.js';
+import { scheduledDateIso, windowByKey, bookableDays, windowOpenOn, isTimeZone, STANDARD_LEAD_HOURS } from '../../nohm/format.js';
 
 /** The steps in order. "schedule" is Standard-only; "account" and "card" are skipped when already done. */
 export const STEPS = ['service', 'issue', 'details', 'speed', 'schedule', 'account', 'home', 'card', 'review', 'done'];
 
+// The three speeds (owner, 2026-10-29: "make now permantly 60 for 60 no
+// discounts now its confusing and also express is 30 now standard is 48
+// hours out no sooner no matter what"). Standard's line is leadLine(), with
+// the server's lead time.
 export const TIERS = {
-  STANDARD: { key: 'STANDARD', name: 'Standard', line: 'A pro in a day or two.', feeKey: null },
-  EXPRESS: { key: 'EXPRESS', name: 'NOHM Express', line: 'Same day. Goes straight to the closest pro.', feeKey: 'EXPRESS_PRIORITY_FEE' },
-  NOW: { key: 'NOW', name: 'NOHM NOW', line: 'A pro within 60 minutes of booking.', feeKey: 'NOHM_NOW_FEE' },
+  STANDARD: { key: 'STANDARD', name: 'Standard', line: leadLine(), feeKey: null },
+  EXPRESS: { key: 'EXPRESS', name: 'NOHM Express', line: 'A pro today. Goes straight to the closest pro.', feeKey: 'EXPRESS_PRIORITY_FEE' },
+  NOW: { key: 'NOW', name: 'NOHM NOW', line: '60 for 60: a pro heads your way within 60 minutes of accepting, or you don’t pay the NOW fee.', feeKey: 'NOHM_NOW_FEE' },
 };
+
+/** "Scheduled 48 hours or more after you book.": Standard's lead time, said one way everywhere. */
+export function leadLine(leadHours = STANDARD_LEAD_HOURS) {
+  return `Scheduled ${leadHours} hours or more after you book.`;
+}
+
+/**
+ * How far out Standard starts, in hours: the server's standardLeadHours
+ * on GET /config/pricing when it sends one, else 48.
+ */
+export function standardLeadHours(pricing) {
+  const n = Number(pricing && pricing.standardLeadHours);
+  return Number.isFinite(n) && n > 0 ? n : STANDARD_LEAD_HOURS;
+}
 
 export const LIMITS = { title: 200, description: 2000, issueSummaryMin: 10, issueSummaryMax: 500, photos: 5, photoBytes: 10 * 1024 * 1024 };
 
@@ -67,8 +85,9 @@ export function bookableTrades(trades) {
  * Whether a step is done enough to leave. Returns null when it is, or
  * the first thing to fix (a short message) when it isn't. `tz` is the
  * home's time zone (homeTimeZone): the schedule's days count there.
+ * `leadHours` is how far out Standard starts (standardLeadHours).
  */
-export function stepProblem(step, draft, now = new Date(), tz = null) {
+export function stepProblem(step, draft, now = new Date(), tz = null, leadHours = STANDARD_LEAD_HOURS) {
   switch (step) {
     case 'service':
       return draft.trade ? null : 'Pick a service.';
@@ -87,9 +106,9 @@ export function stepProblem(step, draft, now = new Date(), tz = null) {
     case 'schedule':
       if (draft.tier !== 'STANDARD') return null;
       if (!draft.day) return 'Pick a day.';
-      if (!bookableDays(now, 7, tz).some((d) => d.iso === draft.day)) return 'Standard starts tomorrow. Pick another day.';
+      if (!bookableDays(now, 7, tz, leadHours).some((d) => d.iso === draft.day)) return `Standard is ${leadHours} hours or more after you book. Pick another day.`;
       if (!windowByKey(draft.window)) return 'Pick an arrival window.';
-      if (!windowOpenOn(draft.day, draft.window, now, tz)) return 'That window has closed. Pick another.';
+      if (!windowOpenOn(draft.day, draft.window, now, tz, leadHours)) return `Standard is ${leadHours} hours or more after you book. Pick a later window.`;
       return null;
     case 'home':
       return draft.propertyId ? null : 'Add the home the pro is coming to.';
@@ -167,24 +186,17 @@ export function homeTimeZone(draft, zones) {
 // ── Money ─────────────────────────────────────────────────────────
 
 /**
- * The fee for a tier from GET /config/pricing's map. `current` is what
- * the person pays now and what goes back as shownFeeCents; `base` is
- * the regular price, shown struck through while a promo is live.
+ * The fee for a tier from GET /config/pricing's map: `current` is what
+ * the person pays and what goes back as shownFeeCents. One price, shown
+ * alone: never a struck-through regular price or a promo beside it
+ * (owner, 2026-10-29: "no discounts now its confusing").
  */
 export function feeFor(tierKey, pricing) {
   const tier = TIERS[tierKey];
-  if (!tier || !tier.feeKey) return { current: 0, base: 0, discounted: false };
+  if (!tier || !tier.feeKey) return { current: 0 };
   const row = pricing && pricing[tier.feeKey];
   if (!row) return null; // pricing not loaded: don't guess a price
-  const current = Number(row.currentAmountCents);
-  const base = Number(row.baseAmountCents);
-  return {
-    current,
-    base,
-    discounted: Boolean(row.hasLiveDiscount) && base > current,
-    promoLabel: row.promoLabel || null,
-    promoDescription: row.promoDescription || null,
-  };
+  return { current: Number(row.currentAmountCents) };
 }
 
 /**
@@ -226,7 +238,7 @@ export function cancellationTermsQuery(draft, tz = null) {
 export function jobBody(draft, pricing, tz = null) {
   if (draft.tier === 'NOW') throw new Error('NOW jobs go through nowDispatchBody');
   for (const s of ['service', 'issue', 'details', 'speed', 'schedule', 'home']) {
-    const p = stepProblem(s, draft, new Date(), tz);
+    const p = stepProblem(s, draft, new Date(), tz, standardLeadHours(pricing));
     if (p) throw new Error(p);
   }
   if (!draft.idempotencyKey) throw new Error('idempotencyKey missing');
@@ -289,7 +301,7 @@ export function bookingErrorAction(err, call = 'job') {
   if (code === 'PAYMENT_METHOD_REQUIRED') return { kind: 'card' };
   if (code === 'PRICE_CHANGED') return { kind: 'price_changed', amountCents: err.body && err.body.amountCents };
   if (code === 'DUPLICATE_TRADE_REQUEST') return { kind: 'duplicate', existingJob: err.body && err.body.existingJob };
-  // The day is today (or past) at the home: pick again, with the server's words.
+  // Too soon at the home (today, or under Standard's 48 hours): pick again, with the server's words.
   if (code === 'STANDARD_NOT_SAME_DAY') return { kind: 'schedule', message: err.message };
   // A NOW dispatch that loses the race (the pro was just taken) is a
   // plain 409 from the server: pick someone else, with its message.

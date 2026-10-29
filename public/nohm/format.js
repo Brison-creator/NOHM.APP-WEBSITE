@@ -115,20 +115,58 @@ export function zoneShortName(tz, at = new Date()) {
 }
 
 /**
- * The seven days a Standard job can be booked for: tomorrow through a
- * week out, counted at the home (`tz`). Standard is never same day
- * (owner, 2026-10-09: "Standard service isn't allowed to be booked same
- * day"); today is NOHM Express, and the server refuses a Standard job
- * for today in the home's time (standard-day.ts). Each:
- * { iso: 'YYYY-MM-DD', label }.
+ * How far out Standard starts: 48 hours or more after booking, never
+ * sooner (owner, 2026-10-29: "standard is 48 hours out no sooner no
+ * matter what"). The server can set it with standardLeadHours on
+ * GET /config/pricing (book/lib/flow.js standardLeadHours).
  */
-export function bookableDays(now = new Date(), count = 7, tz = null) {
+export const STANDARD_LEAD_HOURS = 48;
+
+/**
+ * The instant a window opens at the home (`tz`, else the browser's zone),
+ * or null for a bad day or window. The earlier of its start hour on the
+ * home's wall clock and the home's midnight plus that many hours (the
+ * two differ by an hour on a clock-change day), so the 48 hours hold
+ * however the server counts it.
+ */
+export function windowOpensAt(dayIso, windowKey, tz = null) {
+  const w = windowByKey(windowKey);
+  const midnight = Date.parse(scheduledDateIso(dayIso, tz) || '');
+  if (!w || Number.isNaN(midnight)) return null;
+  const [y, m, d] = dayIso.split('-').map(Number);
+  // As scheduledDateIso: a first guess from the offset at that wall time
+  // read as UTC, then the offset at the instant the guess names.
+  const wall = Date.UTC(y, m - 1, d, w.startHour);
+  const off = zoneOffsetMinutes(new Date(wall - zoneOffsetMinutes(new Date(wall), tz) * 60000), tz);
+  return new Date(Math.min(wall - off * 60000, midnight + w.startHour * 3600000));
+}
+
+/**
+ * Whether a Standard window can be booked: it opens `leadHours` (48) or
+ * more from now, at the home. Nothing sooner is ever offered.
+ */
+export function windowOpenOn(dayIso, windowKey, now = new Date(), tz = null, leadHours = STANDARD_LEAD_HOURS) {
+  const at = windowOpensAt(dayIso, windowKey, tz);
+  return Boolean(at) && at.getTime() - now.getTime() >= leadHours * 3600000;
+}
+
+/**
+ * The days a Standard job can be booked for, counted at the home (`tz`):
+ * the first `count` days with a window that opens `leadHours` (48) or
+ * more from now, so the first is two or three days out. Never today
+ * either (owner, 2026-10-09: "Standard service isn't allowed to be booked
+ * same day"; the server refuses that in the home's time, standard-day.ts).
+ * Each: { iso: 'YYYY-MM-DD', label }.
+ */
+export function bookableDays(now = new Date(), count = 7, tz = null, leadHours = STANDARD_LEAD_HOURS) {
   const t = zonedParts(now, tz);
   const out = [];
-  for (let i = 1; i <= count; i++) {
+  const last = count + Math.ceil(leadHours / 24) + 1;
+  for (let i = 1; out.length < count && i <= last; i++) {
     // Calendar arithmetic on the home's date, in UTC so no zone moves it.
     const d = new Date(Date.UTC(t.year, t.month - 1, t.day + i));
     const iso = isoOf(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+    if (!WINDOWS.some((w) => windowOpenOn(iso, w.key, now, tz, leadHours))) continue;
     const label = i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
     out.push({ iso, label });
   }
@@ -155,14 +193,6 @@ export function scheduledDateIso(dayIso, tz = null) {
   const sign = off < 0 ? '-' : '+';
   const p = (n) => String(Math.abs(n)).padStart(2, '0');
   return `${isoOf(y, m, d)}T00:00:00${sign}${p(Math.trunc(off / 60))}:${p(off % 60)}`;
-}
-
-/** A window that has already ended today at the home isn't offered for today. */
-export function windowOpenOn(dayIso, windowKey, now = new Date(), tz = null) {
-  const w = windowByKey(windowKey);
-  if (!w) return false;
-  if (dayIso !== dateIn(now, tz)) return true;
-  return zonedParts(now, tz).hour < w.startHour + 3;
 }
 
 /** A random id for idempotency keys and the device id; UUID v4 shaped. */
