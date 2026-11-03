@@ -1,5 +1,6 @@
 // node --test tools/ads
 // The landlord ad page's email form (nohm.app/go/landlords): its rules.
+// Off the page since it went plain on 2026-11-03; the rules are kept.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -31,10 +32,11 @@ test('a refusal is said plainly, with the number to call', () => {
   assert.match(leadError(null), /888-230-NOHM/);
 });
 
-test('the page has the form, its script and its settings', () => {
+// The plain page (owner, 2026-11-03: "simple facts") has no email form:
+// lead.js and email.js stay, ready if it comes back, but the page loads
+// neither.
+test('the plain page has no email form and loads none of its scripts', () => {
   const page = readFileSync(new URL('../../public/go/landlords/index.html', import.meta.url), 'utf8');
-  assert.match(page, /<section class="sec wrap lead" id="email" data-seen="email">/);
-  assert.match(page, /<div class="b-main" id="lead-form">/);
-  assert.match(page, /<script src="\/book\/config\.js"><\/script>/);
-  assert.match(page, /<script type="module" src="\/go\/landlords\/email\.js"><\/script>/);
+  assert.ok(!page.includes('id="lead-form"'));
+  assert.ok(!page.includes('/go/landlords/email.js'));
 });

@@ -45,14 +45,13 @@ PAGES = {
     '/pro': 'Pro sign-up page',
     '/ig': 'Instagram link page',
 }
-# The landlord page's parts, top to bottom (data-seen in its HTML). 'free'
-# (free, and how, under the hero) took the place of the old 'price' part
-# lower down on 2026-10-29. 'vent' is the Vent to us box: only that it was
-# seen is counted, never what anyone writes in it.
+# The landlord page's parts, top to bottom (data-seen in its HTML). Plain
+# since 2026-11-03 (owner: "simple facts"): the top, the facts, how to
+# start. The old page's parts (free, versus, screens, NOHMie, Autopilot,
+# questions, the email form, Vent to us) are gone, and so is the headline
+# test: the page sends v=s, which the test doesn't count.
 PARTS = [
-    ('hero', 'Top'), ('free', 'Free, and how'), ('versus', 'Cheap vs NOHM'), ('screens', 'Every rental'), ('tenant-app', 'Tenant app'),
-    ('nohmie', 'NOHMie'), ('autopilot', 'Autopilot'), ('anywhere', 'Anywhere'),
-    ('steps', 'Start in minutes'), ('faq', 'Questions'), ('email', 'Email form'), ('vent', 'Vent to us'), ('final', 'Last button'),
+    ('hero', 'Top'), ('facts', 'The facts'), ('start', 'How to start'),
 ]
 STAYS = (10, 30, 60, 120, 300)
 # The hero test's rule (owner, 2026-10-27: "what you will change automatic"):
@@ -308,9 +307,11 @@ def summarize(report, label):
                 faq = collections.Counter(q for v in counted for q in v['faq'])
                 if faq:
                     lines.append('  Questions opened: ' + ', '.join(f'{k} {n}' for k, n in faq.most_common()))
+                # The headline test ended on 2026-11-03 (the plain page has
+                # no A or B): shown only for visits from before then.
                 t = hero_test(visits)
-                lines.append(f"  Headline test: A (finally in your area) {t['a']['acted']} of {t['a']['people']} acted, B (rent in, repairs handled) {t['b']['acted']} of {t['b']['people']}"
-                             + (f"; winner {t['winner'].upper()}" if t['winner'] else f'; no winner yet (needs {TEST_MIN_PEOPLE} people each)'))
+                if t['a']['people'] or t['b']['people']:
+                    lines.append(f"  Headline test (ended 2026-11-03): A (finally in your area) {t['a']['acted']} of {t['a']['people']} acted, B (rent in, repairs handled) {t['b']['acted']} of {t['b']['people']}")
         if path == '/join/landlord':
             lines.append(f"  New landlord accounts: {sum(signups.values())}" + (' (' + ', '.join(f'{k} {n}' for k, n in signups.items()) + ')' if signups else ''))
         if path.startswith('/pro'):

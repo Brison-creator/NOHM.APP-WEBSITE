@@ -1,7 +1,7 @@
 // node --test tools/ads
-// The landlord ad page (nohm.app/go/landlords): Google sign-up at every
-// turn, the phone's own store in the dock, the hero test, and the counts
-// track.js sends (tools/ads/report.py reads them) with nothing personal.
+// The landlord ad page (nohm.app/go/landlords): plain since 2026-11-03,
+// sign-up and the stores at the top and the end, and the counts track.js
+// sends (tools/ads/report.py reads them) with nothing personal.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,30 +12,36 @@ const page = readFileSync(new URL('../../public/go/landlords/index.html', import
 const track = readFileSync(new URL('../../public/go/landlords/track.js', import.meta.url), 'utf8');
 const report = readFileSync(new URL('./report.py', import.meta.url), 'utf8');
 
-test('Sign up free with Google: the hero, the email part, the last button and the dock', () => {
-  for (const from of ['lp-hero', 'lp-email', 'lp-final', 'lp-dock']) {
+test('Sign up free and the stores: at the top and at the end, each marked where it was tapped', () => {
+  for (const from of ['lp-hero', 'lp-final']) {
     assert.match(page, new RegExp(`href="/join/landlord/\\?from=${from}"`), from);
+    assert.ok(page.includes(`href="/get/?to=ios&amp;from=${from}"`), `ios ${from}`);
+    assert.ok(page.includes(`href="/get/?to=android&amp;from=${from}"`), `android ${from}`);
   }
-  assert.match(page, /href="#email"[^>]*>Not ready\? Email me the links</);
-});
-
-test('the dock shows this phone’s store only', () => {
-  assert.match(page, /html\.android \.dock \.store-badge--app-store, html\.ios \.dock \.store-badge--google-play \{ display: none; \}/);
-  assert.match(page, /\/Android\/i\.test\(navigator\.userAgent\) \? ' android' : ' ios'/);
 });
 
 test('every part the report names is marked on the page, in the same order', () => {
   const marked = [...page.matchAll(/data-seen="([a-z-]+)"/g)].map((m) => m[1]);
   const named = [...report.matchAll(/\('([a-z-]+)', '[^']+'\)/g)].map((m) => m[1]).filter((k) => marked.includes(k) || ['hero'].includes(k));
   assert.deepEqual(marked, named);
-  assert.equal(marked.length, 13);
+  assert.deepEqual(marked, ['hero', 'facts', 'start']);
 });
 
-test('the hero test: two headlines, kept per phone, and a winner switch', () => {
-  assert.match(page, /var WIN = '';/);
-  assert.match(page, /localStorage\.setItem\('nohm:lp-v', v\)/);
-  assert.match(page, /Rent in\. Repairs handled\. From your phone\./);
-  assert.match(page, /<h1>NOHM is finally in your area\.<\/h1>/);
+// Owner, 2026-11-03: "i need this page to be simple not difficult to
+// understand loose the marketing vibe. no sales vibe just white page with
+// nohm landlord logo and simple facts".
+test('a plain page: the NOHM landlord logo, the facts, no photo, no headline test, no sales parts', () => {
+  assert.match(page, /<header class="bar"><a href="\/">NOHM<\/a><span class="role">landlord<\/span><\/header>/);
+  assert.match(page, /<h2>The facts<\/h2>/);
+  assert.match(page, /<html lang="en" data-v="s">/, 'no headline test: the report counts no A or B');
+  for (const gone of ['var WIN', '<picture', 'class="dock"', 'NOHMie', 'Cheap software', 'data-vent', 'id="lead-form"']) {
+    assert.ok(!page.includes(gone), gone);
+  }
+  // Prices only from the live price list.
+  for (const key of ['ACH_RENT_FEE', 'RENTAL_APPLICATION_FEE', 'RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY']) {
+    assert.ok(page.includes(`data-price="${key}"`), key);
+  }
+  assert.match(page, /<script src="\/for\/live\.js" defer><\/script>/);
 });
 
 test('the counts are a HEAD to the page with no name, email or id', () => {
