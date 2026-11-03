@@ -24,7 +24,7 @@ test('every part the report names is marked on the page, in the same order', () 
   const marked = [...page.matchAll(/data-seen="([a-z-]+)"/g)].map((m) => m[1]);
   const named = [...report.matchAll(/\('([a-z-]+)', '[^']+'\)/g)].map((m) => m[1]).filter((k) => marked.includes(k) || ['hero'].includes(k));
   assert.deepEqual(marked, named);
-  assert.deepEqual(marked, ['hero', 'facts', 'start']);
+  assert.deepEqual(marked, ['hero', 'email', 'facts', 'start']);
 });
 
 // Owner, 2026-11-03: "i need this page to be simple not difficult to
@@ -34,7 +34,7 @@ test('a plain page: the NOHM landlord logo, the facts, no photo, no headline tes
   assert.match(page, /<header class="bar"><a href="\/">NOHM<\/a><span class="role">landlord<\/span><\/header>/);
   assert.match(page, /<h2>The facts<\/h2>/);
   assert.match(page, /<html lang="en" data-v="s">/, 'no headline test: the report counts no A or B');
-  for (const gone of ['var WIN', '<picture', 'class="dock"', 'NOHMie', 'Cheap software', 'data-vent', 'id="lead-form"']) {
+  for (const gone of ['var WIN', '<picture', 'class="dock"', 'NOHMie', 'Cheap software', 'data-vent']) {
     assert.ok(!page.includes(gone), gone);
   }
   // Prices only from the live price list.

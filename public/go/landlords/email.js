@@ -22,7 +22,7 @@ const source = leadSource(location.search);
 function sent() {
   clear(root);
   root.append(
-    h('p.lead-done', 'Sent. Check your inbox for the App Store and Google Play links.'),
+    h('p.lead-done', 'Sent. Check your email for the link.'),
     h('p.b-small', 'Questions? Call or text 888-230-NOHM.'),
   );
   // Counted in the site's access logs (tools/ads/report.py): no name or email in it.
@@ -36,7 +36,8 @@ function form() {
   };
   const err = h('p.b-err', { role: 'alert' });
   const hc = humanCheck(webConfig);
-  const btn = button('Email me the links', { key: 'lead-send', submit: true });
+  // White, not blue: Sign up free above it is the page's one blue button.
+  const btn = button('Email me the link', { kind: 'sec', key: 'lead-send', submit: true });
   const submit = async (e) => {
     e && e.preventDefault();
     err.textContent = '';

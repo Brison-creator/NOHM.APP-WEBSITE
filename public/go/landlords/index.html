@@ -17,6 +17,8 @@
   <link rel="stylesheet" href="/type.css" />
   <link rel="stylesheet" href="/bar.css" />
   <link rel="stylesheet" href="/store-cta.css" />
+  <link rel="stylesheet" href="/book/book.css" />
+  <script src="/book/config.js"></script>
   <style>
     /* The landlord ad's page, plain (owner, 2026-11-03: "i need this page to
        be simple not difficult to understand loose the marketing vibe. no
@@ -68,6 +70,15 @@
     }
     .facts a, .call a { color: #356CA3; }
 
+    /* Not ready to download: name and email, and NOHM emails the link
+       (owner, 2026-11-03: "how can we get the visitors info to follow
+       up"). The lead lands in NOHM's inbox; email.js builds the form. */
+    .lead { margin-top: 32px; padding: 20px 20px 22px; border-radius: 12px; background: #f4f4f4; }
+    .lead h2 { margin: 0 0 6px; font-size: 19px; }
+    .lead .note { margin: 0 0 16px; font-size: 15px; line-height: 1.5; }
+    .lead-done { margin: 0; font-size: 17px; font-weight: var(--weight-ui-strong); line-height: 1.4; color: #171a20; }
+    .lead input, .lead .b-btn { box-sizing: border-box; }
+
     .steps { margin: 0; padding-left: 22px; font-size: 16px; line-height: 1.8; }
     .call { margin: 20px 0 0; font-size: 16px; }
 
@@ -94,6 +105,15 @@
             <li><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=lp-hero" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a></li>
           </ul>
         </div>
+      </div>
+    </section>
+
+    <section class="lead" id="email" data-seen="email">
+      <h2>Not ready to download?</h2>
+      <p class="note">Leave your name and email, and we&rsquo;ll email you the link to set it up when you have a minute.</p>
+      <div id="lead-form">
+        <p class="b-small">Loading&hellip;</p>
+        <noscript><p class="b-small">Email <a href="mailto:admin@nohm.app">admin@nohm.app</a>, or call or text 888-230-NOHM, and we&rsquo;ll send you the link.</p></noscript>
       </div>
     </section>
 
@@ -141,6 +161,7 @@
     <a href="/support">Support</a>
   </footer>
 
+  <script type="module" src="/go/landlords/email.js"></script>
   <script src="/go/landlords/track.js" defer></script>
   <script src="/for/live.js" defer></script>
   <script src="/menu.js" defer></script>

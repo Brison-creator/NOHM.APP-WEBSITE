@@ -46,12 +46,13 @@ PAGES = {
     '/ig': 'Instagram link page',
 }
 # The landlord page's parts, top to bottom (data-seen in its HTML). Plain
-# since 2026-11-03 (owner: "simple facts"): the top, the facts, how to
-# start. The old page's parts (free, versus, screens, NOHMie, Autopilot,
-# questions, the email form, Vent to us) are gone, and so is the headline
-# test: the page sends v=s, which the test doesn't count.
+# since 2026-11-03 (owner: "simple facts"): the top, the email form
+# (back the same day: "how can we get the visitors info to follow up"),
+# the facts, how to start. The old page's other parts (free, versus,
+# screens, NOHMie, Autopilot, questions, Vent to us) are gone, and so is
+# the headline test: the page sends v=s, which the test doesn't count.
 PARTS = [
-    ('hero', 'Top'), ('facts', 'The facts'), ('start', 'How to start'),
+    ('hero', 'Top'), ('email', 'Email form'), ('facts', 'The facts'), ('start', 'How to start'),
 ]
 STAYS = (10, 30, 60, 120, 300)
 # The hero test's rule (owner, 2026-10-27: "what you will change automatic"):
