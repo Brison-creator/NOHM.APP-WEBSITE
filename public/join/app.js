@@ -13,7 +13,7 @@ import { createSession } from '../nohm/session.js';
 import { createHttp } from '../nohm/http.js';
 import { createApi, apiBaseFor } from '../nohm/api.js';
 import { createWebConfig } from '../nohm/web-config.js';
-import { h, clear } from '../nohm/dom.js';
+import { h, clear, button } from '../nohm/dom.js';
 import { accountScreen, clearPending, signingUp, accountStoppedScreen } from '../nohm/account.js';
 import { proStepFor } from './lib/pro-flow.js';
 import { renterStepFor } from './lib/renter-flow.js';
@@ -186,6 +186,38 @@ function firstStep() {
 function wrongRoleScreen() {
   const r = a.state.user.role;
   const where = r === 'HOMEOWNER' || r === 'PROPERTY_MANAGER' ? 'a homeowner' : r === 'CONTRACTOR' ? 'a pro' : r === 'TENANT' ? 'a renter' : 'another kind of';
+  // A renter whose account is a homeowner's, landlord's or pro's adds
+  // renting to it right here, as the app's "I rent my place" does, and
+  // goes on to the landlord's invitation (owner, 2026-11-03: a renter who
+  // already had NOHM "basically doesnt give you the option to do
+  // anything"). The server decides what may be added.
+  if (MODE === 'renter') {
+    const err = h('p.b-err', { role: 'alert' });
+    const add = button('Add renting to this account', { key: 'add-renter' });
+    add.addEventListener('click', async () => {
+      err.textContent = '';
+      add.busy(true, 'Adding…');
+      try {
+        try {
+          await api.auth.addSide('TENANT');
+        } catch (ex) {
+          if (!(ex && ex.status === 409)) throw ex; // 409: it already rents.
+        }
+        await loadAccount();
+        a.go(firstStep());
+      } catch (ex) {
+        add.busy(false);
+        err.textContent = (ex && ex.message) || 'That didn’t work. Try again, or call or text 888-230-NOHM.';
+      }
+    });
+    return h('section.b-screen', [
+      h('h1.b-h1', 'You already have a NOHM account.'),
+      h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email || a.state.user.phone || ''}). Add renting to it to accept your landlord’s invitation. Nothing else on your account changes.`),
+      err,
+      h('div.b-foot', [add]),
+      h('p.b-small', ['Not you? ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]),
+    ]);
+  }
   return h('section.b-screen', [
     h('h1.b-h1', 'That’s a different kind of account.'),
     h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email || a.state.user.phone || ''}). Add the ${MODE === 'pro' ? 'pro' : 'renter'} role to it in the NOHM app, or sign out and sign up here with a different email.`),

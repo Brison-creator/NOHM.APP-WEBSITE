@@ -408,6 +408,25 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.waitForFunction(() => document.body.textContent.includes('different kind of account'));
   await snap(page, 'wrong-role');
   console.log('✓ A homeowner on /join is told it’s a different kind of account');
+
+  // The same homeowner, invited to rent: renting is added right here and
+  // the landlord's invitation opens (owner, 2026-11-03: a renter who
+  // already had NOHM "basically doesnt give you the option to do anything").
+  await page.goto(`${BASE}/join/renter/${api}`);
+  await page.waitForSelector('[data-key=add-renter]');
+  assert.match(await page.textContent('main'), /You already have a NOHM account\./);
+  await snap(page, 'renter-has-account');
+  await page.click('[data-key=add-renter]');
+  await page.waitForSelector('[data-invite="482913"]');
+  await snap(page, 'renter-has-account-invite');
+  const calls = await log();
+  const added = calls.filter((c) => c.method === 'POST' && c.path === '/me/profiles/TENANT');
+  assert.deepEqual(added.map((c) => c.status), [201], 'renting is added once');
+  // Reloaded, the account rents now: straight to the invitation.
+  await page.reload();
+  await page.waitForSelector('[data-invite="482913"]');
+  assert.equal((await log()).filter((c) => c.path === '/me/profiles/TENANT').length, 1);
+  console.log('✓ A homeowner invited to rent: “Add renting to this account” → the landlord’s invitation, and it stays after a reload');
   await ctx.close();
 }
 

@@ -265,15 +265,24 @@ function api(method, url, body, req) {
   const guard = [
     [/^\/contractors\//, ['CONTRACTOR']],
     [/^\/stripe\/connect\//, ['CONTRACTOR']],
-    [/^\/tenants\/(my-invites|my-property)$/, ['TENANT']],
+    // my-invites: any signed-in account since 2026-11-03 (its own phone's).
+    [/^\/tenants\/my-property$/, ['TENANT']],
     [/^\/properties(\/|$)/, ['HOMEOWNER', 'PROPERTY_MANAGER']],
     [/^\/jobs$/, ['HOMEOWNER', 'PROPERTY_MANAGER']],
   ].find(([re]) => re.test(p));
-  if (guard && !guard[1].includes(world.role)) return [403, { message: 'Forbidden resource' }];
+  const held = [world.role, ...(world.added || [])];
+  if (guard && !guard[1].some((r) => held.includes(r))) return [403, { message: 'Forbidden resource' }];
+  // "I rent my place" (me.controller.ts POST /me/profiles/:capability): a side
+  // added to the account; holding it already is a 409.
+  if (method === 'POST' && p === '/me/profiles/TENANT') {
+    if (held.includes('TENANT')) return [409, { message: 'You already have this.' }];
+    world.added = [...(world.added || []), 'TENANT'];
+    return [201, { caps: [...held, 'TENANT'] }];
+  }
   // /auth/me carries the homes as stored rows, each with its `timezone`
   // (property-timezone.ts); GET /properties and the property writes don't
   // (property-queries.service.ts mapToPropertyResponse).
-  if (p === '/auth/me') return [200, { user: { ...(world.user || USER), role: world.role, caps: [world.role], homeownerProfile: { properties: world.properties } } }];
+  if (p === '/auth/me') return [200, { user: { ...(world.user || USER), role: world.role, caps: held, homeownerProfile: { properties: world.properties } } }];
   // ── Pros ──
   if (p === '/contractors/dashboard') { const pr = world.pro; return [200, { contractorId: pr.contractorId, applicationStatus: pr.applicationStatus, dispatchEligible: pr.dispatchEligible, shiftStatus: pr.shiftStatus, ...proChecklist(pr), profile: (({ attestedName, ...rest }) => rest)(pr.profile), user: { ...(world.user || USER), role: 'CONTRACTOR' }, trades: pr.trades, documents: pr.documents }]; }
   if (p === '/contractors/profile' && method === 'PATCH') {
@@ -420,7 +429,7 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS' }); return res.end(); }
   if (url.pathname === '/__log') return json(res, 200, log);
-  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 3000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = false; PRICING.standardLeadHours = 48; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; world.legacy = false; world.preferred = false; world.now = null; return json(res, 200, { ok: true }); }
+  if (url.pathname === '/__reset') { log.length = 0; world.properties = []; world.jobs = {}; world.hasCard = url.searchParams.get('card') !== 'false'; world.seq = 1041; world.role = 'HOMEOWNER'; world.added = []; world.user = null; world.conflicts = 0; PRICING.EXPRESS_PRIORITY_FEE.currentAmountCents = 3000; PRICING.EXPRESS_PRIORITY_FEE.hasLiveDiscount = false; PRICING.standardLeadHours = 48; world.pro = freshPro(); world.stripeDone = false; world.stripeAccount = false; world.tenant = { linked: false }; world.otpSent = {}; world.webConfig = 'ok'; world.photoPosts = 0; world.photoFailAt = 0; world.credits = 0; world.phoneOtp = {}; world.proInvites = freshProInvites(); world.accountStop = null; world.expireOnce = false; world.legacy = false; world.preferred = false; world.now = null; return json(res, 200, { ok: true }); }
   // /__now?t=<ISO>: the server's clock, for a run whose browser clock is set too (none: the real time).
   if (url.pathname === '/__now') { const t = url.searchParams.get('t'); world.now = t ? Date.parse(t) : null; return json(res, 200, { ok: true }); }
   // /__preferred?on=1: the home has a Preferred Pro for every trade, so a new Standard or Express job goes to them first.

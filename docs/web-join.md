@@ -47,7 +47,7 @@ public/nohm/                      shared by /book and /join (moved out of /book 
   http.js, session.js, api.js, dom.js, format.js, google.js, signup.js, account.js
 tools/join/
   flow.test.mjs                   7 tests on the rules and bodies
-  e2e.mjs                         headless Chromium: pro end to end (Stripe tab + poll), renter end to end, wrong account type
+  e2e.mjs                         headless Chromium: pro end to end (Stripe tab + poll), renter end to end, wrong account type, a homeowner invited to rent adds renting
 ```
 
 Also: `public/menu.js` (Join as a Pro), `public/pros/index.html` (hero button and the join section point to `/join`; the mailto form stays), `public/renters/index.html` (hero button → `/join/renter`), `tools/book/stub-server.mjs` (pro and renter routes).
