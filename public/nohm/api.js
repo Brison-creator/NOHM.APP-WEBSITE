@@ -66,7 +66,7 @@ export function createApi(http, session, { signupRef } = {}) {
       googleSignupWithPhone: (idToken, phone, code, role = 'HOMEOWNER') => http.post('/auth/google/signup-with-phone', { idToken, phone, code, role, ...dev() }, { auth: false }),
       me: () => http.get('/auth/me'),
       logout: () => http.post('/auth/logout'),
-      /** Adds a side (TENANT: "I rent my place") to this account: POST /me/profiles/:cap. */
+      /** Adds a side (TENANT: the app's "Moving into a rental?") to this account: POST /me/profiles/:cap. */
       addSide: (cap) => http.post(`/me/profiles/${encodeURIComponent(cap)}`, {}),
     },
 

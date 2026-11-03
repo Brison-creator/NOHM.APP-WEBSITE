@@ -187,13 +187,13 @@ function wrongRoleScreen() {
   const r = a.state.user.role;
   const where = r === 'HOMEOWNER' || r === 'PROPERTY_MANAGER' ? 'a homeowner' : r === 'CONTRACTOR' ? 'a pro' : r === 'TENANT' ? 'a renter' : 'another kind of';
   // A renter whose account is a homeowner's, landlord's or pro's adds
-  // renting to it right here, as the app's "I rent my place" does, and
+  // renting to it right here, as the app's "Moving into a rental?" does, and
   // goes on to the landlord's invitation (owner, 2026-11-03: a renter who
   // already had NOHM "basically doesnt give you the option to do
   // anything"). The server decides what may be added.
   if (MODE === 'renter') {
     const err = h('p.b-err', { role: 'alert' });
-    const add = button('Add renting to this account', { key: 'add-renter' });
+    const add = button('Go to my landlord’s invite', { key: 'add-renter' });
     add.addEventListener('click', async () => {
       err.textContent = '';
       add.busy(true, 'Adding…');
@@ -212,7 +212,7 @@ function wrongRoleScreen() {
     });
     return h('section.b-screen', [
       h('h1.b-h1', 'You already have a NOHM account.'),
-      h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email || a.state.user.phone || ''}). Add renting to it to accept your landlord’s invitation. Nothing else on your account changes.`),
+      h('p.b-sub', `You’re signed in as ${where} account (${a.state.user.email || a.state.user.phone || ''}). Moving into a rental? Continue with it to accept your landlord’s invite. Nothing else on your account changes.`),
       err,
       h('div.b-foot', [add]),
       h('p.b-small', ['Not you? ', h('button.b-inline', { type: 'button', onClick: () => a.signOut() }, 'Sign out')]),

@@ -272,7 +272,7 @@ function api(method, url, body, req) {
   ].find(([re]) => re.test(p));
   const held = [world.role, ...(world.added || [])];
   if (guard && !guard[1].some((r) => held.includes(r))) return [403, { message: 'Forbidden resource' }];
-  // "I rent my place" (me.controller.ts POST /me/profiles/:capability): a side
+  // "Moving into a rental?" (me.controller.ts POST /me/profiles/:capability): a side
   // added to the account; holding it already is a 409.
   if (method === 'POST' && p === '/me/profiles/TENANT') {
     if (held.includes('TENANT')) return [409, { message: 'You already have this.' }];

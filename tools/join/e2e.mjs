@@ -426,7 +426,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await page.reload();
   await page.waitForSelector('[data-invite="482913"]');
   assert.equal((await log()).filter((c) => c.path === '/me/profiles/TENANT').length, 1);
-  console.log('✓ A homeowner invited to rent: “Add renting to this account” → the landlord’s invitation, and it stays after a reload');
+  console.log('✓ A homeowner invited to rent: “Go to my landlord’s invite” → the landlord’s invitation, and it stays after a reload');
   await ctx.close();
 }
 
