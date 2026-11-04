@@ -1,0 +1,61 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face { font-family: Sora; src: url(../../../../public/fonts/sora/sora-latin-700-800.woff2) format('woff2'); font-weight: 700 800; }
+@font-face { font-family: Manrope; src: url(../../../../public/fonts/manrope/manrope-latin-400-700.woff2) format('woff2'); font-weight: 400 700; }
+html, body { margin: 0; background: #fff; }
+.ad { position: relative; overflow: hidden; background: #fff; color: #171a20; font-family: Manrope, sans-serif; box-sizing: border-box; }
+.logo { display: flex; align-items: center; gap: 14px; }
+.mark { width: calc(var(--m) * 5.25); height: var(--m); background: #171a20; -webkit-mask: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MjUgMTAwIiB3aWR0aD0iNTI1IiBoZWlnaHQ9IjEwMCI+PHRpdGxlPk5PSE08L3RpdGxlPjxwYXRoIGQ9Ik0wLjAwIDAuMDBMMTQuMDAgMC4wMEwxNC4wMCAxMDAuMDBMMC4wMCAxMDAuMDBaTTkxLjAwIDAuMDBMMTA1LjAwIDAuMDBMMTA1LjAwIDEwMC4wMEw5MS4wMCAxMDAuMDBaTTE2LjQ2IDAuMDBMMTA1LjAwIDk3LjI5TDEwNS4wMCAxMDAuMDBMODguNTQgMTAwLjAwTDAuMDAgMi43MUwwLjAwIDAuMDBaTTE3MC4wMCAwLjAwSDIxMC4wMEMyMjkuODggMC4wMCAyNDYuMDAgMTYuMTIgMjQ2LjAwIDM2LjAwVjY0LjAwQzI0Ni4wMCA4My44OCAyMjkuODggMTAwLjAwIDIxMC4wMCAxMDAuMDBIMTcwLjAwQzE1MC4xMiAxMDAuMDAgMTM0LjAwIDgzLjg4IDEzNC4wMCA2NC4wMFYzNi4wMEMxMzQuMDAgMTYuMTIgMTUwLjEyIDAuMDAgMTcwLjAwIDAuMDBaTTE3MC4wMCAxNC4wMEMxNTcuODUgMTQuMDAgMTQ4LjAwIDIzLjg1IDE0OC4wMCAzNi4wMFY2NC4wMEMxNDguMDAgNzYuMTUgMTU3Ljg1IDg2LjAwIDE3MC4wMCA4Ni4wMEgyMTAuMDBDMjIyLjE1IDg2LjAwIDIzMi4wMCA3Ni4xNSAyMzIuMDAgNjQuMDBWMzYuMDBDMjMyLjAwIDIzLjg1IDIyMi4xNSAxNC4wMCAyMTAuMDAgMTQuMDBaTTI3NS4wMCAwLjAwTDI4OS4wMCAwLjAwTDI4OS4wMCAxMDAuMDBMMjc1LjAwIDEwMC4wMFpNMzYxLjAwIDAuMDBMMzc1LjAwIDAuMDBMMzc1LjAwIDEwMC4wMEwzNjEuMDAgMTAwLjAwWk0yNzUuMDAgNDQuMDBMMzc1LjAwIDQ0LjAwTDM3NS4wMCA1OC4wMEwyNzUuMDAgNTguMDBaTTQwNy4wMCAwLjAwTDQyMS4wMCAwLjAwTDQyMS4wMCAxMDAuMDBMNDA3LjAwIDEwMC4wMFpNNTExLjAwIDAuMDBMNTI1LjAwIDAuMDBMNTI1LjAwIDEwMC4wMEw1MTEuMDAgMTAwLjAwWk00NjYuMDAgNDkuMzFMNTA4Ljc0IDAuMDBMNTI1LjAwIDAuMDBMNTI1LjAwIDIuNjFMNDY2LjAwIDcwLjY5TDQwNy4wMCAyLjYxTDQwNy4wMCAwLjAwTDQyMy4yNiAwLjAwWiIvPjwvc3ZnPgo=) center / 100% 100% no-repeat; }
+.logo b { font-weight: 700; font-size: calc(var(--m) * 1.25); letter-spacing: 0; }
+h1 { font-family: Sora; font-weight: 700; letter-spacing: -0.04em; line-height: 1.04; margin: 0; }
+ul { list-style: none; margin: 0; padding: 0; }
+li { display: flex; gap: 16px; align-items: flex-start; color: #393c41; }
+li::before { content: ""; flex: none; width: 34px; height: 34px; border-radius: 50%; background: #356CA3 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='13'%3E%3Cpath d='M2 7l4 4L14 2.5' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center no-repeat; margin-top: 4px; }
+.free { font-weight: 700; color: #171a20; }
+.tag { margin: 0; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #356CA3; }
+.phone { position: absolute; }
+.phone img { width: 100%; display: block; filter: drop-shadow(0 24px 40px rgba(0,0,0,.22)); }
+.why { position: absolute; left: 0; right: 0; bottom: 0; background: #f2f4f7; border-top: 1px solid #e3e6ea; z-index: 2; box-sizing: border-box; }
+.why h2 { font-family: Sora; font-weight: 700; letter-spacing: -0.02em; margin: 0; color: #171a20; }
+.why p { margin: 0; color: #393c41; }
+.phone .house { position: absolute; left: 9.6875%; width: 15.47%; height: 6.15%; border-radius: 10% / 12.5%; background-repeat: no-repeat; }
+/* Square, for the feeds */
+#sq { width: 1080px; height: 1080px; padding: 56px 64px; --m: 32px; }
+#sq .tag { margin-top: 30px; font-size: 22px; }
+#sq h1 { font-size: 48px; margin-top: 8px; max-width: 520px; }
+#sq ul { margin-top: 26px; display: grid; gap: 12px; max-width: 556px; }
+#sq li { font-size: 27px; line-height: 1.25; gap: 14px; }
+#sq li::before { width: 30px; height: 30px; margin-top: 2px; }
+#sq .free { margin-top: 24px; font-size: 29px; }
+#sq .phone { width: 380px; right: 56px; top: 130px; }
+#sq .why { height: 290px; padding: 36px 64px; }
+#sq .why h2 { font-size: 35px; }
+#sq .why p { margin-top: 12px; font-size: 27px; line-height: 1.4; }
+/* Tall, for Stories: the top and bottom 250px are left for the Stories bar and button */
+#st { width: 1080px; height: 1920px; padding: 250px 80px; --m: 40px; }
+#st .tag { margin-top: 44px; font-size: 30px; }
+#st h1 { font-size: 74px; margin-top: 10px; }
+#st ul { margin-top: 40px; display: grid; gap: 20px; max-width: 520px; }
+#st li { font-size: 34px; line-height: 1.22; text-wrap: balance; }
+#st .free { margin-top: 32px; font-size: 36px; max-width: 520px; line-height: 1.25; text-wrap: balance; }
+#st .phone { width: 370px; right: 70px; top: 668px; }
+#st .why { top: 1310px; padding: 48px 80px; }
+#st .why h2 { font-size: 44px; line-height: 1.15; }
+#st .why p { margin-top: 16px; font-size: 34px; line-height: 1.4; }
+</style></head><body>
+<div class="ad" id="sq">
+  <div class="logo"><span class="mark"></span><b>landlord</b></div>
+  <p class="tag">Launch deal</p><h1>Free rental software for the first 10,000 landlords.</h1>
+  <ul><li>Rent by bank, straight to you</li><li>Tenants send repairs with photos</li><li>Invite the contractors you use</li><li>Every expense accounted for</li><li>Send applications with a tap</li><li>List rentals on NOHM.app for free</li></ul>
+  <p class="free">No subscription, for good.</p>
+  <div class="phone"><img src="../../../../public/img/lp-landlord-phone-640.png"><span class="house" style="top:41.401%;background-image:url(../../../../public/img/lawn-960.jpg);background-position:100% 0%;background-size:560%"></span><span class="house" style="top:49.961%;background-image:url(../../../../public/img/services/landscaping.jpg);background-position:0% 0%;background-size:330%"></span><span class="house" style="top:58.521%;background-image:url(../../../../public/img/door-960.jpg);background-position:88% 6%;background-size:420%"></span><span class="house" style="top:67.082%;background-image:url(../../../../public/img/for-rent-370.jpg);background-position:100% 45%;background-size:190%"></span><span class="house" style="top:75.720%;background-image:url(../../../../public/img/services/tree-service.jpg);background-position:100% 85%;background-size:300%"></span></div>
+  <div class="why"><h2>Why are we giving it away for free?</h2><p>Because we know you&rsquo;ll love it and tell your friends. Word of mouth is everything to us, and we&rsquo;d rather give our software to real landlords than spend millions on corporate advertising.</p></div>
+</div>
+<div class="ad" id="st">
+  <div class="logo"><span class="mark"></span><b>landlord</b></div>
+  <p class="tag">Launch deal</p><h1>Free rental software for the first 10,000 landlords.</h1>
+  <ul><li>Rent by bank, straight to you</li><li>Tenants send repairs with photos</li><li>Invite the contractors you use</li><li>Every expense accounted for</li><li>Send applications with a tap</li><li>List rentals on NOHM.app for free</li></ul>
+  <p class="free">No subscription, for good.</p>
+  <div class="phone"><img src="../../../../public/img/lp-landlord-phone-640.png"><span class="house" style="top:41.401%;background-image:url(../../../../public/img/lawn-960.jpg);background-position:100% 0%;background-size:560%"></span><span class="house" style="top:49.961%;background-image:url(../../../../public/img/services/landscaping.jpg);background-position:0% 0%;background-size:330%"></span><span class="house" style="top:58.521%;background-image:url(../../../../public/img/door-960.jpg);background-position:88% 6%;background-size:420%"></span><span class="house" style="top:67.082%;background-image:url(../../../../public/img/for-rent-370.jpg);background-position:100% 45%;background-size:190%"></span><span class="house" style="top:75.720%;background-image:url(../../../../public/img/services/tree-service.jpg);background-position:100% 85%;background-size:300%"></span></div>
+  <div class="why"><h2>Why are we giving it away for free?</h2><p>Because we know you&rsquo;ll love it and tell your friends. Word of mouth is everything to us, and we&rsquo;d rather give our software to real landlords than spend millions on corporate advertising.</p></div>
+</div>
+</body></html>
