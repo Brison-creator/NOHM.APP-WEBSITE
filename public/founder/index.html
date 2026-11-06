@@ -32,7 +32,10 @@
     .doc p { font-size: 17px; line-height: 1.6; }
     .doc .line { color: #171a20; font-weight: var(--weight-body-strong); font-size: clamp(19px, 2.4vw, 22px); line-height: 1.35; margin: 24px 0; }
     .doc .turn { color: #171a20; font-weight: var(--weight-ui); }
-    .doc .sign { margin-top: 32px; padding-top: 20px; border-top: 1px solid #e6e7e9; font-size: 15px; line-height: 1.4; color: #6e6e73; }
+    .doc .sign { display: flex; align-items: center; gap: 20px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #e6e7e9; }
+    .sign .face { display: block; width: 96px; height: 96px; border-radius: 50%; object-fit: cover; flex: none; }
+    .sign .sig { display: block; width: 220px; max-width: 100%; height: auto; margin: 0 0 6px -6px; }
+    .doc .sign p { margin: 0; font-size: 15px; line-height: 1.4; color: #6e6e73; }
     .sign b { display: block; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-title); font-size: 18px; color: #171a20; }
   </style>
 </head>
@@ -46,7 +49,16 @@
     <p>NOHM &mdash; pronounced &ldquo;Nohm,&rdquo; rhymes with &ldquo;home&rdquo; &mdash; is a play on home and the gnome: the familiar little guardian of the home. It represents what NOHM is meant to be &mdash; a trusted presence helping you organize, understand, and take care of your home.</p>
     <p>That idea also became NOHMie, our private home assistant.</p>
     <p>NOHMie isn&rsquo;t watching you. We built its home-service knowledge base specifically for NOHM so it can help you understand your home, manage repairs, and get things done without requiring you to expose your home&rsquo;s questions and information across the open internet.</p>
-    <p class="sign"><b>Brison McPhail</b>Founder, NOHM</p>
+    <div class="sign">
+      <picture>
+        <source srcset="/img/founder-240.webp" type="image/webp" />
+        <img class="face" src="/img/founder-240.jpg" width="96" height="96" alt="Brison McPhail" />
+      </picture>
+      <div>
+        <img class="sig" src="/img/founder-signature-480.png" width="220" height="56" alt="Brison McPhail’s signature" />
+        <p><b>Brison McPhail</b>Founder, NOHM</p>
+      </div>
+    </div>
   </main>
   <footer class="foot">
     <span>NOHM&trade; &copy; 2026</span>
