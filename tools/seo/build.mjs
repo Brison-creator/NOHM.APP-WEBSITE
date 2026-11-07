@@ -6,6 +6,8 @@
 //   /pros/<trade>/       pros of that trade looking for jobs
 //   /landlords/<topic>/  one landlord job: rent, screening, leases, ...
 //   /pros/ready-now/     on-demand work for pros
+//   /landlords/forms/    landlord forms and notices, state by state, from
+//                        the app's own catalog (legal-forms.json)
 //
 // Every claim here is one the site already makes (/homeowners,
 // /for/homeowners, /for/pros, /landlords, /for/landlords) or the app's
@@ -231,7 +233,7 @@ const FOOTER = `  <footer>
     <a href="tel:+18882306646">888-230-NOHM</a>
   </footer>`;
 
-function page({ url, title, desc, ogImage, ogAlt, ld, body, scripts }) {
+function page({ url, title, desc, ogImage, ogAlt, ld, body, scripts, styles = [] }) {
   const t = text(title);
   const d = text(desc);
   return `<!DOCTYPE html>
@@ -264,7 +266,7 @@ function page({ url, title, desc, ogImage, ogAlt, ld, body, scripts }) {
   <link rel="stylesheet" href="/store-cta.css" />
   <link rel="stylesheet" href="/for/for.css" />
   <link rel="stylesheet" href="/topic.css" />
-  <script type="application/ld+json">${JSON.stringify(ld)}</script>
+${styles.map((h) => `  <link rel="stylesheet" href="${h}" />\n`).join('')}  <script type="application/ld+json">${JSON.stringify(ld)}</script>
 </head>
 <body>
   <header class="bar"><a href="/">NOHM</a></header>
@@ -535,7 +537,7 @@ function landlordPage(t) {
       <p class="pm-line">A property manager takes about 10% of the rent: $150 a month on a $1,500 home. Autopilot is <span data-rental="autopilot">$19.99</span>, about <span data-rental-share="autopilot" data-share-of="1500">1.3%</span>.</p>
       <p class="fine">No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`));
   }
-  parts.push(more('Everything else for landlords.', LANDLORD.filter((o) => o !== t).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])));
+  parts.push(more('Everything else for landlords.', [...LANDLORD.filter((o) => o !== t).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]]), FORMS_LINK]));
   parts.push(final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`));
   const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
   const scripts = ['/pricing.js'];
@@ -572,11 +574,129 @@ function readyNowPage() {
   return [url, page({ url, title: 'Same-Day Home Repair Jobs for Pros: Ready Now | NOHM', desc: 'Turn on Ready Now for four hours and take NOHM NOW calls from homeowners nearby: within 60 minutes of being booked. No lead fees. Free to join.', ogImage: '/img/pro-now-1122.jpg', ogAlt: 'A NOHM pro heading out to a NOHM NOW job', ld, body, scripts: [] })];
 }
 
+
+// ── Landlord forms, state by state ────────────────────────────────
+// Owner, 2026-11-07, on how landlords find NOHM: a free page for each
+// state's notices and forms, for the landlords who search for one. The
+// forms, their words and statutes are the app's own (legal-forms.json, a
+// copy of the server's catalog; tools/seo/export-legal-forms.md). A page
+// never says a form was reviewed by a lawyer, and always says it isn't
+// legal advice.
+const FORMS = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'legal-forms.json'), 'utf8')).states;
+const FORMS_LINK = ['/landlords/forms/', 'Legal forms', 'Notices and forms, state by state'];
+const stateSlug = (name) => name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+const html = (s) => esc(s).replace(/’/g, '&rsquo;');
+const formId = (key) => key.toLowerCase().replace(/_/g, '-');
+const FORMS_IMG = ['landlord', 1920, 1280, '22% 35%', 'A landlord with a clipboard shaking hands with her new tenants in the kitchen of a rental'];
+const NOT_ADVICE = 'Not legal advice. NOHM isn’t a law firm. These forms are built from each state’s statutes as NOHM read them. Laws change, and cities and counties can add their own rules, so check the law under each form, or ask a local lawyer, before you serve one. Use them at your own risk.';
+const FILLED = [
+  ['Pick the state and the form.', 'Notices, move-in and move-out forms, and court papers, in the order you’d use them.'],
+  ['NOHM fills it in from the lease.', 'Names, the address, the rent and the dates come from the lease in NOHM.'],
+  ['Type in the blue boxes.', 'Add what the lease can’t know, then print, download or share it.'],
+];
+
+function host(u) {
+  try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return 'source'; }
+}
+
+function formCard(f) {
+  const law = f.citations.length ? `\n          <div><dt>The law</dt><dd>${f.citations.map(html).join('; ')}</dd></div>` : '';
+  const notes = f.notes.length
+    ? `\n        <details>\n          <summary>Good to know</summary>\n          <ul>\n${f.notes.map((n) => `            <li>${html(n)}</li>`).join('\n')}\n          </ul>\n        </details>`
+    : '';
+  const generic = f.generic ? `\n        <p class="form-check">The statute doesn’t set this notice’s exact words: check it before you serve one.</p>`.replace('’', '&rsquo;') : '';
+  const src = f.sources.map((u) => `<a href="${esc(u)}" rel="nofollow noopener" target="_blank">${esc(host(u))}</a>`).join(', ');
+  return `      <article class="form" id="${formId(f.key)}">
+        <h3>${html(f.label)}${f.court ? ' <span class="form-tag">Court</span>' : ''}</h3>
+        <p>${html(f.explain)}</p>
+        <dl>
+          <div><dt>When</dt><dd>${html(f.when)}</dd></div>${law}
+        </dl>${generic}${notes}
+        <p class="form-src">Read the law: ${src}</p>
+      </article>`;
+}
+
+function formsStatePage(st) {
+  const slug = stateSlug(st.name);
+  const url = `/landlords/forms/${slug}/`;
+  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], ['/landlords/forms/', 'Legal forms'], [null, st.name]];
+  const groups = [];
+  for (const f of st.forms) {
+    const g = groups.find((x) => x.label === f.groupLabel);
+    if (g) g.forms.push(f); else groups.push({ label: f.groupLabel, forms: [f] });
+  }
+  const [img, w, h, pos, alt] = FORMS_IMG;
+  const named = st.forms.slice(0, 3).map((f) => f.label).join(', ');
+  const desc = `${st.name} landlord forms and notices: ${named} and more. What each is for, when you can use it, and the law behind it. Filled in from your lease in NOHM.`;
+  const body = [
+    opening({
+      trail,
+      h1: `${st.name} landlord forms.`,
+      sub: `${st.forms.length} notices and forms for a rental in ${st.name}: what each is for, when you can use it, and the law behind it.`,
+      actions: `${BADGES(false)}\n          <a class="textlink" href="https://business.nohm.app/">Sign in on the web</a>`,
+      shot: photo(`/img/${img}-960.jpg`, w, h, pos, alt),
+    }),
+    `    <section class="sec wrap forms-jump" aria-label="The forms">
+      <ul class="forms-index">
+${groups.map((g) => `        <li><b>${html(g.label)}</b>${g.forms.map((f) => `<a href="#${formId(f.key)}">${html(f.label)}</a>`).join('')}</li>`).join('\n')}
+      </ul>
+    </section>`,
+    ...groups.map((g) => `    <section class="sec wrap forms-group">
+      <h2>${html(g.label)}.</h2>
+${g.forms.map(formCard).join('\n')}
+    </section>`),
+    section('Filled in for you.', steps(FILLED)),
+    `    <section class="sec wrap">
+      <p class="fine forms-fine">${html(NOT_ADVICE)}</p>
+    </section>`,
+    more('More for landlords.', [['/landlords/forms/', 'Other states', 'Notices and forms for all 50 states and DC'], ...LANDLORD.map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])]),
+    final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`),
+  ].join('\n\n');
+  const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
+  const title = `${st.name} Landlord Forms and Notices | NOHM`;
+  return [url, page({ url, title, desc, ogImage: `/img/${img}-960.jpg`, ogAlt: alt, ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
+}
+
+function formsIndexPage() {
+  const url = '/landlords/forms/';
+  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], [null, 'Legal forms']];
+  const [img, w, h, pos, alt] = FORMS_IMG;
+  const count = FORMS.reduce((n, s) => n + s.forms.length, 0);
+  const body = [
+    opening({
+      trail,
+      h1: 'Landlord forms, state by state.',
+      sub: `${count} notices and forms for all 50 states and DC: what each is for, when you can use it, and the law behind it.`,
+      actions: `${BADGES(false)}\n          <a class="textlink" href="https://business.nohm.app/">Sign in on the web</a>`,
+      shot: photo(`/img/${img}-960.jpg`, w, h, pos, alt),
+    }),
+    `    <section class="sec wrap">
+      <h2>Pick your state.</h2>
+      <ul class="more">
+${FORMS.map((s) => `        <li><a href="/landlords/forms/${stateSlug(s.name)}/">${html(s.name)}<span>${s.forms.length} forms</span></a></li>`).join('\n')}
+      </ul>
+    </section>`,
+    section('Filled in for you.', steps(FILLED)),
+    `    <section class="sec wrap">
+      <p class="fine forms-fine">${html(NOT_ADVICE)}</p>
+    </section>`,
+    more('More for landlords.', LANDLORD.map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])),
+    final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`),
+  ].join('\n\n');
+  const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
+  return [url, page({
+    url,
+    title: 'Landlord Forms and Eviction Notices by State | NOHM',
+    desc: 'Notices to quit, pay or quit, move-in and move-out forms and court papers for all 50 states and DC: what each is for, when to use it, and the law. Filled in from your lease in NOHM.',
+    ogImage: `/img/${img}-960.jpg`, ogAlt: alt, ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'],
+  })];
+}
+
 // The links each hub page carries to its topic pages, between markers.
 const HUBS = {
   'services/index.html': ['Every service, up close.', SERVICES.map((s) => [`/services/${s.slug}/`, s.label, s.blurb])],
   'pros/index.html': ['Find your trade.', [...SERVICES.map((s) => [`/pros/${s.slug}/`, s.label, `${s.jobs[0].toUpperCase()}${s.jobs.slice(1)}`]), ['/pros/ready-now/', 'Ready Now', 'Same-day NOHM NOW jobs']]],
-  'landlords/index.html': ['Go deeper.', LANDLORD.map((t) => [`/landlords/${t.slug}/`, ...LANDLORD_LABEL[t.slug]])],
+  'landlords/index.html': ['Go deeper.', [...LANDLORD.map((t) => [`/landlords/${t.slug}/`, ...LANDLORD_LABEL[t.slug]]), FORMS_LINK]],
 };
 const START = '<!-- topics: built by tools/seo/build.mjs -->';
 const END = '<!-- /topics -->';
@@ -604,6 +724,8 @@ export function build() {
   for (const s of SERVICES) out.set(...proPage(s));
   for (const t of LANDLORD) out.set(...landlordPage(t));
   out.set(...readyNowPage());
+  out.set(...formsIndexPage());
+  for (const st of FORMS) out.set(...formsStatePage(st));
   const files = new Map([...out].map(([url, html]) => [path.join(ROOT, url, 'index.html'), html]));
   for (const [rel, h] of Object.entries(HUBS)) {
     const f = path.join(ROOT, rel);
