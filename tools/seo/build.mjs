@@ -597,7 +597,12 @@ const formUrl = (st, f) => `${stateUrl(st)}${slugOf(f.label)}/`;
 const html = (s) => esc(s).replace(/’/g, '&rsquo;');
 const formId = (key) => key.toLowerCase().replace(/_/g, '-');
 const FORMS_OG = ['/img/landlord-960.jpg', 'A landlord with a clipboard shaking hands with her new tenants in the kitchen of a rental'];
-const NOT_ADVICE = 'Not legal advice. NOHM isn’t a law firm. These forms are built from each state’s statutes as NOHM read them. Laws change, and cities and counties can add their own rules, so check the law under each form, or ask a local lawyer, before you serve one. Use them at your own risk.';
+// Owner, 2026-11-07: "We need to make sure we are not liable." Said at the
+// top of every forms page (TOP_NOTE) and in full at the foot (NOT_ADVICE),
+// with the Terms' section on legal information (/terms/#g-1, the same
+// promise the app's forms agreement asks a landlord to accept).
+const NOT_ADVICE = 'Not legal advice. NOHM isn’t a law firm, and using these pages or forms doesn’t make NOHM your lawyer. They’re general information, built from each state’s statutes as NOHM read them, and may be incomplete, out of date or wrong for your situation: laws change, courts differ, and cities and counties can add their own rules. NOHM doesn’t guarantee any form, deadline or result. You’re responsible for what you serve and file, so check the current law, or ask a licensed attorney in your state, before you do. Use them at your own risk.';
+const TOP_NOTE = 'General information, not legal advice. NOHM isn’t a law firm. Check your state’s current law, or ask a local attorney, before you serve or file anything.';
 const FILLED = [
   ['Pick the state and the form.', 'Notices, move-in and move-out forms, and court papers, in the order you’d use them.'],
   ['NOHM fills it in from the lease.', 'Names, the address, the rent and the dates come from the lease in NOHM.'],
@@ -654,7 +659,8 @@ function textOpening({ trail, h1, sub, extra = '' }) {
         ${crumbs(trail)}
         <h1>${html(h1)}</h1>
         <p class="sub">${html(sub)}</p>
-        <p class="updated">Updated <time datetime="${FORMS_UPDATED}">${updatedOn}</time></p>${extra}
+        <p class="updated">Page updated <time datetime="${FORMS_UPDATED}">${updatedOn}</time></p>
+        <p class="legal-note" role="note">${html(TOP_NOTE)} <a href="/terms/#g-1">Terms</a></p>${extra}
         <div class="actions">
           ${BADGES(false)}
           <a class="textlink" href="https://business.nohm.app/">Sign in on the web</a>
@@ -665,7 +671,7 @@ function textOpening({ trail, h1, sub, extra = '' }) {
 
 const finalAsk = final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`);
 const fine = `    <section class="sec wrap">
-      <p class="fine forms-fine">${html(NOT_ADVICE)}</p>
+      <p class="fine forms-fine">${html(NOT_ADVICE)} <a href="/terms/#g-1">See the Terms</a>.</p>
     </section>`;
 
 function webPageLd({ url, title, desc, trail, extra = {} }) {
@@ -754,7 +760,7 @@ function formPage(st, f) {
   const facts = [['When', f.when], ...(f.citations.length ? [['The law', f.citations.join('; ')]] : []), ['Stage', f.groupLabel], ...(f.court ? [['Kind', 'Court paper']] : [])];
   const body = [
     textOpening({ trail, h1: `${st.name} ${label}`, sub: f.explain }),
-    section('The facts.', specs(facts)),
+    section('At a glance.', specs(facts)),
     f.notes.length ? section('What to know.', `      <ul class="form-notes">
 ${f.notes.map((n) => `        <li>${html(n)}</li>`).join('\n')}
       </ul>${f.generic ? `\n      <p class="form-check">${html(GENERIC)}</p>` : ''}`) : '',
