@@ -1,5 +1,6 @@
 {
  "_about": "The landlord forms in the NOHM app, state by state: a copy of the server catalog (nohm-backend src/modules/legal-forms, stateView of every state). Refresh it from there with tools/seo/export-legal-forms.md; never edit it by hand.",
+ "_exported": "2026-11-07",
  "states": [
   {
    "code": "AL",

@@ -15,7 +15,8 @@ const states = c.statesIndex().map((s) => {
   return { code: v.state.code, name: v.state.name, forms: v.forms.map((f) => Object.fromEntries(keep.map((k) => [k, f[k]]))) };
 });
 const about = require('<site>/tools/seo/legal-forms.json')._about;
-require('fs').writeFileSync('<site>/tools/seo/legal-forms.json', JSON.stringify({ _about: about, states }, null, 1));
+const exported = new Date().toISOString().slice(0, 10); // shown as "Updated" and the sitemap's lastmod
+require('fs').writeFileSync('<site>/tools/seo/legal-forms.json', JSON.stringify({ _about: about, _exported: exported, states }, null, 1));
 "
 ```
 

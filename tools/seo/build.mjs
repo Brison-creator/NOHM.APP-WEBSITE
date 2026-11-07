@@ -577,119 +577,259 @@ function readyNowPage() {
 
 // ── Landlord forms, state by state ────────────────────────────────
 // Owner, 2026-11-07, on how landlords find NOHM: a free page for each
-// state's notices and forms, for the landlords who search for one. The
-// forms, their words and statutes are the app's own (legal-forms.json, a
-// copy of the server's catalog; tools/seo/export-legal-forms.md). A page
-// never says a form was reviewed by a lawyer, and always says it isn't
-// legal advice.
-const FORMS = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'legal-forms.json'), 'utf8')).states;
-const FORMS_LINK = ['/landlords/forms/', 'Legal forms', 'Notices and forms, state by state'];
-const stateSlug = (name) => name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+// state's notices and forms ("Yes do that"), with search first ("Make sure
+// SEO is paramount"). Three layers, each for what landlords type:
+//   /landlords/forms/                      eviction notices and forms by state
+//   /landlords/forms/<state>/              one state's forms ("arkansas eviction notice")
+//   /landlords/forms/<state>/<form>/       one form ("arkansas 3 day notice to quit")
+//   /landlords/forms/<type>/               one kind of form, state by state
+//                                          ("late rent notice by state")
+// The forms, their words and statutes are the app's own (legal-forms.json,
+// a copy of the server's catalog; tools/seo/export-legal-forms.md). A page
+// never says a lawyer reviewed a form, and always says it isn't legal advice.
+const FORMS_DATA = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'legal-forms.json'), 'utf8'));
+const FORMS = FORMS_DATA.states;
+const FORMS_UPDATED = FORMS_DATA._exported;
+const FORMS_LINK = ['/landlords/forms/', 'Legal forms', 'Eviction notices and forms by state'];
+const slugOf = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const stateUrl = (st) => `/landlords/forms/${slugOf(st.name)}/`;
+const formUrl = (st, f) => `${stateUrl(st)}${slugOf(f.label)}/`;
 const html = (s) => esc(s).replace(/’/g, '&rsquo;');
 const formId = (key) => key.toLowerCase().replace(/_/g, '-');
-const FORMS_IMG = ['landlord', 1920, 1280, '22% 35%', 'A landlord with a clipboard shaking hands with her new tenants in the kitchen of a rental'];
+const FORMS_OG = ['/img/landlord-960.jpg', 'A landlord with a clipboard shaking hands with her new tenants in the kitchen of a rental'];
 const NOT_ADVICE = 'Not legal advice. NOHM isn’t a law firm. These forms are built from each state’s statutes as NOHM read them. Laws change, and cities and counties can add their own rules, so check the law under each form, or ask a local lawyer, before you serve one. Use them at your own risk.';
 const FILLED = [
   ['Pick the state and the form.', 'Notices, move-in and move-out forms, and court papers, in the order you’d use them.'],
   ['NOHM fills it in from the lease.', 'Names, the address, the rent and the dates come from the lease in NOHM.'],
   ['Type in the blue boxes.', 'Add what the lease can’t know, then print, download or share it.'],
 ];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const updatedOn = (() => { const [y, m, d] = FORMS_UPDATED.split('-').map(Number); return `${MONTHS[m - 1]} ${d}, ${y}`; })();
+// "3-day notice to quit" → "3-Day Notice to Quit", for titles.
+const SMALL = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with']);
+const titled = (s) => s.split(' ').map((w, i) => w.split('-').map((p, k) => (i > 0 && k === 0 && SMALL.has(p.toLowerCase()) ? p : p.charAt(0).toUpperCase() + p.slice(1))).join('-')).join(' ');
+// A form's name inside a sentence: "Notice of entry" → "notice of entry",
+// never an acronym ("UD-100" stays).
+const inline = (s) => (/^[A-Z][a-z]/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s);
+// A description cut at a word, under Google's ~160 characters.
+const clip = (s, n = 158) => (s.length <= n ? s : s.slice(0, s.lastIndexOf(' ', n - 1)).replace(/[,:;]$/, '') + '…');
+
+// The kinds of form landlords search for across states. Arkansas, the
+// first state built, has its own key for some of them (`ar`), matched in
+// Arkansas only: another state's form under that key is another notice.
+const FORM_TYPES = [
+  { slug: 'late-rent-notice', keys: ['NOTICE_RENT'], ar: 'NOTICE_TO_QUIT', name: 'Late rent notice', the: 'late rent notice', title: 'Late Rent Notice by State: Pay or Quit Rules | NOHM', h1: 'Late rent notices, state by state.', lead: 'The written notice for unpaid rent, in each state: what it’s called, when you can serve it, and the law behind it.' },
+  { slug: 'lease-violation-notice', keys: ['NOTICE_LEASE_VIOLATION'], ar: 'NOTICE_OF_NONCOMPLIANCE', name: 'Lease violation notice', the: 'lease violation notice', title: 'Lease Violation Notice by State | NOHM', h1: 'Lease violation notices, state by state.', lead: 'The notice for a tenant who broke the lease (other than rent), in each state: what it’s called, when you can serve it, and the law.' },
+  { slug: 'notice-to-end-tenancy', keys: ['NOTICE_END_TENANCY'], ar: 'NOTICE_OF_TERMINATION', name: 'Notice to end a tenancy', the: 'notice to end a tenancy', title: 'Notice to End a Tenancy by State (Notice to Vacate) | NOHM', h1: 'Notices to end a tenancy, state by state.', lead: 'The notice that ends a month-to-month or other periodic tenancy, in each state: how much notice, when, and the law.' },
+  { slug: 'notice-of-entry', keys: ['NOTICE_OF_ENTRY'], name: 'Notice of entry', the: 'notice of entry', title: 'Landlord Notice of Entry by State | NOHM', h1: 'Landlord notice of entry, state by state.', lead: 'Telling a tenant you’re coming in, in each state: how much notice, when, and the law.' },
+  { slug: 'rent-increase-notice', keys: ['NOTICE_OF_RENT_CHANGE'], name: 'Rent increase notice', the: 'rent increase notice', title: 'Rent Increase Notice by State | NOHM', h1: 'Rent increase notices, state by state.', lead: 'Telling a tenant the rent is changing, in each state: how much notice, when, and the law.' },
+  { slug: 'security-deposit-itemization', keys: ['DEPOSIT_ITEMIZATION'], name: 'Security deposit itemization', the: 'security deposit itemization', title: 'Security Deposit Itemization by State: Deadlines | NOHM', h1: 'Security deposit itemization, state by state.', lead: 'The itemized list of deductions from a deposit, in each state: when it’s due back, and the law.' },
+  { slug: 'move-in-checklist', keys: ['MOVE_IN_CHECKLIST'], ar: 'MOVE_IN_DEFECT_FORM', name: 'Move-in checklist', the: 'move-in checklist', title: 'Move-In Condition Checklist by State | NOHM', h1: 'Move-in condition checklists, state by state.', lead: 'The record of a rental’s condition when the tenant moves in, in each state: when to use it, and the law.' },
+  { slug: 'abandoned-property-notice', keys: ['PROPERTY_LEFT_BEHIND'], name: 'Abandoned property notice', the: 'abandoned property notice', title: 'Abandoned Property Notice by State | NOHM', h1: 'Notices for property left behind, state by state.', lead: 'What to do with a tenant’s things left after move-out, in each state: the notice, how long to wait, and the law.' },
+  { slug: 'eviction-filing', keys: ['EVICTION_FILING_WORKSHEET'], ar: 'UNLAWFUL_DETAINER_COMPLAINT', name: 'Eviction court forms', the: 'eviction court forms', title: 'Eviction Court Forms by State | NOHM', h1: 'Eviction court forms, state by state.', lead: 'The court papers to file for an eviction, in the states NOHM has them: what they are, when to file, and the law.' },
+];
+const isType = (t, st, f) => t.keys.includes(f.key) || (st.code === 'AR' && f.key === t.ar);
+const typeOf = (st, f) => FORM_TYPES.find((t) => isType(t, st, f));
+const rowsOf = (t) => FORMS.flatMap((st) => st.forms.filter((f) => isType(t, st, f)).map((f) => ({ st, f })));
+const placeCount = (rows) => {
+  const places = new Set(rows.map((r) => r.st.code));
+  const dc = places.has('DC');
+  const n = places.size - (dc ? 1 : 0);
+  return n === 50 && dc ? 'all 50 states and DC' : `${n} states${dc ? ' and DC' : ''}`;
+};
+
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 function host(u) {
   try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return 'source'; }
 }
+const readLaw = (f) => f.sources.map((u) => `<a href="${esc(u)}" rel="nofollow noopener" target="_blank">${esc(host(u))}</a>`).join(', ');
+const GENERIC = 'The statute doesn’t set this notice’s exact words: check it before you serve one.';
 
-function formCard(f) {
+// The opening of a forms page: words first, no photo (the answer above the
+// fold), and when it was last brought up to date.
+function textOpening({ trail, h1, sub, extra = '' }) {
+  return `    <section class="opening opening--text">
+      <div class="copy">
+        ${crumbs(trail)}
+        <h1>${html(h1)}</h1>
+        <p class="sub">${html(sub)}</p>
+        <p class="updated">Updated <time datetime="${FORMS_UPDATED}">${updatedOn}</time></p>${extra}
+        <div class="actions">
+          ${BADGES(false)}
+          <a class="textlink" href="https://business.nohm.app/">Sign in on the web</a>
+        </div>
+      </div>
+    </section>`;
+}
+
+const finalAsk = final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`);
+const fine = `    <section class="sec wrap">
+      <p class="fine forms-fine">${html(NOT_ADVICE)}</p>
+    </section>`;
+
+function webPageLd({ url, title, desc, trail, extra = {} }) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      breadcrumbLd(trail, url),
+      {
+        '@type': 'WebPage', '@id': `${HOST}${url}`, url: `${HOST}${url}`, name: title, description: desc,
+        inLanguage: 'en-US', dateModified: FORMS_UPDATED, isPartOf: { '@type': 'WebSite', name: 'NOHM', url: `${HOST}/` },
+        publisher: ORG, ...extra,
+      },
+    ],
+  };
+}
+
+function formCard(st, f) {
   const law = f.citations.length ? `\n          <div><dt>The law</dt><dd>${f.citations.map(html).join('; ')}</dd></div>` : '';
   const notes = f.notes.length
     ? `\n        <details>\n          <summary>Good to know</summary>\n          <ul>\n${f.notes.map((n) => `            <li>${html(n)}</li>`).join('\n')}\n          </ul>\n        </details>`
     : '';
-  const generic = f.generic ? `\n        <p class="form-check">The statute doesn’t set this notice’s exact words: check it before you serve one.</p>`.replace('’', '&rsquo;') : '';
-  const src = f.sources.map((u) => `<a href="${esc(u)}" rel="nofollow noopener" target="_blank">${esc(host(u))}</a>`).join(', ');
+  const generic = f.generic ? `\n        <p class="form-check">${html(GENERIC)}</p>` : '';
   return `      <article class="form" id="${formId(f.key)}">
-        <h3>${html(f.label)}${f.court ? ' <span class="form-tag">Court</span>' : ''}</h3>
+        <h3><a href="${formUrl(st, f)}">${html(f.label)}</a>${f.court ? ' <span class="form-tag">Court</span>' : ''}</h3>
         <p>${html(f.explain)}</p>
         <dl>
           <div><dt>When</dt><dd>${html(f.when)}</dd></div>${law}
         </dl>${generic}${notes}
-        <p class="form-src">Read the law: ${src}</p>
+        <p class="form-src"><a href="${formUrl(st, f)}">The ${html(inline(f.label))} in full</a> · Read the law: ${readLaw(f)}</p>
       </article>`;
 }
 
-function formsStatePage(st) {
-  const slug = stateSlug(st.name);
-  const url = `/landlords/forms/${slug}/`;
-  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], ['/landlords/forms/', 'Legal forms'], [null, st.name]];
+function groupsOf(st) {
   const groups = [];
   for (const f of st.forms) {
     const g = groups.find((x) => x.label === f.groupLabel);
     if (g) g.forms.push(f); else groups.push({ label: f.groupLabel, forms: [f] });
   }
-  const [img, w, h, pos, alt] = FORMS_IMG;
-  const named = st.forms.slice(0, 3).map((f) => f.label).join(', ');
-  const desc = `${st.name} landlord forms and notices: ${named} and more. What each is for, when you can use it, and the law behind it. Filled in from your lease in NOHM.`;
+  return groups;
+}
+
+function formsStatePage(st) {
+  const url = stateUrl(st);
+  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], ['/landlords/forms/', 'Legal forms'], [null, st.name]];
+  const groups = groupsOf(st);
+  const named = st.forms.slice(0, 3).map((f) => inline(f.label)).join(', ');
+  const title = `${st.name} Eviction Notices and Landlord Forms | NOHM`;
+  const desc = clip(`${st.name} eviction notices and landlord forms: ${named}, and more. When to use each and the law. Filled in from your lease in NOHM.`);
   const body = [
-    opening({
+    textOpening({
       trail,
-      h1: `${st.name} landlord forms.`,
+      h1: `${st.name} eviction notices and landlord forms.`,
       sub: `${st.forms.length} notices and forms for a rental in ${st.name}: what each is for, when you can use it, and the law behind it.`,
-      actions: `${BADGES(false)}\n          <a class="textlink" href="https://business.nohm.app/">Sign in on the web</a>`,
-      shot: photo(`/img/${img}-960.jpg`, w, h, pos, alt),
     }),
-    `    <section class="sec wrap forms-jump" aria-label="The forms">
+    `    <section class="sec wrap forms-jump" aria-label="${attr(st.name)} forms">
       <ul class="forms-index">
 ${groups.map((g) => `        <li><b>${html(g.label)}</b>${g.forms.map((f) => `<a href="#${formId(f.key)}">${html(f.label)}</a>`).join('')}</li>`).join('\n')}
       </ul>
     </section>`,
     ...groups.map((g) => `    <section class="sec wrap forms-group">
       <h2>${html(g.label)}.</h2>
-${g.forms.map(formCard).join('\n')}
+${g.forms.map((f) => formCard(st, f)).join('\n')}
     </section>`),
     section('Filled in for you.', steps(FILLED)),
-    `    <section class="sec wrap">
-      <p class="fine forms-fine">${html(NOT_ADVICE)}</p>
-    </section>`,
-    more('More for landlords.', [['/landlords/forms/', 'Other states', 'Notices and forms for all 50 states and DC'], ...LANDLORD.map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])]),
-    final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`),
+    fine,
+    more('More for landlords.', [['/landlords/forms/', 'Other states', 'Eviction notices and forms by state'], ...FORM_TYPES.slice(0, 3).map((t) => [`/landlords/forms/${t.slug}/`, `${t.name} by state`, cap(placeCount(rowsOf(t)))]), ...LANDLORD.slice(0, 3).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])]),
+    finalAsk,
   ].join('\n\n');
-  const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
-  const title = `${st.name} Landlord Forms and Notices | NOHM`;
-  return [url, page({ url, title, desc, ogImage: `/img/${img}-960.jpg`, ogAlt: alt, ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
+  const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'AdministrativeArea', name: st.name } } });
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+}
+
+function formPage(st, f) {
+  const url = formUrl(st, f);
+  const label = inline(f.label);
+  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], ['/landlords/forms/', 'Legal forms'], [stateUrl(st), st.name], [null, f.label]];
+  // Under ~65 characters where it can be: a long court form's numbers
+  // (in brackets) stay on the page, not in the title.
+  const full = `${st.name} ${titled(f.label)} | NOHM`;
+  const title = full.length <= 65 ? full : `${st.name} ${titled(f.label.replace(/\s*\([^)]*\d[^)]*\)/g, ''))} | NOHM`;
+  const law = f.citations.length ? ` The law: ${f.citations[0]}.` : '';
+  const desc = clip(`${st.name} ${label}: ${inline(f.explain)} When: ${inline(f.when)}${law}`);
+  const t = typeOf(st, f);
+  const others = t ? rowsOf(t).filter((r) => r.st !== st) : [];
+  const siblings = st.forms.filter((x) => x !== f);
+  const facts = [['When', f.when], ...(f.citations.length ? [['The law', f.citations.join('; ')]] : []), ['Stage', f.groupLabel], ...(f.court ? [['Kind', 'Court paper']] : [])];
+  const body = [
+    textOpening({ trail, h1: `${st.name} ${label}`, sub: f.explain }),
+    section('The facts.', specs(facts)),
+    f.notes.length ? section('What to know.', `      <ul class="form-notes">
+${f.notes.map((n) => `        <li>${html(n)}</li>`).join('\n')}
+      </ul>${f.generic ? `\n      <p class="form-check">${html(GENERIC)}</p>` : ''}`) : '',
+    section('Read the law.', `      <p class="form-src form-src--page">${readLaw(f)}</p>`),
+    section('Filled in for you.', steps(FILLED)),
+    others.length ? `    <section class="sec wrap">
+      <h2>The ${html(t.the)} in other states.</h2>
+      <ul class="forms-index forms-states">
+        <li>${others.map((r) => `<a href="${formUrl(r.st, r.f)}">${html(r.st.name)}</a>`).join('')}</li>
+      </ul>
+      <p class="note"><a href="/landlords/forms/${t.slug}/">Compare the ${html(t.the)} in ${placeCount(rowsOf(t))}</a></p>
+    </section>` : '',
+    more(`More ${st.name} forms.`, [...siblings.map((x) => [formUrl(st, x), x.label, x.groupLabel]), [stateUrl(st), `All ${st.name} forms`, `${st.forms.length} notices and forms`]]),
+    fine,
+    finalAsk,
+  ].filter(Boolean).join('\n\n');
+  const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'Thing', name: `${st.name} ${f.label}` }, ...(f.citations.length ? { citation: f.citations } : {}) } });
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+}
+
+function formTypePage(t) {
+  const url = `/landlords/forms/${t.slug}/`;
+  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], ['/landlords/forms/', 'Legal forms'], [null, `${t.name} by state`]];
+  const rows = rowsOf(t);
+  const desc = clip(`${t.lead} ${cap(placeCount(rows))}, side by side. Filled in from your lease in NOHM.`);
+  const body = [
+    textOpening({ trail, h1: t.h1, sub: `${t.lead} ${cap(placeCount(rows))}.` }),
+    `    <section class="sec wrap">
+      <table class="ftable">
+        <thead><tr><th scope="col">State</th><th scope="col">The form</th><th scope="col">When you can use it</th></tr></thead>
+        <tbody>
+${rows.map(({ st, f }) => `          <tr><th scope="row"><a href="${formUrl(st, f)}">${html(st.name)}</a></th><td>${html(f.label)}</td><td>${html(f.when)}</td></tr>`).join('\n')}
+        </tbody>
+      </table>
+    </section>`,
+    section('Filled in for you.', steps(FILLED)),
+    fine,
+    more('Other forms by state.', [...FORM_TYPES.filter((o) => o !== t).map((o) => [`/landlords/forms/${o.slug}/`, `${o.name} by state`, placeCount(rowsOf(o))]), ['/landlords/forms/', 'Every form, by state', 'Pick your state']]),
+    finalAsk,
+  ].join('\n\n');
+  const ld = webPageLd({ url, title: t.title, desc, trail });
+  return [url, page({ url, title: t.title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
 }
 
 function formsIndexPage() {
   const url = '/landlords/forms/';
   const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], [null, 'Legal forms']];
-  const [img, w, h, pos, alt] = FORMS_IMG;
   const count = FORMS.reduce((n, s) => n + s.forms.length, 0);
+  const title = 'Eviction Notices and Landlord Forms by State | NOHM';
+  const desc = 'Late rent notices, lease violation notices, notices to end a tenancy, deposit itemizations and court forms for all 50 states and DC, with the law. Free in NOHM.';
   const body = [
-    opening({
+    textOpening({
       trail,
-      h1: 'Landlord forms, state by state.',
+      h1: 'Eviction notices and landlord forms, state by state.',
       sub: `${count} notices and forms for all 50 states and DC: what each is for, when you can use it, and the law behind it.`,
-      actions: `${BADGES(false)}\n          <a class="textlink" href="https://business.nohm.app/">Sign in on the web</a>`,
-      shot: photo(`/img/${img}-960.jpg`, w, h, pos, alt),
     }),
     `    <section class="sec wrap">
       <h2>Pick your state.</h2>
       <ul class="more">
-${FORMS.map((s) => `        <li><a href="/landlords/forms/${stateSlug(s.name)}/">${html(s.name)}<span>${s.forms.length} forms</span></a></li>`).join('\n')}
+${FORMS.map((s) => `        <li><a href="${stateUrl(s)}">${html(s.name)}<span>${s.forms.length} forms</span></a></li>`).join('\n')}
+      </ul>
+    </section>`,
+    `    <section class="sec wrap">
+      <h2>Or pick the form.</h2>
+      <ul class="more">
+${FORM_TYPES.map((t) => `        <li><a href="/landlords/forms/${t.slug}/">${html(t.name)}<span>${cap(placeCount(rowsOf(t)))}</span></a></li>`).join('\n')}
       </ul>
     </section>`,
     section('Filled in for you.', steps(FILLED)),
-    `    <section class="sec wrap">
-      <p class="fine forms-fine">${html(NOT_ADVICE)}</p>
-    </section>`,
+    fine,
     more('More for landlords.', LANDLORD.map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])),
-    final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`),
+    finalAsk,
   ].join('\n\n');
-  const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
-  return [url, page({
-    url,
-    title: 'Landlord Forms and Eviction Notices by State | NOHM',
-    desc: 'Notices to quit, pay or quit, move-in and move-out forms and court papers for all 50 states and DC: what each is for, when to use it, and the law. Filled in from your lease in NOHM.',
-    ogImage: `/img/${img}-960.jpg`, ogAlt: alt, ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'],
-  })];
+  const ld = webPageLd({ url, title, desc, trail });
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
 }
 
 // The links each hub page carries to its topic pages, between markers.
@@ -725,7 +865,11 @@ export function build() {
   for (const t of LANDLORD) out.set(...landlordPage(t));
   out.set(...readyNowPage());
   out.set(...formsIndexPage());
-  for (const st of FORMS) out.set(...formsStatePage(st));
+  for (const t of FORM_TYPES) out.set(...formTypePage(t));
+  for (const st of FORMS) {
+    out.set(...formsStatePage(st));
+    for (const f of st.forms) out.set(...formPage(st, f));
+  }
   const files = new Map([...out].map(([url, html]) => [path.join(ROOT, url, 'index.html'), html]));
   for (const [rel, h] of Object.entries(HUBS)) {
     const f = path.join(ROOT, rel);
@@ -733,7 +877,7 @@ export function build() {
   }
   // The sitemap lists every topic page between its markers.
   const sm = path.join(ROOT, 'sitemap.xml');
-  const urls = [...out.keys()].map((u) => `  <url><loc>${HOST}${u}</loc></url>`).join('\n');
+  const urls = [...out.keys()].map((u) => `  <url><loc>${HOST}${u}</loc>${u.startsWith('/landlords/forms/') ? `<lastmod>${FORMS_UPDATED}</lastmod>` : ''}</url>`).join('\n');
   const SM_START = '  <!-- topics: tools/seo/build.mjs -->';
   const SM_END = '  <!-- /topics -->';
   let x = fs.readFileSync(sm, 'utf8');
