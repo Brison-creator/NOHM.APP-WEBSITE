@@ -612,7 +612,8 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 const updatedOn = (() => { const [y, m, d] = FORMS_UPDATED.split('-').map(Number); return `${MONTHS[m - 1]} ${d}, ${y}`; })();
 // "3-day notice to quit" → "3-Day Notice to Quit", for titles.
 const SMALL = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with']);
-const titled = (s) => s.split(' ').map((w, i) => w.split('-').map((p, k) => (i > 0 && k === 0 && SMALL.has(p.toLowerCase()) ? p : p.charAt(0).toUpperCase() + p.slice(1))).join('-')).join(' ');
+// A word opening brackets is capitalized too: "(Rent Not Paid)".
+const titled = (s) => s.split(' ').map((w, i) => w.split('-').map((p, k) => (i > 0 && k === 0 && !p.startsWith('(') && SMALL.has(p.toLowerCase()) ? p : p.replace(/^(\(?)(.)/, (m, b, c) => b + c.toUpperCase()))).join('-')).join(' ');
 // A form's name inside a sentence: "Notice of entry" → "notice of entry",
 // never an acronym ("UD-100" stays).
 const inline = (s) => (/^[A-Z][a-z]/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s);
