@@ -20,9 +20,14 @@ const under = process.argv[2] || '/';
 const urls = [...fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8').matchAll(/<loc>([^<]*)<\/loc>/g)]
   .map((m) => m[1])
   .filter((u) => new URL(u).pathname.startsWith(under));
-const res = await fetch('https://api.indexnow.org/indexnow', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json; charset=utf-8' },
-  body: JSON.stringify({ host: HOST, key: KEY, keyLocation: `https://${HOST}/${KEY}.txt`, urlList: urls }),
-});
-console.log(`IndexNow: ${urls.length} URL(s) under ${under}: HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
+// Straight to Bing and Yandex (each shares with the other IndexNow
+// engines); the api.indexnow.org relay kept answering 403
+// SiteVerificationNotCompleted for a new key when they already took it.
+for (const endpoint of ['https://www.bing.com/indexnow', 'https://yandex.com/indexnow']) {
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    body: JSON.stringify({ host: HOST, key: KEY, keyLocation: `https://${HOST}/${KEY}.txt`, urlList: urls }),
+  });
+  console.log(`IndexNow ${new URL(endpoint).host}: ${urls.length} URL(s) under ${under}: HTTP ${res.status} ${(await res.text()).slice(0, 200).replace(/\s+/g, ' ')}`);
+}
