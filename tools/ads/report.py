@@ -41,6 +41,8 @@ PAGES = {
     '/go/landlords': 'Landlord ad page',
     '/join/landlord': 'Landlord sign-up page',
     '/start': 'Handout card page',
+    # The card pros hand homeowners (owner, 2026-11-10).
+    '/home': 'Homeowner card page',
     '/pro/handyman': 'Handyman page',
     '/pro': 'Pro sign-up page',
     '/ig': 'Instagram link page',

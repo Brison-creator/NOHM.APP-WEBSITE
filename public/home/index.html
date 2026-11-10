@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Get the NOHM App | NOHM</title>
+  <meta name="description" content="Your home, all in one place: your home's records, local pros when something breaks, and NOHMie for anything else. Free on iPhone and Android." />
+  <!-- The homeowner card's QR (owner, 2026-11-10: "when my techs or whatever
+       give out cards to homowners they need a specal page to go to"):
+       tools/ads/report.py counts the scans; kept out of search, like /start. -->
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/favicon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
+  <style>
+    /* nohm.app/home: where a homeowner lands from the card a pro hands
+       them. One job: get the app on their phone, in one tap. Both store
+       badges always show; the one for the phone in hand comes first. */
+    html, body { margin: 0; background: #fff; }
+    body { font-family: var(--font-text); -webkit-font-smoothing: antialiased; color: #171a20; }
+    .hm { max-width: 540px; margin: 0 auto; padding: 36px 20px 48px; text-align: center; }
+    .hm-icon { display: block; width: 84px; height: 84px; margin: 0 auto 18px; border-radius: 20px;
+               box-shadow: 0 10px 24px -12px rgba(23, 26, 32, 0.45); }
+    .hm-eyebrow { margin: 0 0 10px; font-size: 15px; font-weight: var(--weight-ui-strong); color: #356CA3; }
+    .hm h1 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-hero); font-size: clamp(32px, 8.4vw, 46px);
+             line-height: 1.06; letter-spacing: var(--tracking-headline); }
+    .hm-lede { margin: 14px auto 22px; max-width: 30em; font-size: 17px; line-height: 1.5; color: #393c41; }
+    .hm .store-cta { margin: 0 auto; }
+    .hm-free { margin: 12px 0 0; font-size: 14px; color: #6e6e73; }
+    .hm-rows { list-style: none; margin: 34px 0 0; padding: 0; text-align: left; border-top: 1px solid #e6e7e9; }
+    .hm-rows li { display: flex; gap: 14px; align-items: flex-start; padding: 18px 2px; border-bottom: 1px solid #e6e7e9;
+                  font-size: 15px; line-height: 1.5; color: #5c5e62; }
+    .hm-rows svg { flex: none; width: 24px; height: 24px; margin-top: 1px; color: #356CA3; }
+    .hm-rows b { display: block; margin-bottom: 2px; color: #171a20; font-family: var(--font-display);
+                 font-weight: var(--weight-heading); letter-spacing: var(--tracking-title); font-size: 17px; }
+    .hm-again { margin: 30px 0 0; }
+    .hm-help { margin: 26px 0 0; font-size: 15px; color: #6e6e73; }
+    .hm-help a { color: #171a20; font-weight: var(--weight-ui-strong); }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a></header>
+  <main class="hm">
+    <img class="hm-icon" src="/apple-touch-icon.png" width="84" height="84" alt="" />
+    <p class="hm-eyebrow">Got this card from your technician? Welcome.</p>
+    <h1>Your home, all in one place.</h1>
+    <p class="hm-lede">Keep every repair on record, book a local pro when something breaks, and ask NOHMie anything about your home.</p>
+
+    <div class="store-cta store-cta--center">
+      <ul class="store-cta__badges" data-stores>
+        <li data-os="ios"><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=home-card" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+        <li data-os="android"><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=home-card" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+      </ul>
+    </div>
+    <p class="hm-free">Free on iPhone and Android.</p>
+
+    <ul class="hm-rows">
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 13.5h5M9.5 17h5"/></svg>
+        <div><b>Dorstry: your home&rsquo;s history</b>Every repair, service and appliance in one place. Share the record when you sell.</div>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <div><b>A local pro when something breaks</b>Plumbing, electrical, heating and air, appliances and more. You see the price before any work starts.</div>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9 10.5h6M9 13.5h4"/></svg>
+        <div><b>Ask NOHMie</b>Your home assistant. Ask anything about your home, or snap a photo of an appliance&rsquo;s label and it&rsquo;s saved.</div>
+      </li>
+    </ul>
+
+    <div class="store-cta store-cta--center hm-again">
+      <ul class="store-cta__badges" data-stores>
+        <li data-os="ios"><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=home-card" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+        <li data-os="android"><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=home-card" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+      </ul>
+    </div>
+    <p class="hm-help">Questions? Call or text <a href="tel:+18882306646">888-230-NOHM</a>.</p>
+  </main>
+  <footer>
+    <span>NOHM&trade; &copy; 2026</span>
+    <span class="eho" style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 100 84" width="21" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M50 0 100 30v10l-8-5v49H8V35l-8 5V30zm0 11L16 31.5V76h68V31.5zM34.5 40h31v9h-31zm0 15h31v9h-31z"/></svg>Equal Housing Opportunity</span>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+  <script>
+    // An Android phone sees Google Play first; everyone else, the App Store.
+    (function () {
+      if (!/Android/i.test(navigator.userAgent || '')) return;
+      document.querySelectorAll('[data-stores]').forEach(function (list) {
+        var android = list.querySelector('[data-os="android"]');
+        if (android) list.insertBefore(android, list.firstChild);
+      });
+    })();
+  </script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
