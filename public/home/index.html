@@ -50,7 +50,7 @@
   <header class="bar"><a href="/">NOHM</a></header>
   <main class="hm">
     <img class="hm-icon" src="/apple-touch-icon.png" width="84" height="84" alt="" />
-    <p class="hm-eyebrow">Got this card from your technician? Welcome.</p>
+    <p class="hm-eyebrow" id="hello">Got this card from your technician? Welcome.</p>
     <h1>Your home, all in one place.</h1>
     <p class="hm-lede">Keep every repair on record, book a local pro when something breaks, and ask NOHMie anything about your home.</p>
 
@@ -93,6 +93,9 @@
     <a href="/support">Support</a>
   </footer>
   <script>
+    // The Google review card's back (from=review-card) isn't always from a
+    // technician: a plain welcome there.
+    if (/[?&]from=review-card(&|$)/.test(location.search)) document.getElementById('hello').textContent = 'Welcome to NOHM.';
     // An Android phone sees Google Play first; everyone else, the App Store.
     (function () {
       if (!/Android/i.test(navigator.userAgent || '')) return;
