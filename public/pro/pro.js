@@ -130,7 +130,7 @@ async function boot() {
   } catch {
     clear(root);
     root.append(
-      h('p.b-sub', 'The form didn’t load. Sign up right here instead, or call or text 501-618-0026.'),
+      h('p.b-sub', 'The form didn’t load. Sign up right here instead, or call or text 888-230-NOHM.'),
       h('a.b-btn', { href: joinUrl() }, 'Sign up'),
     );
   }

@@ -83,9 +83,9 @@ test('the handyman has a hero of his own, on /pro/handyman/ and his link', () =>
 });
 
 test('a refusal is said plainly, with the number to call', () => {
-  assert.match(interestError({ status: 429 }), /Too many tries.*501-618-0026/);
+  assert.match(interestError({ status: 429 }), /Too many tries.*888-230-NOHM/);
   assert.equal(interestError({ status: 400, message: 'Choose your trade.' }), 'Choose your trade.');
-  assert.match(interestError(null), /501-618-0026/);
+  assert.match(interestError(null), /888-230-NOHM/);
 });
 
 function memoryStorage() {

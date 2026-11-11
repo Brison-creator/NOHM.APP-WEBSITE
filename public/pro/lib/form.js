@@ -88,6 +88,6 @@ export function interestBody(f, source) {
 
 /** Said when the server says no. */
 export function interestError(ex) {
-  if (ex && ex.status === 429) return 'Too many tries from here. Wait a bit, or call or text 501-618-0026.';
-  return (ex && ex.message) || 'That didn’t go through. Try again, or call or text 501-618-0026.';
+  if (ex && ex.status === 429) return 'Too many tries from here. Wait a bit, or call or text 888-230-NOHM.';
+  return (ex && ex.message) || 'That didn’t go through. Try again, or call or text 888-230-NOHM.';
 }
