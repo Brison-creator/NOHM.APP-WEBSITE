@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Free rental software for the first 10,000 landlords | NOHM</title>
-  <meta name="description" content="NOHM's launch deal: rental software free for good for the first 10,000 landlords. Rent by bank straight to your account, repairs, leases, tenants and the books, with the contractors you already use. No subscription." />
+  <title>Rent paid straight to your bank. Free for the first 10,000 landlords | NOHM</title>
+  <meta name="description" content="Collect rent straight to your bank and run every rental from your phone. No cut of your rent and no monthly fee, free for good for the first 10,000 landlords. Here is exactly how that works." />
   <!-- The Facebook ad's page: kept out of search and the menu, like /try. -->
   <meta name="robots" content="noindex, follow" />
   <meta name="theme-color" content="#ffffff" />
@@ -20,14 +20,15 @@
   <link rel="stylesheet" href="/book/book.css" />
   <script src="/book/config.js"></script>
   <style>
-    /* The landlord ad's page, plain (owner, 2026-11-03: "i need this page to
-       be simple not difficult to understand loose the marketing vibe. no
-       sales vibe just white page with nohm landlord logo and simple facts").
-       White, the NOHM landlord logo, what it is, the facts, how to start. */
+    /* The landlord ad's page. Owner, 2026-11-03: plain, white, simple facts.
+       Owner, 2026-11-13, after Sabri Suby's landing page training: long form
+       for cold traffic, benefit headlines that work as hooks when skimmed,
+       proof louder than claims, the whole catch said out loud, a plain
+       call to action, and a P.S. Still white, still no invented proof:
+       every line is already on /landlords or in the app, and the pictures
+       are the app on sample data (labelled). Never a live count. */
     body { margin: 0; background: #fff; color: #393c41; font-family: var(--font-text); }
 
-    /* The logo: the NOHM mark (bar.css) and "landlord", as the app's own
-       top bar reads on the landlord side. */
     .bar .role {
       margin-right: auto; margin-left: 9px;
       font-family: var(--font-text); font-weight: var(--weight-ui-strong); font-size: 17px; line-height: 1;
@@ -36,22 +37,29 @@
 
     main { max-width: 640px; margin: 0 auto; padding: 40px 24px 24px; box-sizing: border-box; }
     h1 {
-      margin: 0; font-size: clamp(30px, 7vw, 40px); line-height: 1.1;
+      margin: 0; font-size: clamp(32px, 8vw, 44px); line-height: 1.08;
       font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline);
       color: #171a20;
     }
-    .lede { margin: 12px 0 0; font-size: 18px; line-height: 1.5; }
-    /* The launch deal (owner, 2026-11-03: "im giving the first 10,000
-       landlords the app for free. launch deal"; "lets call it software"). */
-    .tag { margin: 0 0 12px; font-size: 13px; font-weight: var(--weight-ui-strong); letter-spacing: 0.12em; text-transform: uppercase; color: #356CA3; }
+    .tag { margin: 0 0 14px; font-size: 13px; font-weight: var(--weight-ui-strong); letter-spacing: 0.12em; text-transform: uppercase; color: #356CA3; }
+    .lede { margin: 16px 0 0; font-size: 19px; line-height: 1.5; color: #171a20; }
+    .lede b { font-weight: var(--weight-ui-strong); }
     .card-note { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #6e6e73; }
     h2 {
-      margin: 48px 0 8px; font-size: 22px; line-height: 1.2;
+      margin: 56px 0 14px; font-size: clamp(24px, 6vw, 30px); line-height: 1.15;
+      font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline);
+      color: #171a20;
+    }
+    h3 {
+      margin: 32px 0 6px; font-size: 20px; line-height: 1.25;
       font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-title);
       color: #171a20;
     }
+    p { margin: 0 0 16px; font-size: 17px; line-height: 1.6; }
+    h3 + p { margin-top: 0; }
+    p b { color: #171a20; font-weight: var(--weight-ui-strong); }
+    a { color: #356CA3; }
 
-    /* Sign up: one blue button, then the stores. */
     .start { margin-top: 24px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center;
@@ -63,7 +71,18 @@
     .start .store-cta { --store-badge-h: 44px; margin-top: 4px; }
     .start .store-cta__badges { justify-content: flex-start; }
 
-    /* The facts: a label and one plain line each. */
+    /* Proof: the app itself, on sample data. A row that slides on phones,
+       three across on a computer (Tesla spacing: 16px apart, the next
+       card peeking). */
+    .proof { display: flex; gap: 16px; margin: 24px -24px 0; padding: 0 24px 8px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+    .proof figure { margin: 0; flex: 0 0 66%; max-width: 250px; scroll-snap-align: start; }
+    .proof img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid #e6e7e9; background: #f4f4f4; }
+    .proof figcaption { margin-top: 10px; font-size: 14px; line-height: 1.45; color: #6e6e73; }
+    .proof figcaption b { display: block; font-size: 15px; color: #171a20; font-weight: var(--weight-ui-strong); }
+    .sample { margin: 6px 0 0; font-size: 13px; color: #6e6e73; }
+    @media (min-width: 700px) { .proof { margin-left: 0; margin-right: 0; padding: 0; overflow: visible; } .proof figure { flex: 1 1 0; max-width: none; } }
+
+    /* The whole catch, plainly. */
     .facts { margin: 0; padding: 0; border-top: 1px solid #e6e7e9; }
     .facts div { padding: 16px 0; border-bottom: 1px solid #e6e7e9; }
     .facts dt { margin: 0 0 4px; font-weight: var(--weight-ui-strong); font-size: 16px; color: #171a20; }
@@ -72,19 +91,27 @@
       .facts div { display: grid; grid-template-columns: 150px 1fr; gap: 16px; }
       .facts dt { margin: 0; }
     }
-    .facts a, .call a { color: #356CA3; }
 
-    /* Not ready to download: name and email, and NOHM emails the link
-       (owner, 2026-11-03: "how can we get the visitors info to follow
-       up"). The lead lands in NOHM's inbox; email.js builds the form. */
-    .lead { margin-top: 32px; padding: 20px 20px 22px; border-radius: 12px; background: #f4f4f4; }
-    .lead h2 { margin: 0 0 6px; font-size: 19px; }
+    .lead { margin-top: 40px; padding: 20px 20px 22px; border-radius: 12px; background: #f4f4f4; }
+    .lead h2 { margin: 0 0 6px; font-size: 20px; letter-spacing: var(--tracking-title); }
     .lead .note { margin: 0 0 16px; font-size: 15px; line-height: 1.5; }
     .lead-done { margin: 0; font-size: 17px; font-weight: var(--weight-ui-strong); line-height: 1.4; color: #171a20; }
     .lead input, .lead .b-btn { box-sizing: border-box; }
 
-    .steps { margin: 0; padding-left: 22px; font-size: 16px; line-height: 1.8; }
+    .steps { margin: 0; padding-left: 22px; font-size: 17px; line-height: 1.8; }
     .call { margin: 20px 0 0; font-size: 16px; }
+
+    /* Questions: each opens on tap; track.js counts the ones opened. */
+    .faq { border-top: 1px solid #e6e7e9; }
+    .faq details { border-bottom: 1px solid #e6e7e9; }
+    .faq summary { cursor: pointer; list-style: none; padding: 16px 28px 16px 0; position: relative; font-weight: var(--weight-ui-strong); font-size: 17px; line-height: 1.35; color: #171a20; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; position: absolute; right: 4px; top: 14px; font-size: 22px; font-weight: 400; color: #6e6e73; }
+    .faq details[open] summary::after { content: "\2212"; }
+    .faq details p { margin: 0 0 16px; font-size: 16px; line-height: 1.6; }
+
+    .ps { margin-top: 48px; padding-top: 24px; border-top: 1px solid #e6e7e9; }
+    .ps p { font-size: 17px; }
 
     footer {
       max-width: 640px; margin: 48px auto 0; padding: 24px 24px 40px; box-sizing: border-box;
@@ -98,10 +125,11 @@
 <body>
   <header class="bar"><a href="/">NOHM</a><span class="role">landlord</span></header>
   <main>
+
     <section data-seen="hero">
-      <p class="tag">Launch deal</p>
-      <h1>Free rental software for the first 10,000 landlords.</h1>
-      <p class="lede">Rent, repairs, leases, tenants and the books in one place, with the contractors you already use. No subscription, for good.</p>
+      <p class="tag">For landlords who collect their own rent</p>
+      <h1>Rent paid straight to your bank. Every rental run from your phone. Free for good.</h1>
+      <p class="lede">NOHM takes <b>no cut of your rent</b> and charges <b>no monthly fee</b>. For the first 10,000 landlords, that&rsquo;s for good. Here&rsquo;s exactly how we make that work.</p>
       <div class="start">
         <a class="btn" href="/join/landlord/?from=lp-hero">Sign up free</a>
         <div class="store-cta">
@@ -111,7 +139,95 @@
           </ul>
         </div>
       </div>
-      <p class="card-note">A card is kept on file only to pay for repairs you approve and to keep out fake accounts. You&rsquo;re never charged a subscription.</p>
+      <p class="card-note">A card is kept on file only to pay for repairs you approve and to keep out fake accounts. You&rsquo;re never charged a subscription. No ads. No spam.</p>
+    </section>
+
+    <section data-seen="problem">
+      <h2>If rent day still starts with a text, this is for you.</h2>
+      <p>You send the reminder. They say Friday. Friday turns into the 8th.</p>
+      <p>Then a pipe leaks, the handyman&rsquo;s number is buried in your messages, and in April you&rsquo;re digging through a shoebox of receipts to work out what you actually made.</p>
+      <p><b>None of that is a you problem.</b> It&rsquo;s a tools problem. A rental is rent, repairs, a lease, a tenant and the books. They belong in one place.</p>
+    </section>
+
+    <section data-seen="what">
+      <h2>NOHM puts the whole rental in one app.</h2>
+      <p>Rent, repairs, leases, tenants and the books for every unit, on your phone or on a computer at <a href="https://business.nohm.app/">business.nohm.app</a>. Here&rsquo;s what that looks like.</p>
+
+      <h3>Rent lands in your bank. Not ours.</h3>
+      <p>Tenants pay by bank, straight to your connected account. NOHM takes no percentage of the rent. Autopay, reminders and late fees run themselves.</p>
+
+      <h3>Know who&rsquo;s paid before you open a single text.</h3>
+      <p>Every rental shows paid up, due or late on your home screen, with the month&rsquo;s rent in, costs and profit right at the top.</p>
+
+      <h3>Repairs without the phone tag.</h3>
+      <p>Tenants send a repair request with photos. You approve it, or let NOHM Autopilot handle it. You see the price before you book, you approve estimates before work starts, and you pay only for work you book.</p>
+
+      <h3>Keep the contractor you already trust.</h3>
+      <p>Invite your own handyman, plumber or electrician right from NOHM. After their first job at a rental, make them its go-to pro, and that rental&rsquo;s next repairs of that kind go to them first.</p>
+
+      <h3>Screen applicants without chasing paperwork.</h3>
+      <p>Applicants pay <span data-price="RENTAL_APPLICATION_FEE">$50</span> for their own background check, where the law allows: identity, credit and criminal, run by Certn. NOHM never asks applicants for W-2s or bank statements, because those can be faked. Want proof of income? The optional NOHM Income Check is free for Founding Partners.</p>
+
+      <h3>Sign the lease in the app. Keep it there.</h3>
+      <p>Upload your lease and you and your tenant e-sign it, with a signing certificate kept alongside. Condition reports go room by room with photos, so at move-out every room sits beside how it looked on day one. Eviction notices and forms are there by state too (<a href="/landlords/forms/">see them</a>); they aren&rsquo;t legal advice.</p>
+
+      <h3>See your profit on every unit. Tax time takes one tap.</h3>
+      <p>Income, costs and profit for each rental, sorted into IRS Schedule E categories. At tax time, email your accountant a year-end report as a PDF and a spreadsheet.</p>
+    </section>
+
+    <section data-seen="proof">
+      <h2>See it before you sign up.</h2>
+      <p>This is the app itself, not a mock-up.</p>
+      <div class="proof">
+        <figure>
+          <img src="/go/landlords/img/take.webp" width="480" height="1041" loading="lazy" alt="The NOHM landlord home screen: your take for the month, rent in, costs and what is still to collect." />
+          <figcaption><b>Your month at a glance</b>Rent in, costs, profit, and what&rsquo;s still to collect.</figcaption>
+        </figure>
+        <figure>
+          <img src="/go/landlords/img/rentals.webp" width="480" height="1041" loading="lazy" alt="Your properties, each showing paid up or rent due, with maintenance requests below." />
+          <figcaption><b>Every rental, paid or not</b>Paid up, due or late, plus any open repairs.</figcaption>
+        </figure>
+        <figure>
+          <img src="/go/landlords/img/tools.webp" width="480" height="1041" loading="lazy" alt="Landlord shortcuts: approve repair, collect rent, message tenants, invite tenant, rental applications, money and taxes, landlord laws and legal forms." />
+          <figcaption><b>Everything one tap away</b>Collect rent, message tenants, applications, money and taxes, legal forms.</figcaption>
+        </figure>
+      </div>
+      <p class="sample">Sample data. Names, addresses and amounts are made up.</p>
+    </section>
+
+    <section data-seen="catch">
+      <h2>What&rsquo;s the catch? Here&rsquo;s all of it.</h2>
+      <p>You&rsquo;ve seen &ldquo;free&rdquo; before. So here is every way NOHM gets paid, and every way you might pay.</p>
+      <dl class="facts">
+        <div><dt>The deal</dt><dd>Free for good for the first 10,000 landlords: NOHM Founding Partners. Every rental, rent collection and the books. No plan, no subscription.</dd></div>
+        <div><dt>Rent</dt><dd>Tenants pay by bank, straight to your account. NOHM takes no part of the rent. Each bank payment has a <span data-price="ACH_RENT_FEE">$7</span> fee: the tenant pays it, or you can. About $5 of it is the bank processor&rsquo;s cost, and NOHM keeps about $2.</dd></div>
+        <div><dt>Applications</dt><dd>Applicants pay <span data-price="RENTAL_APPLICATION_FEE">$50</span> for their background check, where the law allows. That&rsquo;s how NOHM makes money on screening, not you.</dd></div>
+        <div><dt>Repairs</dt><dd>You pay only for repairs and walkthroughs you book, and you see the price first.</dd></div>
+        <div><dt>Autopilot</dt><dd>Optional, <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> a month per rental. It answers your tenants and handles repairs up to a limit you set. A property manager takes about 10% of the rent: $150 a month on a $1,500 home.</dd></div>
+        <div><dt>Card on file</dt><dd>Kept only to pay for repairs you approve and to keep out fake accounts. You add it when you add a rental or invite a contractor. Never a subscription.</dd></div>
+        <div><dt>Ads</dt><dd>None. No spam.</dd></div>
+      </dl>
+      <h3>Only the first 10,000.</h3>
+      <p>After the first 10,000 landlords, new accounts are on the plans as priced (<a href="/landlords">see them</a>). Founding Partners keep every rental free for good, and get a direct line to the founder with suggestions.</p>
+    </section>
+
+    <section data-seen="start">
+      <h2>What happens when you tap &ldquo;Sign up free.&rdquo;</h2>
+      <ol class="steps">
+        <li>Make your account.</li>
+        <li>Add your rentals.</li>
+        <li>Invite your tenants, and the contractors you already use.</li>
+      </ol>
+      <p style="margin-top:16px">Then rent goes from your tenant&rsquo;s bank to yours.</p>
+      <div class="start">
+        <a class="btn" href="/join/landlord/?from=lp-final">Sign up free</a>
+        <div class="store-cta">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=lp-final" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="132" height="44" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=lp-final" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a></li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <section class="lead" id="email" data-seen="email">
@@ -123,40 +239,23 @@
       </div>
     </section>
 
-    <section data-seen="facts">
-      <h2>The facts</h2>
-      <dl class="facts">
-        <div><dt>Cost</dt><dd>Free for good for the first 10,000 landlords: our launch deal (NOHM Founding Partners). No plan, no subscription.</dd></div>
-        <div><dt>Rent</dt><dd>Tenants pay by bank, straight to your account. NOHM takes no part of the rent. Each bank payment has a <span data-price="ACH_RENT_FEE">$7</span> fee: the tenant pays it, or you can.</dd></div>
-        <div><dt>Repairs</dt><dd>Tenants send repairs with photos. You approve, and a NOHM pro near the rental does the work. You see the price before you book, and pay only for work you book.</dd></div>
-        <div><dt>Your contractors</dt><dd>Invite the handyman, plumber or electrician you already use, right from NOHM. After their first job at a rental, make them its go-to pro, and its next repairs of that kind go to them first.</dd></div>
-        <div><dt>Leases</dt><dd>Signed in NOHM and kept there.</dd></div>
-        <div><dt>Applications</dt><dd>Applicants pay <span data-price="RENTAL_APPLICATION_FEE">$50</span> for their background check, where the law allows.</dd></div>
-        <div><dt>Records</dt><dd>Every repair and its service report, kept for each rental and each unit.</dd></div>
-        <div><dt>Messages</dt><dd>Message your tenants in NOHM, one at a time or all at once, instead of from your own phone.</dd></div>
-        <div><dt>Money</dt><dd>Income, costs and profit for each unit. A tax report for one rental or all of them, as a PDF and a spreadsheet, ready to download or email to your accountant.</dd></div>
-        <div><dt>Autopilot</dt><dd>Optional, <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> a month per rental. It answers your tenants and handles repairs up to a limit you set.</dd></div>
-        <div><dt>Card on file</dt><dd>Kept only to pay for repairs you approve and to keep out fake accounts. You add it when you add a rental or invite a contractor. Never a subscription.</dd></div>
-        <div><dt>Ads</dt><dd>None. No spam.</dd></div>
-        <div><dt>Where</dt><dd>iPhone, Android, and a computer at <a href="https://business.nohm.app/">business.nohm.app</a>.</dd></div>
-      </dl>
+    <section data-seen="faq">
+      <h2>Questions landlords ask.</h2>
+      <div class="faq">
+        <details data-q="cut"><summary>Does NOHM take a cut of my rent?</summary><p>No. Rent goes straight to your connected payout account. Your tenant pays the bank payment fee, or you can cover it for them.</p></details>
+        <details data-q="why-free"><summary>Why is it free?</summary><p>NOHM is free for the first 10,000 landlords as a launch deal. NOHM earns a small part of each bank payment fee (about $2 of the $7), the background check applicants pay for, and the repairs and walkthroughs you choose to book. Autopilot is optional.</p></details>
+        <details data-q="card"><summary>Do I have to put a card on file?</summary><p>Yes, you add one when you add a rental or invite a contractor. It&rsquo;s kept only to pay for repairs you approve and to keep fake accounts out. It&rsquo;s charged only for work you book, never as a subscription.</p></details>
+        <details data-q="after"><summary>What if I&rsquo;m not in the first 10,000?</summary><p>You&rsquo;re on the plans as priced. See them on <a href="/landlords">the landlords page</a>.</p></details>
+        <details data-q="autopilot"><summary>What does Autopilot do?</summary><p>It answers tenant messages from your house notes, books repairs, reviews every estimate, relists the unit after move-out and sends you a weekly summary. Emergencies always come straight to you. It&rsquo;s optional.</p></details>
+        <details data-q="legal"><summary>Are the notices and forms legal advice?</summary><p>No. They&rsquo;re tools to help you get the paperwork done. <a href="/landlords/forms/">See the forms by state.</a></p></details>
+      </div>
     </section>
 
-    <section data-seen="start">
-      <h2>How to start</h2>
-      <ol class="steps">
-        <li>Sign up free.</li>
-        <li>Add your rentals.</li>
-        <li>Invite your tenants and the contractors you already use.</li>
-      </ol>
+    <section class="ps" data-seen="ps">
+      <p><b>P.S.</b> The short version: rent straight to your bank, no cut of it, no monthly fee, free for good for the first 10,000 landlords.</p>
+      <p>If you do nothing, rent day stays a chase and tax time stays a scramble. Sign up free, add a rental, and see how it feels with everything in one place.</p>
       <div class="start">
-        <a class="btn" href="/join/landlord/?from=lp-final">Sign up free</a>
-        <div class="store-cta">
-          <ul class="store-cta__badges">
-            <li><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=lp-final" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="132" height="44" alt="" /></a></li>
-            <li><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=lp-final" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a></li>
-          </ul>
-        </div>
+        <a class="btn" href="/join/landlord/?from=lp-ps">Sign up free</a>
       </div>
       <p class="call">Questions? Call or text <a href="tel:+18882306646">888-230-NOHM</a>.</p>
     </section>
