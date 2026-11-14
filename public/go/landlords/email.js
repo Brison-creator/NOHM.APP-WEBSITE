@@ -26,7 +26,7 @@ function sent() {
     h('p.b-small', 'Questions? Call or text 888-230-NOHM.'),
   );
   // Counted in the site's access logs (tools/ads/report.py): no name or email in it.
-  fetch(`/go/landlords/?lead=sent&src=${encodeURIComponent(source)}`, { method: 'HEAD', cache: 'no-store' }).catch(() => {});
+  fetch(`${location.pathname}?lead=sent&src=${encodeURIComponent(source)}`, { method: 'HEAD', cache: 'no-store' }).catch(() => {});
 }
 
 function form() {

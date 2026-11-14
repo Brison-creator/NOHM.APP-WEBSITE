@@ -39,6 +39,9 @@ CT = ZoneInfo('America/Chicago')
 # Campaign pages, by path (no trailing slash), and what to call them.
 PAGES = {
     '/go/landlords': 'Landlord ad page',
+    # The plain 2026-11-03 page, kept as the control in the 2026-11 page test
+    # (owner, 2026-11-14): the same ads send half the people here.
+    '/go/landlords/old': 'Landlord ad page, old version (page test control)',
     '/join/landlord': 'Landlord sign-up page',
     '/start': 'Handout card page',
     # The card pros hand homeowners (owner, 2026-11-10).
@@ -56,6 +59,14 @@ PAGES = {
 PARTS = [
     ('hero', 'Top'), ('email', 'Email form'), ('facts', 'The facts'), ('start', 'How to start'),
 ]
+# The long page (2026-11-13) has its own parts, top to bottom.
+PARTS_NEW = [
+    ('hero', 'Top'), ('problem', 'The problem'), ('what', 'What it is'), ('proof', 'Proof'), ('catch', 'The catch'),
+    ('start', 'How to start'), ('email', 'Email form'), ('faq', 'Questions'), ('ps', 'P.S.'),
+]
+# The landlord ad pages: the long page and the old one it is tested against.
+LANDING = ('/go/landlords', '/go/landlords/old')
+PARTS_BY_PATH = {'/go/landlords': PARTS_NEW, '/go/landlords/old': PARTS}
 STAYS = (10, 30, 60, 120, 300)
 # The hero test's rule (owner, 2026-10-27: "what you will change automatic"):
 # a headline wins once each has been seen by this many people and it gets
@@ -214,7 +225,7 @@ def build(rows):
                 'device': device(ua),
                 'app': app_of(ua),
                 'when': t0.astimezone(CT),
-                'scrolled': 'lp-tenant-phone' in stems if path == '/go/landlords' else None,
+                'scrolled': 'lp-tenant-phone' in stems if path in LANDING else None,
                 'taps': taps,
                 'other': list(dict.fromkeys(other)),
                 'applied': any(r['cs-uri-stem'].startswith('/join') and query(r).get('from') == 'pro' for r in after),
@@ -230,7 +241,7 @@ def build(rows):
     # (public/go/landlords/email.js): counted, never named.
     report['leads'] = collections.Counter(
         query(r).get('src', 'unknown') for r in rows
-        if r.get('cs-method') == 'HEAD' and page_of(r['cs-uri-stem']) == '/go/landlords' and query(r).get('lead') == 'sent')
+        if r.get('cs-method') == 'HEAD' and page_of(r['cs-uri-stem']) in LANDING and query(r).get('lead') == 'sent')
     # A new landlord account from /join/landlord (public/join/ui/landlord-screens.js).
     report['signups'] = collections.Counter(
         query(r).get('src', 'unknown') for r in rows
@@ -285,20 +296,20 @@ def summarize(report, label):
         # Scrolled: what track.js counts (a part past the top seen). Before it
         # ran, the lower phone picture loading stood in, but phones fetch it
         # without anyone scrolling, so it is only shown for those days.
-        if path == '/go/landlords' and not any(v['seen'] for v in people):
+        if path in LANDING and not any(v['seen'] for v in people):
             lines.append(f"  Lower pictures loaded (not a sure sign of scrolling): {sum(1 for v in people if v['scrolled'])} of {len(people)}")
         taps = collections.Counter()
         for v in people:
             taps.update(v['taps'])
         tappers = sum(1 for v in people if v['taps'])
-        if path == '/go/landlords':
+        if path in LANDING:
             names = {'ios': 'App Store', 'android': 'Google Play', 'business': 'computer sign-in'}
             lines.append(f'  Tapped download: {tappers} of {len(people)}' + (' (' + ', '.join(f'{names.get(k, k)} {n}' for k, n in taps.items()) + ')' if taps else ''))
             lines.append(f"  Opened sign up: {sum(1 for v in people if v['signup_opened'])} of {len(people)}")
             lines.append(f"  Left their email: {sum(leads.values())}" + (' (' + ', '.join(f'{k} {n}' for k, n in leads.items()) + ')' if leads else '') + ' (each one is in the admin@nohm.app inbox)')
             counted = [v for v in people if v['seen']]
             if counted:
-                got = [(name, sum(1 for v in counted if key in v['seen'])) for key, name in PARTS]
+                got = [(name, sum(1 for v in counted if key in v['seen'])) for key, name in PARTS_BY_PATH[path]]
                 lines.append(f"  Scrolled past the top: {sum(1 for v in counted if v['seen'] - {'hero'})} of {len(counted)} counted")
                 lines.append(f"  Looked 10 seconds or more: {sum(1 for v in counted if v['stay'] >= 10)} of {len(counted)}")
                 lines.append(f'  How far down: ' + ', '.join(f'{name} {n}' for name, n in got))
@@ -363,7 +374,7 @@ def as_json(report, label):
     for path in PAGES:
         people = [v for v in report[path] if not v['robot']]
         out['pages'][path] = {'people': len(people), 'robots': len(report[path]) - len(people),
-                              'acted': sum(1 for v in people if acted(v)) if path == '/go/landlords' else None}
+                              'acted': sum(1 for v in people if acted(v)) if path in LANDING else None}
     out['hero_test'] = hero_test(report['/go/landlords'])
     return out
 

@@ -1,4 +1,5 @@
-// nohm.app/go/landlords: what visitors look at, so the page can be made
+// nohm.app/go/landlords (and /go/landlords/old, the page test's control):
+// what visitors look at, so the page can be made
 // better. Each is a HEAD to this page that the site's access logs count
 // (tools/ads/report.py) with no name, email or id in it: each part of the
 // page scrolled to (?seen=), each question opened (?faq=), and time on the
@@ -12,7 +13,7 @@
     if (sent[k]) return;
     sent[k] = true;
     try {
-      fetch('/go/landlords/?' + k + '&v=' + v, { method: 'HEAD', cache: 'no-store', keepalive: true }).catch(function () {});
+      fetch(location.pathname + '?' + k + '&v=' + v, { method: 'HEAD', cache: 'no-store', keepalive: true }).catch(function () {});
     } catch (e) { /* an old browser: not counted */ }
   }
 

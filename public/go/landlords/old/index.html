@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en" data-v="s">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Free rental software for the first 10,000 landlords | NOHM</title>
+  <meta name="description" content="NOHM's launch deal: rental software free for good for the first 10,000 landlords. Rent by bank straight to your account, repairs, leases, tenants and the books, with the contractors you already use. No subscription." />
+  <!-- The old version of the ad page (the plain 2026-11-03 page), kept as the control in the 2026-11 page test against /go/landlords/ (owner, 2026-11-14). Out of search and the menu. Its sign-up tags are old-hero and old-final. -->
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/favicon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
+  <link rel="stylesheet" href="/book/book.css" />
+  <script src="/book/config.js"></script>
+  <style>
+    /* The landlord ad's page, plain (owner, 2026-11-03: "i need this page to
+       be simple not difficult to understand loose the marketing vibe. no
+       sales vibe just white page with nohm landlord logo and simple facts").
+       White, the NOHM landlord logo, what it is, the facts, how to start. */
+    body { margin: 0; background: #fff; color: #393c41; font-family: var(--font-text); }
+
+    /* The logo: the NOHM mark (bar.css) and "landlord", as the app's own
+       top bar reads on the landlord side. */
+    .bar .role {
+      margin-right: auto; margin-left: 9px;
+      font-family: var(--font-text); font-weight: var(--weight-ui-strong); font-size: 17px; line-height: 1;
+      letter-spacing: 0; color: #171a20;
+    }
+
+    main { max-width: 640px; margin: 0 auto; padding: 40px 24px 24px; box-sizing: border-box; }
+    h1 {
+      margin: 0; font-size: clamp(30px, 7vw, 40px); line-height: 1.1;
+      font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline);
+      color: #171a20;
+    }
+    .lede { margin: 12px 0 0; font-size: 18px; line-height: 1.5; }
+    /* The launch deal (owner, 2026-11-03: "im giving the first 10,000
+       landlords the app for free. launch deal"; "lets call it software"). */
+    .tag { margin: 0 0 12px; font-size: 13px; font-weight: var(--weight-ui-strong); letter-spacing: 0.12em; text-transform: uppercase; color: #356CA3; }
+    .card-note { margin: 14px 0 0; font-size: 14px; line-height: 1.5; color: #6e6e73; }
+    h2 {
+      margin: 48px 0 8px; font-size: 22px; line-height: 1.2;
+      font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-title);
+      color: #171a20;
+    }
+
+    /* Sign up: one blue button, then the stores. */
+    .start { margin-top: 24px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 48px; padding: 0 28px; border-radius: 4px;
+      background: #356CA3; color: #fff; text-decoration: none;
+      font-family: var(--font-text); font-weight: var(--weight-ui-strong); font-size: 16px;
+    }
+    .btn:hover { background: #2b5885; }
+    .start .store-cta { --store-badge-h: 44px; margin-top: 4px; }
+    .start .store-cta__badges { justify-content: flex-start; }
+
+    /* The facts: a label and one plain line each. */
+    .facts { margin: 0; padding: 0; border-top: 1px solid #e6e7e9; }
+    .facts div { padding: 16px 0; border-bottom: 1px solid #e6e7e9; }
+    .facts dt { margin: 0 0 4px; font-weight: var(--weight-ui-strong); font-size: 16px; color: #171a20; }
+    .facts dd { margin: 0; font-size: 16px; line-height: 1.55; }
+    @media (min-width: 620px) {
+      .facts div { display: grid; grid-template-columns: 150px 1fr; gap: 16px; }
+      .facts dt { margin: 0; }
+    }
+    .facts a, .call a { color: #356CA3; }
+
+    /* Not ready to download: name and email, and NOHM emails the link
+       (owner, 2026-11-03: "how can we get the visitors info to follow
+       up"). The lead lands in NOHM's inbox; email.js builds the form. */
+    .lead { margin-top: 32px; padding: 20px 20px 22px; border-radius: 12px; background: #f4f4f4; }
+    .lead h2 { margin: 0 0 6px; font-size: 19px; }
+    .lead .note { margin: 0 0 16px; font-size: 15px; line-height: 1.5; }
+    .lead-done { margin: 0; font-size: 17px; font-weight: var(--weight-ui-strong); line-height: 1.4; color: #171a20; }
+    .lead input, .lead .b-btn { box-sizing: border-box; }
+
+    .steps { margin: 0; padding-left: 22px; font-size: 16px; line-height: 1.8; }
+    .call { margin: 20px 0 0; font-size: 16px; }
+
+    footer {
+      max-width: 640px; margin: 48px auto 0; padding: 24px 24px 40px; box-sizing: border-box;
+      border-top: 1px solid #e6e7e9;
+      display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: #6e6e73;
+    }
+    footer a { color: #6e6e73; text-decoration: none; }
+    footer a:hover { color: #171a20; }
+  </style>
+</head>
+<body>
+  <header class="bar"><a href="/">NOHM</a><span class="role">landlord</span></header>
+  <main>
+    <section data-seen="hero">
+      <p class="tag">Launch deal</p>
+      <h1>Free rental software for the first 10,000 landlords.</h1>
+      <p class="lede">Rent, repairs, leases, tenants and the books in one place, with the contractors you already use. No subscription, for good.</p>
+      <div class="start">
+        <a class="btn" href="/join/landlord/?from=old-hero">Sign up free</a>
+        <div class="store-cta">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=old-hero" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="132" height="44" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=old-hero" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="card-note">A card is kept on file only to pay for repairs you approve and to keep out fake accounts. You&rsquo;re never charged a subscription.</p>
+    </section>
+
+    <section class="lead" id="email" data-seen="email">
+      <h2>Not ready to download?</h2>
+      <p class="note">Leave your name and email, and we&rsquo;ll email you the link to set it up when you have a minute.</p>
+      <div id="lead-form">
+        <p class="b-small">Loading&hellip;</p>
+        <noscript><p class="b-small">Email <a href="mailto:admin@nohm.app">admin@nohm.app</a>, or call or text 888-230-NOHM, and we&rsquo;ll send you the link.</p></noscript>
+      </div>
+    </section>
+
+    <section data-seen="facts">
+      <h2>The facts</h2>
+      <dl class="facts">
+        <div><dt>Cost</dt><dd>Free for good for the first 10,000 landlords: our launch deal (NOHM Founding Partners). No plan, no subscription.</dd></div>
+        <div><dt>Rent</dt><dd>Tenants pay by bank, straight to your account. NOHM takes no part of the rent. Each bank payment has a <span data-price="ACH_RENT_FEE">$7</span> fee: the tenant pays it, or you can.</dd></div>
+        <div><dt>Repairs</dt><dd>Tenants send repairs with photos. You approve, and a NOHM pro near the rental does the work. You see the price before you book, and pay only for work you book.</dd></div>
+        <div><dt>Your contractors</dt><dd>Invite the handyman, plumber or electrician you already use, right from NOHM. After their first job at a rental, make them its go-to pro, and its next repairs of that kind go to them first.</dd></div>
+        <div><dt>Leases</dt><dd>Signed in NOHM and kept there.</dd></div>
+        <div><dt>Applications</dt><dd>Applicants pay <span data-price="RENTAL_APPLICATION_FEE">$50</span> for their background check, where the law allows.</dd></div>
+        <div><dt>Records</dt><dd>Every repair and its service report, kept for each rental and each unit.</dd></div>
+        <div><dt>Messages</dt><dd>Message your tenants in NOHM, one at a time or all at once, instead of from your own phone.</dd></div>
+        <div><dt>Money</dt><dd>Income, costs and profit for each unit. A tax report for one rental or all of them, as a PDF and a spreadsheet, ready to download or email to your accountant.</dd></div>
+        <div><dt>Autopilot</dt><dd>Optional, <span data-price="RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY">$19.99</span> a month per rental. It answers your tenants and handles repairs up to a limit you set.</dd></div>
+        <div><dt>Card on file</dt><dd>Kept only to pay for repairs you approve and to keep out fake accounts. You add it when you add a rental or invite a contractor. Never a subscription.</dd></div>
+        <div><dt>Ads</dt><dd>None. No spam.</dd></div>
+        <div><dt>Where</dt><dd>iPhone, Android, and a computer at <a href="https://business.nohm.app/">business.nohm.app</a>.</dd></div>
+      </dl>
+    </section>
+
+    <section data-seen="start">
+      <h2>How to start</h2>
+      <ol class="steps">
+        <li>Sign up free.</li>
+        <li>Add your rentals.</li>
+        <li>Invite your tenants and the contractors you already use.</li>
+      </ol>
+      <div class="start">
+        <a class="btn" href="/join/landlord/?from=old-final">Sign up free</a>
+        <div class="store-cta">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="/get/?to=ios&amp;from=old-final" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="132" height="44" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="/get/?to=android&amp;from=old-final" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="call">Questions? Call or text <a href="tel:+18882306646">888-230-NOHM</a>.</p>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM&trade; &copy; 2026</span>
+    <span class="eho" style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 100 84" width="21" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M50 0 100 30v10l-8-5v49H8V35l-8 5V30zm0 11L16 31.5V76h68V31.5zM34.5 40h31v9h-31zm0 15h31v9h-31z"/></svg>Equal Housing Opportunity</span>
+    <a href="/landlords">Landlords</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+  </footer>
+
+  <script type="module" src="/go/landlords/email.js"></script>
+  <script src="/go/landlords/track.js" defer></script>
+  <script src="/for/live.js" defer></script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
