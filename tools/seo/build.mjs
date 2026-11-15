@@ -738,7 +738,7 @@ ${g.forms.map((f) => formCard(st, f)).join('\n')}
     </section>`),
     section('Filled in for you.', steps(FILLED)),
     fine,
-    more('More for landlords.', [['/landlords/forms/', 'Other states', 'Eviction notices and forms by state'], ...FORM_TYPES.slice(0, 3).map((t) => [`/landlords/forms/${t.slug}/`, `${t.name} by state`, cap(placeCount(rowsOf(t)))]), ...LANDLORD.slice(0, 3).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])]),
+    more('More for landlords.', [...(st.code === 'AR' ? [GUIDES_LINK] : []), ['/landlords/forms/', 'Other states', 'Eviction notices and forms by state'], ...FORM_TYPES.slice(0, 3).map((t) => [`/landlords/forms/${t.slug}/`, `${t.name} by state`, cap(placeCount(rowsOf(t)))]), ...LANDLORD.slice(0, 3).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]])]),
     finalAsk,
   ].join('\n\n');
   const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'AdministrativeArea', name: st.name } } });
@@ -839,6 +839,141 @@ ${FORM_TYPES.map((t) => `        <li><a href="/landlords/forms/${t.slug}/">${htm
   return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
 }
 
+// ── Arkansas guides ───────────────────────────────────────────────
+// Owner, 2026-11-15 ("Let's get started"): the questions Arkansas landlords
+// type into Google ("how to evict a tenant in Arkansas", "arkansas security
+// deposit law"), answered in order. Every legal statement comes from the
+// forms catalog (legal-forms.json, the app's own): a guide only arranges the
+// catalog's explanations, notes and statutes by question and links to the
+// form pages. It adds no law of its own, and says it isn't legal advice.
+const arState = () => FORMS.find((s) => s.code === 'AR');
+const arForm = (key) => {
+  const f = arState().forms.find((x) => x.key === key);
+  if (!f) throw new Error(`no Arkansas form ${key}`);
+  return f;
+};
+const GUIDE_BASE = '/landlords/guides/arkansas/';
+const GUIDES = [
+  {
+    slug: 'eviction-process', short: 'How to evict a tenant',
+    h1: 'How to evict a tenant in Arkansas.', title: 'How to Evict a Tenant in Arkansas, Step by Step',
+    sub: 'The order Arkansas landlords follow: a notice, a demand for possession, the unlawful detainer filing, and a hearing if the tenant objects. Each step links to the notice or form and the law behind it.',
+    line: 'Notice, demand, filing and hearing, in order',
+    blocks: [
+      { h2: 'Step 1: Serve a notice.', items: [['NOTICE_TO_QUIT'], ['NOTICE_OF_NONCOMPLIANCE'], ['NOTICE_OF_TERMINATION']] },
+      { h2: 'Step 2: Demand possession.', items: [['DEMAND_FOR_POSSESSION']] },
+      { h2: 'Step 3: File for unlawful detainer.', items: [['UNLAWFUL_DETAINER_COMPLAINT']] },
+      { h2: 'Step 4: If the tenant objects, the hearing.', items: [['NOTICE_OF_HEARING']] },
+    ],
+  },
+  {
+    slug: 'late-rent', short: 'Late rent and the 3-day notice',
+    h1: 'Arkansas late rent: when you can serve a notice.', title: 'Arkansas Late Rent: When You Can Serve a Notice',
+    sub: 'In Arkansas, rent must be more than 5 days late before you serve the 3-day notice to quit. What the notice does, how to deliver it, and what taking rent after it can do.',
+    line: 'When the 3-day notice can be served',
+    blocks: [{ h2: 'The 3-day notice to quit.', items: [['NOTICE_TO_QUIT']] }],
+  },
+  {
+    slug: 'security-deposit', short: 'Security deposit law',
+    h1: 'Arkansas security deposit law for landlords.', title: 'Arkansas Security Deposit Law for Landlords',
+    sub: 'The 60-day deadline, what you can deduct, how to send the itemized list, and when the law applies to a small landlord.',
+    line: '60 days, deductions and the itemized list',
+    blocks: [{ h2: 'The itemized deductions.', items: [['DEPOSIT_ITEMIZATION']] }],
+  },
+  {
+    slug: 'rent-increase', short: 'Raising the rent',
+    h1: 'Can a landlord raise rent in Arkansas?', title: 'Can a Landlord Raise Rent in Arkansas?',
+    sub: 'Whether Arkansas caps rent, how much notice to give, and what to check in a lease before you change the rent.',
+    line: 'Rent caps, notice and leases',
+    blocks: [{ h2: 'The notice of rent change.', items: [['NOTICE_OF_RENT_CHANGE']] }],
+  },
+  {
+    slug: 'landlord-entry', short: 'Entering the rental',
+    h1: 'Can a landlord enter without notice in Arkansas?', title: 'Can a Landlord Enter Without Notice in Arkansas?',
+    sub: 'What Arkansas law says about entering a tenant’s home for an inspection, a repair or a showing, and what to put in the notice.',
+    line: 'Inspections, repairs and showings',
+    blocks: [{ h2: 'The notice of entry.', items: [['NOTICE_OF_ENTRY']] }],
+  },
+  {
+    slug: 'abandoned-property', short: 'Belongings left behind',
+    h1: 'A tenant left belongings behind in Arkansas.', title: 'Arkansas: Tenant Left Belongings Behind',
+    sub: 'What the law says about property a tenant leaves when a lease ends, and the notice that heads off disputes.',
+    line: 'Property left when a lease ends',
+    blocks: [{ h2: 'The notice of property left behind.', items: [['PROPERTY_LEFT_BEHIND']] }],
+  },
+  {
+    slug: 'healthy-homes-move-in-form', short: 'Move-in defect form',
+    h1: 'The Arkansas Healthy Homes Act move-in defect form.', title: 'Arkansas Healthy Homes Act: Move-In Defect Form',
+    sub: 'The form the Healthy Homes Act has a tenant fill in at move-in, when to give it, and what a tenant can do about a defect you don’t fix.',
+    line: 'The Healthy Homes Act form',
+    blocks: [{ h2: 'The move-in defect form.', items: [['MOVE_IN_DEFECT_FORM']] }],
+  },
+  {
+    slug: 'end-month-to-month', short: 'Ending a month-to-month tenancy',
+    h1: 'How to end a month-to-month tenancy in Arkansas.', title: 'How to End a Month-to-Month Tenancy in Arkansas',
+    sub: 'How much notice Arkansas requires for a month-to-month tenancy, what a week-to-week tenancy needs, and what to do if the tenant stays.',
+    line: 'Notice for a month-to-month tenancy',
+    blocks: [{ h2: 'The 30-day notice.', items: [['NOTICE_OF_TERMINATION']] }],
+  },
+];
+const guideUrl = (g) => `${GUIDE_BASE}${g.slug}/`;
+const GUIDES_LINK = [GUIDE_BASE, 'Arkansas landlord guides', `${GUIDES.length} questions answered`];
+
+function guideItem([key]) {
+  const st = arState();
+  const f = arForm(key);
+  const law = f.citations.length ? `\n          <div><dt>The law</dt><dd>${f.citations.map(html).join('; ')}</dd></div>` : '';
+  const notes = f.notes.length ? `\n        <ul class="form-notes">\n${f.notes.map((n) => `          <li>${html(n)}</li>`).join('\n')}\n        </ul>` : '';
+  return `      <article class="form" id="${formId(f.key)}">
+        <h3><a href="${formUrl(st, f)}">${html(f.label)}</a>${f.court ? ' <span class="form-tag">Court</span>' : ''}</h3>
+        <p>${html(f.explain)}</p>
+        <dl>
+          <div><dt>When</dt><dd>${html(f.when)}</dd></div>${law}
+        </dl>${notes}
+        <p class="form-src"><a href="${formUrl(st, f)}">The ${html(inline(f.label))} in full</a> · Read the law: ${readLaw(f)}</p>
+      </article>`;
+}
+
+function guidePage(g) {
+  const st = arState();
+  const url = guideUrl(g);
+  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], [GUIDE_BASE, 'Arkansas guides'], [null, g.short]];
+  const title = `${g.title} | NOHM`;
+  const desc = clip(g.sub);
+  const keys = g.blocks.flatMap((b) => b.items.map(([k]) => k));
+  const citations = [...new Set(keys.flatMap((k) => arForm(k).citations))];
+  const body = [
+    textOpening({ trail, h1: g.h1, sub: g.sub }),
+    ...g.blocks.map((b) => `    <section class="sec wrap forms-group">
+      <h2>${html(b.h2)}</h2>
+${b.items.map(guideItem).join('\n')}
+    </section>`),
+    section('Filled in for you.', steps(FILLED)),
+    fine,
+    more('More Arkansas guides.', [...GUIDES.filter((x) => x !== g).map((x) => [guideUrl(x), x.short, x.line]), [stateUrl(st), 'All Arkansas forms', `${st.forms.length} notices and forms`]]),
+    finalAsk,
+  ].join('\n\n');
+  const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'AdministrativeArea', name: st.name }, ...(citations.length ? { citation: citations } : {}) } });
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+}
+
+function guidesHubPage() {
+  const st = arState();
+  const url = GUIDE_BASE;
+  const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], [null, 'Arkansas guides']];
+  const title = 'Arkansas Landlord Guides: Evictions, Deposits, Rent | NOHM';
+  const desc = clip('Arkansas landlord guides: how to evict a tenant, late rent, security deposits, raising rent, entering the rental and more. Built from the statutes.');
+  const body = [
+    textOpening({ trail, h1: 'Arkansas landlord guides.', sub: 'The questions Arkansas landlords ask, answered in order, each with the notice or form and the law behind it.' }),
+    more('The guides.', GUIDES.map((g) => [guideUrl(g), g.short, g.line])),
+    more('The forms.', [[stateUrl(st), 'All Arkansas notices and forms', `${st.forms.length} notices and forms, filled in from your lease`]]),
+    fine,
+    finalAsk,
+  ].join('\n\n');
+  const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'AdministrativeArea', name: st.name } } });
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+}
+
 // The links each hub page carries to its topic pages, between markers.
 const HUBS = {
   'services/index.html': ['Every service, up close.', SERVICES.map((s) => [`/services/${s.slug}/`, s.label, s.blurb])],
@@ -877,6 +1012,8 @@ export function build() {
     out.set(...formsStatePage(st));
     for (const f of st.forms) out.set(...formPage(st, f));
   }
+  out.set(...guidesHubPage());
+  for (const g of GUIDES) out.set(...guidePage(g));
   const files = new Map([...out].map(([url, html]) => [path.join(ROOT, url, 'index.html'), html]));
   for (const [rel, h] of Object.entries(HUBS)) {
     const f = path.join(ROOT, rel);
@@ -884,7 +1021,7 @@ export function build() {
   }
   // The sitemap lists every topic page between its markers.
   const sm = path.join(ROOT, 'sitemap.xml');
-  const urls = [...out.keys()].map((u) => `  <url><loc>${HOST}${u}</loc>${u.startsWith('/landlords/forms/') ? `<lastmod>${FORMS_UPDATED}</lastmod>` : ''}</url>`).join('\n');
+  const urls = [...out.keys()].map((u) => `  <url><loc>${HOST}${u}</loc>${u.startsWith('/landlords/forms/') || u.startsWith('/landlords/guides/') ? `<lastmod>${FORMS_UPDATED}</lastmod>` : ''}</url>`).join('\n');
   const SM_START = '  <!-- topics: tools/seo/build.mjs -->';
   const SM_END = '  <!-- /topics -->';
   let x = fs.readFileSync(sm, 'utf8');
