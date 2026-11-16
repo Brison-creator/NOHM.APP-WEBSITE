@@ -12,7 +12,9 @@
 // Every claim here is one the site already makes (/homeowners,
 // /for/homeowners, /for/pros, /landlords, /for/landlords) or the app's
 // own lists (the trade issues are public/book/lib/issues.js, the app's
-// catalog). Prices come from /pricing.js and /for/live.js, never typed.
+// catalog). Prices come from /pricing.js and /for/live.js, never typed: the
+// words a crawler reads without running a script (descriptions, the typed
+// fallback inside each price span) are filled from public/pricing.js here.
 //
 // Run after changing anything here:  node tools/seo/build.mjs
 // tools/seo/build.test.mjs fails while a page is out of date.
@@ -24,6 +26,14 @@ import { ISSUES } from '../../public/book/lib/issues.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../public');
 const HOST = 'https://nohm.app';
+
+// The rental plan's monthly price, read from /pricing.js so a page never types
+// it (owner, 2026-11-16: $7.99 a month, first month free). PLAN_SPAN is the
+// price as pricing.js renders it, with its typed fallback.
+const PLAN = fs.readFileSync(path.join(ROOT, 'pricing.js'), 'utf8').match(/^\s*plan:\s*(\d+(?:\.\d+)?)/m)[1];
+const PLAN_SPAN = `<span data-rental="plan">$${PLAN}</span>`;
+// The landlord topic pages' lastmod in the sitemap: when their pricing last changed.
+const LANDLORD_UPDATED = '2026-11-16';
 
 // ── The 15 services ───────────────────────────────────────────────
 // slug (as on /services and /book), the server's Trade.name, the /services
@@ -57,11 +67,14 @@ const QUOTES = {
 
 // ── Landlord topics ───────────────────────────────────────────────
 // Each says only what /landlords and /for/landlords say.
+// The ask at the foot of every landlord page.
+const PLAN_ASK = `${PLAN_SPAN} a month for every rental. First month free.`;
+
 const LANDLORD = [
   {
     slug: 'rent-collection',
     title: 'Online Rent Collection for Landlords | NOHM',
-    desc: 'Collect rent online by bank transfer, straight to your own account. Autopay, reminders and late fees run themselves. Free for the first 10,000 landlords: no plan, no monthly fee.',
+    desc: `Collect rent online by bank transfer, straight to your own account. Autopay, reminders and late fees run themselves. $${PLAN} a month, first month free.`,
     h1: 'Collect rent online.',
     sub: 'Tenants pay by bank, straight to your account. Autopay, reminders and late fees run themselves.',
     img: ['renter', 1448, 1086, '50% 30%', 'A renter on his couch paying rent and sending a repair request from his phone'],
@@ -93,7 +106,7 @@ const LANDLORD = [
     img: ['door', 1536, 864, '60% 30%', 'A NOHM pro walking up to a rental’s front door'],
     cards: [
       ['Background check.', 'Certn runs identity, credit and criminal checks. <span data-rental="application">$50</span>, paid by the applicant where the law allows.'],
-      ['Income, from the bank.', 'The optional NOHM Income Check reads income from the applicant’s own bank through Plaid. Free for Founding Partners.'],
+      ['Income, from the bank.', 'The optional NOHM Income Check reads income from the applicant’s own bank through Plaid.'],
       ['Local limits, applied.', 'Where a state or city sets less, the applicant pays less. NOHM applies the limit before checkout.'],
       ['Notices sent for you.', 'Adverse-action notices go out for you when you decline.'],
     ],
@@ -121,14 +134,14 @@ const LANDLORD = [
   },
   {
     slug: 'rental-listings',
-    title: 'List Your Rental for Free | NOHM',
-    desc: 'List a rental for free with photos and an Apply button. Unlimited applications sent by text, Fair Housing wording checks, and the listing comes down when the lease is signed.',
+    title: 'List Your Rental Online | NOHM',
+    desc: 'List a rental with photos and an Apply button. Unlimited applications sent by text, Fair Housing wording checks, and the listing comes down when the lease is signed.',
     h1: 'List it. Fill it.',
-    sub: 'List in minutes with photos and an Apply button. Unlimited applications, free.',
+    sub: 'List in minutes with photos and an Apply button. Unlimited applications.',
     img: ['landlord', 1920, 1280, '22% 35%', 'A landlord with a clipboard shaking hands with her new tenants in the kitchen of a rental'],
     cards: [
       ['Listed in minutes.', 'Photos, rent and an Apply button. Fair Housing wording checks as you write.'],
-      ['Applications by text.', 'Send the application to anyone who asks. Unlimited, and free.'],
+      ['Applications by text.', 'Send the application to anyone who asks. Unlimited.'],
       ['Down when it’s rented.', 'The listing comes down when a lease is signed.'],
       ['Ready for next time.', 'After move-out, the next listing is drafted for you.'],
     ],
@@ -198,7 +211,7 @@ const LANDLORD_LABEL = {
   'rent-collection': ['Rent collection', 'Paid by bank, straight to you'],
   'tenant-screening': ['Tenant screening', 'No fake paperwork'],
   'lease-signing': ['Leases and move-ins', 'E-sign and condition reports'],
-  'rental-listings': ['Rental listings', 'Free, with unlimited applications'],
+  'rental-listings': ['Rental listings', 'Photos, an Apply button, unlimited applications'],
   maintenance: ['Maintenance', 'Requests, pros and receipts'],
   accounting: ['Accounting and taxes', 'Profit per unit, Schedule E'],
   autopilot: ['NOHM Autopilot', 'Hands off, still in charge'],
@@ -494,17 +507,18 @@ function landlordPage(t) {
       <p class="lede">${text(t.specsLede)}</p>
     </section>`);
   if (t.speeds) parts.push(section(t.specsTitle, SPEEDS));
-  // Free for NOHM Founding Partners, the first 10,000 landlords (owner,
-  // 2026-10-29), and how: the tenant's bank fee and the application, as
-  // /landlords says it. Never a count of who's left.
-  const FOUNDERS = 'For the first 10,000 landlords: NOHM Founding Partners. Your rentals are free for good.';
+  // The plan, as /landlords says it (owner, 2026-11-16): one price per landlord
+  // account however many rentals, first month free, and the tenant's bank fee
+  // and the application unchanged. "Free" attaches to a landlord only as the
+  // first month; no Founding Partner wording (the program is closed).
+  const PLAN_LEDE = `${PLAN_SPAN} a month per landlord account, for as many rentals as you add. First month free. Cancel any time.`;
   if (t.price === 'rent' || t.price === 'books') {
-    parts.push(section('Free for Founding Partners.', `      <ul class="plans plans--2">
+    parts.push(section('One plan. Every rental.', `      <ul class="plans plans--2">
         <li class="plan plan--lead">
-          <p class="name">You pay</p>
-          <p class="price"><span data-rental="free">$0</span></p>
-          <p class="per">for every rental, for good</p>
-          <p>Rent collection, autopay, reminders, late fees, the books and reports. No plan, no monthly fee.</p>
+          <p class="name">Your plan</p>
+          <p class="price">${PLAN_SPAN}</p>
+          <p class="per">a month, for every rental</p>
+          <p>Rent collection and tracking, ledgers and financial records, payment reminders and financial reporting on every rental you add. Your first month is free.</p>
         </li>
         <li class="plan">
           <p class="name">Your tenant pays</p>
@@ -513,12 +527,11 @@ function landlordPage(t) {
           <p>About $5 of it is the bank processor&rsquo;s cost. NOHM keeps about $2.</p>
         </li>
       </ul>
-      <p class="fine">NOHM takes no cut of rent. No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`, FOUNDERS));
+      <p class="fine">NOHM takes no cut of rent. No spam. No ads. <a href="/landlords/">What does NOHM cost?</a></p>`, PLAN_LEDE));
   }
-  // NOHM Autopilot is optional and priced per rental for everyone, Founding
-  // Partners included (owner, 2026-10-29: "Wait Nohm autopilot cost still
-  // ok"), set against a property manager's cut; the price and its share of
-  // a $1,500 rent come from /pricing.js.
+  // NOHM Autopilot is optional and priced per rental (owner, 2026-10-29:
+  // "Wait Nohm autopilot cost still ok"), set against a property manager's
+  // cut; the price and its share of a $1,500 rent come from /pricing.js.
   if (t.price === 'autopilot') {
     parts.push(section('One price per rental.', `      <ul class="plans plans--2">
         <li class="plan plan--lead">
@@ -528,17 +541,17 @@ function landlordPage(t) {
           <p>Optional, and it runs the rental for you.</p>
         </li>
         <li class="plan">
-          <p class="name">Everything else</p>
-          <p class="price"><span data-rental="free">$0</span></p>
-          <p class="per">for every rental, for good</p>
-          <p>Listings, leases, repairs, rent collection and the books, for NOHM Founding Partners: the first 10,000 landlords. No plan, no monthly fee.</p>
+          <p class="name">Your plan</p>
+          <p class="price">${PLAN_SPAN}</p>
+          <p class="per">a month, for every rental</p>
+          <p>Rent collection and tracking, ledgers, reminders and reports. Your first month is free. Autopilot is on top, on the rentals you choose.</p>
         </li>
       </ul>
       <p class="pm-line">A property manager takes about 10% of the rent: $150 a month on a $1,500 home. Autopilot is <span data-rental="autopilot">$19.99</span>, about <span data-rental-share="autopilot" data-share-of="1500">1.3%</span>.</p>
-      <p class="fine">No spam. No ads. <a href="/landlords/">How NOHM is free</a>.</p>`));
+      <p class="fine">No spam. No ads. <a href="/landlords/">What does NOHM cost?</a></p>`));
   }
   parts.push(more('Everything else for landlords.', [...LANDLORD.filter((o) => o !== t).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]]), FORMS_LINK]));
-  parts.push(final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`));
+  parts.push(final('Got rentals? NOHM it.', PLAN_ASK, `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`));
   const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
   const scripts = ['/pricing.js'];
   if (t.soon) scripts.push('/for/live.js');
@@ -670,7 +683,7 @@ function textOpening({ trail, h1, sub, extra = '' }) {
     </section>`;
 }
 
-const finalAsk = final('Got rentals? NOHM it.', 'Free for the first 10,000 landlords. No spam. No ads. Nothing.', `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`);
+const finalAsk = final('Got rentals? NOHM it.', PLAN_ASK, `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`);
 const fine = `    <section class="sec wrap">
       <p class="fine forms-fine">${html(NOT_ADVICE)} <a href="/terms/#g-1">See the Terms</a>.</p>
     </section>`;
@@ -742,7 +755,7 @@ ${g.forms.map((f) => formCard(st, f)).join('\n')}
     finalAsk,
   ].join('\n\n');
   const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'AdministrativeArea', name: st.name } } });
-  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
 }
 
 function formPage(st, f) {
@@ -779,7 +792,7 @@ ${f.notes.map((n) => `        <li>${html(n)}</li>`).join('\n')}
     finalAsk,
   ].filter(Boolean).join('\n\n');
   const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'Thing', name: `${st.name} ${f.label}` }, ...(f.citations.length ? { citation: f.citations } : {}) } });
-  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
 }
 
 function formTypePage(t) {
@@ -803,7 +816,7 @@ ${rows.map(({ st, f }) => `          <tr><th scope="row"><a href="${formUrl(st, 
     finalAsk,
   ].join('\n\n');
   const ld = webPageLd({ url, title: t.title, desc, trail });
-  return [url, page({ url, title: t.title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+  return [url, page({ url, title: t.title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
 }
 
 function formsIndexPage() {
@@ -811,7 +824,7 @@ function formsIndexPage() {
   const trail = [['/', 'Home'], ['/landlords/', 'Landlords'], [null, 'Legal forms']];
   const count = FORMS.reduce((n, s) => n + s.forms.length, 0);
   const title = 'Eviction Notices and Landlord Forms by State | NOHM';
-  const desc = 'Late rent notices, lease violation notices, notices to end a tenancy, deposit itemizations and court forms for all 50 states and DC, with the law. Free in NOHM.';
+  const desc = 'Late rent notices, lease violation notices, notices to end a tenancy, deposit itemizations and court forms for all 50 states and DC, with the law.';
   const body = [
     textOpening({
       trail,
@@ -836,7 +849,7 @@ ${FORM_TYPES.map((t) => `        <li><a href="/landlords/forms/${t.slug}/">${htm
     finalAsk,
   ].join('\n\n');
   const ld = webPageLd({ url, title, desc, trail });
-  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
 }
 
 // ── Arkansas guides ───────────────────────────────────────────────
@@ -954,7 +967,7 @@ ${b.items.map(guideItem).join('\n')}
     finalAsk,
   ].join('\n\n');
   const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'AdministrativeArea', name: st.name }, ...(citations.length ? { citation: citations } : {}) } });
-  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
 }
 
 function guidesHubPage() {
@@ -971,7 +984,7 @@ function guidesHubPage() {
     finalAsk,
   ].join('\n\n');
   const ld = webPageLd({ url, title, desc, trail, extra: { about: { '@type': 'AdministrativeArea', name: st.name } } });
-  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: [], styles: ['/landlords/forms/forms.css'] })];
+  return [url, page({ url, title, desc, ogImage: FORMS_OG[0], ogAlt: FORMS_OG[1], ld, body, scripts: ['/pricing.js'], styles: ['/landlords/forms/forms.css'] })];
 }
 
 // The links each hub page carries to its topic pages, between markers.
@@ -1021,7 +1034,9 @@ export function build() {
   }
   // The sitemap lists every topic page between its markers.
   const sm = path.join(ROOT, 'sitemap.xml');
-  const urls = [...out.keys()].map((u) => `  <url><loc>${HOST}${u}</loc>${u.startsWith('/landlords/forms/') || u.startsWith('/landlords/guides/') ? `<lastmod>${FORMS_UPDATED}</lastmod>` : ''}</url>`).join('\n');
+  const topicUrls = new Set(LANDLORD.map((t) => `/landlords/${t.slug}/`));
+  const lastmod = (u) => (u.startsWith('/landlords/forms/') || u.startsWith('/landlords/guides/') ? FORMS_UPDATED : topicUrls.has(u) ? LANDLORD_UPDATED : '');
+  const urls = [...out.keys()].map((u) => `  <url><loc>${HOST}${u}</loc>${lastmod(u) ? `<lastmod>${lastmod(u)}</lastmod>` : ''}</url>`).join('\n');
   const SM_START = '  <!-- topics: tools/seo/build.mjs -->';
   const SM_END = '  <!-- /topics -->';
   let x = fs.readFileSync(sm, 'utf8');

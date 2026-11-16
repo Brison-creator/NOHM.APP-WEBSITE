@@ -32,12 +32,17 @@ test('a refusal is said plainly, with the number to call', () => {
 });
 
 // Back on the plain page the same day (owner, 2026-11-03: "how can we get
-// the visitors info to follow up"), right under the top's buttons.
-test('the page has the form, its script and its settings, under the top', () => {
+// the visitors info to follow up"), right under the top's buttons; on the long
+// page it follows the last sign-up and comes before the questions.
+test('the pages have the form, its script and its settings', () => {
   const page = readFileSync(new URL('../../public/go/landlords/index.html', import.meta.url), 'utf8');
-  assert.match(page, /<section class="lead" id="email" data-seen="email">/);
-  assert.match(page, /<div id="lead-form">/);
-  assert.match(page, /<script src="\/book\/config\.js"><\/script>/);
-  assert.match(page, /<script type="module" src="\/go\/landlords\/email\.js"><\/script>/);
-  assert.ok(page.indexOf('data-seen="email"') < page.indexOf('data-seen="facts"'), 'above the facts');
+  const old = readFileSync(new URL('../../public/go/landlords/old/index.html', import.meta.url), 'utf8');
+  for (const p of [page, old]) {
+    assert.match(p, /<section class="lead" id="email" data-seen="email">/);
+    assert.match(p, /<div id="lead-form">/);
+    assert.match(p, /<script src="\/book\/config\.js"><\/script>/);
+    assert.match(p, /<script type="module" src="\/go\/landlords\/email\.js"><\/script>/);
+  }
+  assert.ok(old.indexOf('data-seen="email"') < old.indexOf('data-seen="facts"'), 'the old page: above the facts');
+  assert.ok(page.indexOf('data-seen="start"') < page.indexOf('data-seen="email"') && page.indexOf('data-seen="email"') < page.indexOf('data-seen="faq"'), 'the long page: after how to start, before the questions');
 });

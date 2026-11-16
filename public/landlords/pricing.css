@@ -40,7 +40,7 @@
 
 .compare-table {
   width: 100%;
-  min-width: 860px;
+  min-width: 700px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -71,6 +71,11 @@
 
 .compare-table .nohm-row td {
   background: #f8fafc;
+}
+
+.compare small {
+  display: block;
+  margin-top: 2px;
 }
 
 .compare small,
@@ -144,6 +149,47 @@
   font-weight: var(--weight-ui);
 }
 
+/* Phones: each company's row becomes a short card, so the price, the yearly
+   figure and the source with its date all show without a sideways scroll. */
+@media (max-width: 640px) {
+  .compare-table {
+    min-width: 0;
+  }
+
+  .compare-table thead {
+    display: none;
+  }
+
+  .compare-table,
+  .compare-table tbody,
+  .compare-table tr,
+  .compare-table td {
+    display: block;
+  }
+
+  .compare-table tr {
+    padding: 12px 0;
+    border-bottom: 1px solid #e6e7e9;
+  }
+
+  .compare-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .compare-table td {
+    padding: 4px 18px;
+    border: 0;
+  }
+
+  .compare-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: #6e6e73;
+    font-size: 12px;
+    font-weight: var(--weight-ui);
+  }
+}
+
 @media (min-width: 900px) {
   .fees .fee-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -152,4 +198,9 @@
   .screening-tiers {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+.compare-table a {
+  color: #356CA3;
+  text-underline-offset: 3px;
 }

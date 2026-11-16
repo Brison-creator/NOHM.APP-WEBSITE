@@ -36,7 +36,7 @@ function form() {
   };
   const err = h('p.b-err', { role: 'alert' });
   const hc = humanCheck(webConfig);
-  // White, not blue: Sign up free above it is the page's one blue button.
+  // White, not blue: Start your free month above it is the page's one blue button.
   const btn = button('Email me the link', { kind: 'sec', key: 'lead-send', submit: true });
   const submit = async (e) => {
     e && e.preventDefault();

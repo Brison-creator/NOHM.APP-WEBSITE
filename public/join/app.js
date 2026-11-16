@@ -57,7 +57,7 @@ const COPY = {
     },
   },
   renter: { signupTitle: 'Join NOHM as a renter', signupSub: 'Use the phone number your landlord has for you; the invite is matched to it.', signinSub: 'Sign in to accept your landlord’s invite.' },
-  landlord: { signupTitle: 'Set up NOHM for your rentals', signupSub: 'Free to use. One tap with Google, or your phone. Then add your rentals in the app.', signinSub: 'Sign in to your NOHM landlord account.' },
+  landlord: { signupTitle: 'Set up NOHM for your rentals', signupSub: 'First month free. One tap with Google, or your phone. Then add your rentals in the app.', signinSub: 'Sign in to your NOHM landlord account.' },
 };
 
 const a = {

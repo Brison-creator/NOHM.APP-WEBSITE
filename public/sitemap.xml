@@ -5,9 +5,9 @@
   <url><loc>https://nohm.app/how-it-works/</loc></url>
   <url><loc>https://nohm.app/homeowners/</loc></url>
   <url><loc>https://nohm.app/home-history/</loc></url>
-  <url><loc>https://nohm.app/landlords/</loc></url>
+  <url><loc>https://nohm.app/landlords/</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://nohm.app/renters/</loc></url>
-  <url><loc>https://nohm.app/for/landlords/</loc></url>
+  <url><loc>https://nohm.app/for/landlords/</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://nohm.app/for/homeowners/</loc></url>
   <url><loc>https://nohm.app/for/pros/</loc></url>
   <url><loc>https://nohm.app/for/renters/</loc></url>
@@ -59,13 +59,13 @@
   <url><loc>https://nohm.app/pros/flooring/</loc></url>
   <url><loc>https://nohm.app/pros/house-cleaning/</loc></url>
   <url><loc>https://nohm.app/pros/tree-service/</loc></url>
-  <url><loc>https://nohm.app/landlords/rent-collection/</loc></url>
-  <url><loc>https://nohm.app/landlords/tenant-screening/</loc></url>
-  <url><loc>https://nohm.app/landlords/lease-signing/</loc></url>
-  <url><loc>https://nohm.app/landlords/rental-listings/</loc></url>
-  <url><loc>https://nohm.app/landlords/maintenance/</loc></url>
-  <url><loc>https://nohm.app/landlords/accounting/</loc></url>
-  <url><loc>https://nohm.app/landlords/autopilot/</loc></url>
+  <url><loc>https://nohm.app/landlords/rent-collection/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://nohm.app/landlords/tenant-screening/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://nohm.app/landlords/lease-signing/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://nohm.app/landlords/rental-listings/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://nohm.app/landlords/maintenance/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://nohm.app/landlords/accounting/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://nohm.app/landlords/autopilot/</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://nohm.app/pros/ready-now/</loc></url>
   <url><loc>https://nohm.app/landlords/forms/</loc><lastmod>2026-11-07</lastmod></url>
   <url><loc>https://nohm.app/landlords/forms/late-rent-notice/</loc><lastmod>2026-11-07</lastmod></url>

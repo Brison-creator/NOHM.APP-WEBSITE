@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Landlord App: Rent Collection, Leases &amp; Repairs | NOHM</title>
-  <meta name="description" content="Landlord app, free for the first 10,000 landlords: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. No plan, no monthly fee." />
+  <meta name="description" content="Landlord app: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. $7.99 a month for every rental, first month free." />
   <link rel="canonical" href="https://nohm.app/landlords/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NOHM" />
   <meta property="og:title" content="Landlord App: Rent Collection, Leases &amp; Repairs | NOHM" />
-  <meta property="og:description" content="Landlord app, free for the first 10,000 landlords: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. No plan, no monthly fee." />
+  <meta property="og:description" content="Landlord app: list rentals, screen applicants, e-sign leases, collect rent, keep the books and send repairs. $7.99 a month for every rental, first month free." />
   <meta property="og:url" content="https://nohm.app/landlords/" />
   <meta property="og:image" content="https://nohm.app/img/q-hero-1536.jpg" />
   <meta property="og:image:width" content="1536" />
@@ -47,6 +47,7 @@
     .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
     .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
     .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+    .top p.plan-line { margin-top: 6px; font-weight: var(--weight-ui-strong); }
     .top .store-cta { margin-top: 10px; }
 
     /* The long read: one column, generous space, Tesla's quiet type. */
@@ -147,6 +148,8 @@
     .faq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #5c5e62; border-bottom: 1.5px solid #5c5e62; transform: translateY(-70%) rotate(45deg); transition: transform 0.2s ease; }
     .faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
     .faq details p { margin: 0 0 18px; font-size: 16px; line-height: 1.55; color: #393c41; }
+    .faq details ul { margin: 0 0 18px; padding-left: 20px; font-size: 16px; line-height: 1.55; color: #393c41; }
+    .faq details li + li { margin-top: 6px; }
     @media (min-width: 900px) {
       .tiles { grid-template-columns: repeat(4, 1fr); }
       .fee-grid { grid-template-columns: repeat(3, 1fr); }
@@ -198,6 +201,7 @@
       <div class="copy">
         <h1>Rentals, handled.</h1>
         <p>Rent, repairs, leases, walkthroughs and the books. Every unit, one app.</p>
+        <p class="plan-line"><span data-rental="plan">$7.99</span> a month for every rental. First month free.</p>
         <div class="store-cta store-cta--center store-cta--on-dark">
           <ul class="store-cta__badges">
             <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
@@ -287,7 +291,7 @@
         <p>Edited pay stubs, W-2s and bank statements are sold online, and they look real. NOHM never asks applicants for paperwork: Certn runs the background check, and if you want proof of income, the NOHM Income Check reads it from the applicant&rsquo;s own bank through Plaid.</p>
         <div class="screening-tiers" aria-label="Screening prices">
           <div class="screening-tier"><b>Background check · <span data-rental="application">$50</span></b><span>Paid by the applicant. Credit, criminal and identity.</span></div>
-          <div class="screening-tier"><b>NOHM Income Check · Free</b><span>Optional, and free for Founding Partners. Their income against the rent, never where it comes from.</span></div>
+          <div class="screening-tier"><b>NOHM Income Check · Optional</b><span>Their income against the rent, never where it comes from.</span></div>
         </div>
         <ol class="screening-steps" aria-label="How it works">
           <li><b>Send the application.</b> They apply and pay for the background check.</li>
@@ -363,7 +367,7 @@
           <li>Applications sent by text</li>
           <li>Background check <span data-rental="application">$50</span>, paid by the applicant where allowed</li>
           <li>Certn identity, credit &amp; criminal checks</li>
-          <li>Optional NOHM Income Check from the applicant&rsquo;s bank, free for Founding Partners</li>
+          <li>Optional NOHM Income Check from the applicant&rsquo;s bank</li>
           <li>No W-2s or bank statements to fake</li>
           <li>Local fee limits applied before checkout</li>
           <li>Approve with lease terms</li>
@@ -418,15 +422,15 @@
     </section>
 
 
-    <section class="fees">
-      <h2>Free for Founding Partners.<br />Here&rsquo;s how.</h2>
-      <p class="fees-lede">For the first 10,000 landlords: NOHM Founding Partners. Your rentals are free for good, and you get a direct line to the founder with suggestions.</p>
-      <p class="launch">No spam. No ads. Nothing.</p>
+    <section class="fees" id="cost">
+      <h2>One plan.<br />Every rental.</h2>
+      <p class="fees-lede"><span data-rental="plan">$7.99</span> a month per landlord account, for as many rentals as you add. Your first month is free, and you can cancel any time. Here is every cost.</p>
+      <p class="launch">First month free</p>
       <div class="fee-grid">
         <div class="fee">
-          <h3>You pay</h3>
-          <div class="price"><b data-rental="free">$0</b></div>
-          <p>For every rental, for good. Listings, applications, tenant invites, leases, repair requests, messages, rent collection, the books, reminders, late fees and reports. No plan, no monthly fee. NOHM Autopilot is optional, priced below.</p>
+          <h3>Your plan</h3>
+          <div class="price"><b data-rental="plan">$7.99</b></div>
+          <p>A month per landlord account, for as many rentals as you add. Includes Financial Management on every rental: rent collection and tracking, ledgers and financial records, payment reminders and financial reporting, your Schedule E report included. NOHM Autopilot is optional, priced below.</p>
         </div>
         <div class="fee">
           <h3>Your tenant pays</h3>
@@ -449,57 +453,69 @@
           <p>Only if you order one. A trained specialist does the condition report. Charged only when it&rsquo;s in.</p>
         </div>
       </div>
-      <p class="fine">Rent goes straight to your connected payout account, and NOHM takes no percentage of rent. NOHM shows you no ads, and we don&rsquo;t spam you. Local legal limits on the background check are applied before checkout. If you book a pro for a repair or a NOHM walkthrough, you pay for that work, and you see the price before you book: Standard has no NOHM fee and is 48 hours or more after you book, Express is <span data-fee="express">$30</span> for a pro today and NOHM NOW is <span data-fee="now">$60</span> (60 for 60), plus the pro&rsquo;s charges, which you approve first. We ask for a card on file to keep fake accounts out. It&rsquo;s only charged for work you book.</p>
+      <p class="fine">The plan is billed by the App Store or Google Play when you buy it in the app, or to your card when you buy it on the web. You never pay more than <span data-rental="plan">$7.99</span> a month for it (<span data-rental-year="plan">$95.88</span> a year), however many rentals you add. Rent goes straight to your connected payout account, and NOHM takes no percentage of rent. NOHM shows you no ads, and we don&rsquo;t spam you. Local legal limits on the background check are applied before checkout. If you book a pro for a repair or a NOHM walkthrough, you pay for that work, and you see the price before you book: Standard has no NOHM fee and is 48 hours or more after you book, Express is <span data-fee="express">$30</span> for a pro today and NOHM NOW is <span data-fee="now">$60</span> (60 for 60), plus the pro&rsquo;s charges, which you approve first. We ask for a card on file to keep fake accounts out. It&rsquo;s charged only for work you book and, if you start your plan on the web, for the plan after your free month.</p>
     </section>
 
     <section class="compare" aria-labelledby="compare-title">
       <h2 id="compare-title">Landlord cost comparison.</h2>
-      <p class="compare-lede">Published landlord-facing prices, checked October 2026. Feature sets differ, so this compares cost structure rather than pretending every platform does the same thing.</p>
+      <p class="compare-lede">Paid plans only, each checked on the company&rsquo;s own pricing page on November 16, 2026. Some of these companies also have free plans, and feature sets differ, so this compares what the paid plans cost, not what they do.</p>
       <div class="compare-scroll">
         <table class="compare-table">
           <thead>
             <tr>
-              <th>Provider</th>
-              <th>Landlord software</th>
-              <th>Screening cost to landlord</th>
-              <th>ACH rent cost to landlord</th>
+              <th>Company and plan</th>
+              <th>Price</th>
+              <th>A year</th>
+              <th>Source</th>
             </tr>
           </thead>
           <tbody>
             <tr class="nohm-row">
-              <td>NOHM</td>
-              <td>Free for the first 10,000 landlords (NOHM Founding Partners): every rental, rent collection and the books; optional Autopilot <span data-rental="autopilot">$19.99</span> a month per rental</td>
-              <td>$0 for the background check (applicant-paid; local law controls the charge); optional Income Check free for Founding Partners</td>
-              <td>$0 when the tenant pays the <span data-rental="achFee">$7</span> bank payment fee; you can cover it for them</td>
+              <td>NOHM rental plan</td>
+              <td data-label="Price"><span data-rental="plan">$7.99</span> a month, for as many rentals as you add. First month free.</td>
+              <td data-label="A year"><span data-rental-year="plan">$95.88</span></td>
+              <td data-label="Source">This page</td>
             </tr>
             <tr>
-              <td>RentRedi</td>
-              <td>About $12/mo on its annual plan; unlimited units</td>
-              <td>$0 by default; landlord may cover $39.99 standard or $49.99 with income/assets</td>
-              <td>$0 by default; $1/payment if landlord covers the tenant ACH fee</td>
+              <td>RentRedi, annual plan</td>
+              <td data-label="Price">$12 a month, billed annually. $29.95 a month if billed monthly. Unlimited properties.</td>
+              <td data-label="A year">$144</td>
+              <td data-label="Source"><a href="https://rentredi.com/pricing" target="_blank" rel="noopener">RentRedi pricing</a><small>Checked November 16, 2026</small></td>
             </tr>
             <tr>
-              <td>TurboTenant</td>
-              <td>Free plan; paid plans start at $149/year</td>
-              <td>$0 by default; landlord-paid screening is $55 on Free or $45 on paid plans</td>
-              <td>Plan-dependent</td>
+              <td>TurboTenant Essentials</td>
+              <td data-label="Price">$149 a year for 1&ndash;10 units. More units cost more.</td>
+              <td data-label="A year">$149</td>
+              <td data-label="Source"><a href="https://www.turbotenant.com/pricing/" target="_blank" rel="noopener">TurboTenant pricing</a><small>Checked November 16, 2026</small></td>
             </tr>
             <tr>
-              <td>Zillow Rental Manager</td>
-              <td>$0 for core rental applications and screening tools</td>
-              <td>$0; applicant pays Zillow&rsquo;s published $35 application fee</td>
-              <td>$0 for landlord ACH rent collection</td>
+              <td>TurboTenant Pro</td>
+              <td data-label="Price">$199 a year for 1&ndash;10 units. More units cost more.</td>
+              <td data-label="A year">$199</td>
+              <td data-label="Source"><a href="https://www.turbotenant.com/pricing/" target="_blank" rel="noopener">TurboTenant pricing</a><small>Checked November 16, 2026</small></td>
+            </tr>
+            <tr>
+              <td>TenantCloud Starter</td>
+              <td data-label="Price">$15 a month, billed annually.</td>
+              <td data-label="A year">$180</td>
+              <td data-label="Source"><a href="https://www.tenantcloud.com/pricing" target="_blank" rel="noopener">TenantCloud pricing</a><small>Checked November 16, 2026</small></td>
+            </tr>
+            <tr>
+              <td>Baselane Smart</td>
+              <td data-label="Price">$20 a month, on an annual plan.</td>
+              <td data-label="A year">$240</td>
+              <td data-label="Source"><a href="https://www.baselane.com/pricing/" target="_blank" rel="noopener">Baselane pricing</a><small>Checked November 16, 2026</small></td>
+            </tr>
+            <tr>
+              <td>Avail Unlimited Plus</td>
+              <td data-label="Price">$9 per unit, per month.</td>
+              <td data-label="A year">$108 per unit</td>
+              <td data-label="Source"><a href="https://www.avail.co/pricing" target="_blank" rel="noopener">Avail pricing</a><small>Checked November 16, 2026</small></td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p class="compare-sources">Sources:
-        <a href="https://rentredi.com/pricing" target="_blank" rel="noopener">RentRedi pricing</a>,
-        <a href="https://help.rentredi.com/en/articles/4474091-convenience-fees-for-rent-payments" target="_blank" rel="noopener">RentRedi payment fees</a>,
-        <a href="https://www.turbotenant.com/pricing/" target="_blank" rel="noopener">TurboTenant pricing</a>,
-        <a href="https://www.zillow.com/rental-manager/rental-applications-faq/" target="_blank" rel="noopener">Zillow applications</a> and
-        <a href="https://www.zillow.com/rental-manager/online-payments-faq/" target="_blank" rel="noopener">Zillow payments</a>.
-      </p>
+      <p class="compare-sources">&ldquo;A year&rdquo; is the plan&rsquo;s yearly price, or twelve months of its monthly price. Prices are as each company&rsquo;s page showed them on the date shown and can change: follow the link for today&rsquo;s.</p>
     </section>
 
     <section class="area">
@@ -516,12 +532,21 @@
 
     <section class="faq">
       <h2>Questions.</h2>
-      <details><summary>How much does NOHM cost for landlords?</summary><p>Nothing, for NOHM Founding Partners: the first 10,000 landlords to sign up. Their rentals get listings, applications, tenant invites, leases, repairs, messages, rent collection and the books, free for good. No plan, no monthly fee. NOHM Autopilot is optional: <span data-rental="autopilot">$19.99</span> a month per rental, and it runs the rental for you. Founding Partners also get a direct line to the founder with suggestions. If you book a pro for a repair or a NOHM walkthrough (<span data-rental="walkthrough">$79</span>), you pay for that work, and you see the price before you book. We ask for a card on file to keep fake accounts out. It&rsquo;s only charged for work you book.</p></details>
-      <details><summary>So how does NOHM make money?</summary><p>Two ways. When your tenant pays rent by bank, they pay a <span data-rental="achFee">$7</span> fee (or you can cover it for them): about $5 is the bank processor&rsquo;s cost, and NOHM keeps about $2. And applicants pay for their background check, where the law allows. No spam, no ads.</p></details>
+      <details><summary>What does NOHM cost?</summary><p><span data-rental="plan">$7.99</span> a month per landlord account, for as many rentals as you add. Your first month is free, and you can cancel any time. The rest, in short:</p>
+        <ul>
+          <li>The plan: <span data-rental="plan">$7.99</span> a month, however many rentals. Billed by the App Store or Google Play when you buy it in the app, or to your card on the web.</li>
+          <li>Your tenant&rsquo;s bank payment: <span data-rental="achFee">$7</span> each time, paid by the tenant or covered by you.</li>
+          <li>Applicants: <span data-rental="application">$50</span> for the background check, where local law allows.</li>
+          <li>NOHM Walkthrough: <span data-rental="walkthrough">$79</span>, only if you order one.</li>
+          <li>NOHM Autopilot: <span data-rental="autopilot">$19.99</span> a month per rental, optional.</li>
+          <li>Repairs: you pay the pro you book, and you see the price before you book.</li>
+        </ul>
+        <p>We ask for a card on file to keep fake accounts out. It&rsquo;s charged only for work you book and, if you start your plan on the web, for the plan after your free month.</p></details>
+      <details><summary>How does NOHM make money?</summary><p>Three ways. The plan. When your tenant pays rent by bank, they pay a <span data-rental="achFee">$7</span> fee (or you can cover it for them): about $5 is the bank processor&rsquo;s cost, and NOHM keeps about $2. And applicants pay for their background check, where the law allows. NOHM Autopilot and NOHM Walkthroughs are extras you choose. No spam, no ads.</p></details>
       <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Rent goes straight to your connected payout account. Your tenant pays the <span data-rental="achFee">$7</span> bank payment fee, or you can cover it for them.</p></details>
       <details><summary>What does NOHM Autopilot actually do?</summary><p>It answers tenant messages from your house notes, books repairs, reviews estimates, relists the unit after move-out and sends you a weekly summary. Emergencies always come straight to you. It&rsquo;s optional: <span data-rental="autopilot">$19.99</span> a month per rental.</p></details>
-      <details><summary>What is a NOHM Walkthrough?</summary><p>A move-in or move-out condition report done in person by a trained local specialist. Every room is rated and photographed, both sides sign it, and it&rsquo;s saved as a signed PDF. You can also do it yourself in the app for free.</p></details>
-      <details><summary>Who screens my applicants?</summary><p>Certn runs the background check: identity, credit and criminal. It is <span data-rental="application">$50</span>, paid by the applicant, where local law permits; NOHM applies local limits before checkout. If you want proof of income, ask for the NOHM Income Check: the applicant connects their bank through Plaid and you see their income against the rent. It&rsquo;s free for Founding Partners. NOHM never asks for W-2s or bank statements, which can be faked. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
+      <details><summary>What is a NOHM Walkthrough?</summary><p>A move-in or move-out condition report done in person by a trained local specialist. Every room is rated and photographed, both sides sign it, and it&rsquo;s saved as a signed PDF. You can also do it yourself in the app.</p></details>
+      <details><summary>Who screens my applicants?</summary><p>Certn runs the background check: identity, credit and criminal. It is <span data-rental="application">$50</span>, paid by the applicant, where local law permits; NOHM applies local limits before checkout. If you want proof of income, ask for the NOHM Income Check: the applicant connects their bank through Plaid and you see their income against the rent. NOHM never asks for W-2s or bank statements, which can be faked. <a href="https://certn.co/property-management/" target="_blank" rel="noopener" style="color:#171a20;font-weight: var(--weight-ui);">Learn more about Certn</a></p></details>
       <details><summary>Can I use my own lease?</summary><p>Yes. Upload your lease as a PDF and you and your tenant e-sign it in the app. NOHM keeps a signing certificate with it.</p></details>
       <details><summary>How do deposits work at move-out?</summary><p>Set the move-out date and NOHM tracks the deposit deadline. Itemize any deductions next to the move-in report, send the statement and mark the refund paid. Reminders go out before the deadline.</p></details>
       <details><summary>Can I see profit for each unit?</summary><p>Yes. Money &amp; Taxes shows income, costs and profit per rental, sorted into IRS Schedule E categories, with a year-end report you can email to your accountant.</p></details>
@@ -537,7 +562,7 @@
         <li><a href="/landlords/rent-collection/">Rent collection<span>Paid by bank, straight to you</span></a></li>
         <li><a href="/landlords/tenant-screening/">Tenant screening<span>No fake paperwork</span></a></li>
         <li><a href="/landlords/lease-signing/">Leases and move-ins<span>E-sign and condition reports</span></a></li>
-        <li><a href="/landlords/rental-listings/">Rental listings<span>Free, with unlimited applications</span></a></li>
+        <li><a href="/landlords/rental-listings/">Rental listings<span>Photos, an Apply button, unlimited applications</span></a></li>
         <li><a href="/landlords/maintenance/">Maintenance<span>Requests, pros and receipts</span></a></li>
         <li><a href="/landlords/accounting/">Accounting and taxes<span>Profit per unit, Schedule E</span></a></li>
         <li><a href="/landlords/autopilot/">NOHM Autopilot<span>Hands off, still in charge</span></a></li>

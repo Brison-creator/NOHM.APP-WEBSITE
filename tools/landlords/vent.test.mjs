@@ -63,8 +63,11 @@ test('the form: one box and Submit, signed out, elements only', async () => {
   assert.equal((js.match(/h\('input/g) || []).length, 0);
 });
 
-test('the ad page and the role page carry the box, with nothing that asks who you are', async () => {
-  for (const [f, page] of [['go/landlords/index.html', 'go/landlords'], ['for/landlords/index.html', 'for/landlords']]) {
+// The box is on /for/landlords only: it came off /go/landlords when that page
+// went plain (2026-11-03). Never worded as a perk for a group of landlords
+// (the founding-partner program is closed, owner, 2026-11-16).
+test('the role page carries the box, with nothing that asks who you are, and the ad pages do not', async () => {
+  for (const [f, page] of [['for/landlords/index.html', 'for/landlords']]) {
     const html = await read(f);
     const at = html.indexOf('<h2>Vent to us.</h2>');
     assert.ok(at > 0, f);
@@ -73,14 +76,14 @@ test('the ad page and the role page carry the box, with nothing that asks who yo
     assert.match(sec, new RegExp(`data-vent="${page}"`), f);
     assert.match(sec, /Anonymous\. We keep only what you write\./, f);
     assert.doesNotMatch(sec, /<input|<form|type="email"|cf-turnstile/, f);
+    assert.doesNotMatch(sec, /founding|first 10,000|perk|direct line/i, f);
     // Near the bottom: just before the last ask.
     assert.ok(html.indexOf('<section class="final"', at) > at, f);
     assert.match(html, /<script src="\/book\/config\.js"><\/script>/, f);
     assert.match(html, /<script type="module" src="\/nohm\/vent-form\.js"><\/script>/, f);
   }
-  // The ad page counts that the box was seen, and nothing it holds.
-  const ad = await read('go/landlords/index.html');
-  assert.match(ad, /<section class="sec wrap" id="vent" data-seen="vent">/);
+  for (const f of ['go/landlords/index.html', 'go/landlords/old/index.html']) assert.doesNotMatch(await read(f), /data-vent|vent-form/, f);
+  // track.js counts that a box was seen, and nothing it holds.
   const track = await read('go/landlords/track.js');
   assert.doesNotMatch(track, /textarea|data-vent|vent-text|\.value\b/);
 });

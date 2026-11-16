@@ -430,7 +430,7 @@ fs.writeFileSync(tmp, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await ctx.close();
 }
 
-// ── Landlord (the ad page's "Sign up free"): phone sign-up → the app ──
+// ── Landlord (the ad page's "Start your free month"): phone sign-up → the app ──
 {
   await reset();
   const { ctx, page } = await fresh();
