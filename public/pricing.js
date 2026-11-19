@@ -41,7 +41,9 @@ var NOHM_PRICING = {
     achFee: 7,
     walkthrough: 79,
     // Owner, 2026-10-09: one background check, paid by the applicant
-    // where the law allows.
+    // where the law allows. Not shown on any page since 2026-11-19: they
+    // are not live for renters and applying is free, so no page has a
+    // span for this price. Kept for when they are.
     application: 50
   }
 };

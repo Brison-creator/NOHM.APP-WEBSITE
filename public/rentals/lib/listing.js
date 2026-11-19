@@ -110,7 +110,7 @@ export function costRows(l) {
   const rows = [{ label: 'Monthly rent', value: dollars(l.rentCents) }];
   rows.push({ label: 'Security deposit', value: l.depositCents != null ? dollars(l.depositCents) : CONTACT_FOR_DETAILS });
   if (l.asksApplication === false) rows.push({ label: 'Application', value: 'No application', note: 'The landlord invites you to your lease on NOHM.' });
-  else if (typeof l.applicationFeeCents === 'number') rows.push({ label: 'Application fee', value: l.applicationFeeCents === 0 ? 'No fee' : dollars(l.applicationFeeCents), note: 'Paid when you apply on NOHM, for the background check.' });
+  else if (typeof l.applicationFeeCents === 'number') rows.push({ label: 'Application fee', value: l.applicationFeeCents === 0 ? 'No fee' : dollars(l.applicationFeeCents), note: l.applicationFeeCents === 0 ? 'Applying is free.' : 'Paid when you apply on NOHM.' });
   else rows.push({ label: 'Application fee', value: CONTACT_FOR_DETAILS });
   rows.push({ label: 'Other fees', value: CONTACT_FOR_DETAILS });
   return rows;

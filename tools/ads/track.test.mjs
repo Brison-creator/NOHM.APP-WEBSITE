@@ -55,10 +55,13 @@ test('the old page stays a plain page: the NOHM landlord logo, the facts, no pho
   assert.match(page, /<html lang="en" data-v="s">/);
   for (const gone of ['var WIN', 'data-vent']) assert.ok(!page.includes(gone), gone);
   // The fees that come from the live price list; the plan from /pricing.js.
+  // The application fee is gone from both (2026-11-19): applying is free, and
+  // background checks are not live.
   for (const p of [page, old]) {
-    for (const key of ['ACH_RENT_FEE', 'RENTAL_APPLICATION_FEE', 'RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY']) {
+    for (const key of ['ACH_RENT_FEE', 'RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY']) {
       assert.ok(p.includes(`data-price="${key}"`), key);
     }
+    assert.ok(!p.includes('RENTAL_APPLICATION_FEE'), 'no application fee');
     assert.match(p, /<script src="\/for\/live\.js" defer><\/script>/);
     assert.match(p, /<script src="\/pricing\.js"><\/script>/);
     assert.match(p, /data-rental="plan">\$7\.99</);

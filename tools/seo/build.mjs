@@ -32,8 +32,9 @@ const HOST = 'https://nohm.app';
 // price as pricing.js renders it, with its typed fallback.
 const PLAN = fs.readFileSync(path.join(ROOT, 'pricing.js'), 'utf8').match(/^\s*plan:\s*(\d+(?:\.\d+)?)/m)[1];
 const PLAN_SPAN = `<span data-rental="plan">$${PLAN}</span>`;
-// The landlord topic pages' lastmod in the sitemap: when their pricing last changed.
-const LANDLORD_UPDATED = '2026-11-16';
+// The landlord topic pages' lastmod in the sitemap: when their pricing or
+// their words last changed (2026-11-19: tenant screening is "coming soon").
+const LANDLORD_UPDATED = '2026-11-19';
 
 // ── The 15 services ───────────────────────────────────────────────
 // slug (as on /services and /book), the server's Trade.name, the /services
@@ -96,24 +97,24 @@ const LANDLORD = [
     ],
     price: 'rent',
   },
+  // Background checks are not live for renters (2026-11-19), so this page says
+  // "coming soon" and only what a landlord can do today: send an application
+  // from the app, read it there, approve or deny. Applying is free. It keeps
+  // its address. When background checks go live, write the page again from
+  // what the app then does: no price, provider or income check before that.
   {
     slug: 'tenant-screening',
-    title: 'Tenant Screening for Landlords | NOHM',
-    desc: 'Screen tenants without fake paperwork: a Certn background check paid by the applicant where allowed, and an optional NOHM Income Check straight from their bank.',
-    h1: 'Screen tenants. Skip the fake paperwork.',
-    soon: 'paidScreening',
-    sub: 'Edited pay stubs, W-2s and bank statements are sold online, and they look real. NOHM never asks applicants for paperwork.',
+    title: 'Tenant Screening for Landlords: Coming Soon | NOHM',
+    desc: 'Background checks for rental applicants are coming soon to NOHM. Today you can send an application from the app, read it there, and approve or deny.',
+    h1: 'Tenant screening.',
+    soon: true,
+    sub: 'Background checks are coming soon. They are not on yet. Today you can take applications in the app, and applying is free for your applicant.',
     img: ['door', 1536, 864, '60% 30%', 'A NOHM pro walking up to a rental’s front door'],
-    cards: [
-      ['Background check.', 'Certn runs identity, credit and criminal checks. <span data-rental="application">$50</span>, paid by the applicant where the law allows.'],
-      ['Income, from the bank.', 'The optional NOHM Income Check reads income from the applicant’s own bank through Plaid.'],
-      ['Local limits, applied.', 'Where a state or city sets less, the applicant pays less. NOHM applies the limit before checkout.'],
-      ['Notices sent for you.', 'Adverse-action notices go out for you when you decline.'],
-    ],
+    stepsTitle: 'What you can do today.',
     steps: [
-      ['Send the application.', 'They apply by text and pay for the background check.'],
-      ['See the results.', 'The background check shows up in the app.'],
-      ['Approve.', 'They pay the deposit and first month from their bank, straight to your account.'],
+      ['Send the application.', 'Send it from the app.'],
+      ['They fill it in.', 'Your applicant fills it in on their phone. Applying is free.'],
+      ['Approve or deny.', 'Read it in the app and decide.'],
     ],
   },
   {
@@ -135,13 +136,13 @@ const LANDLORD = [
   {
     slug: 'rental-listings',
     title: 'List Your Rental Online | NOHM',
-    desc: 'List a rental with photos and an Apply button. Unlimited applications sent by text, Fair Housing wording checks, and the listing comes down when the lease is signed.',
+    desc: 'List a rental with photos and an Apply button. Unlimited applications, Fair Housing wording checks, and the listing comes down when the lease is signed.',
     h1: 'List it. Fill it.',
     sub: 'List in minutes with photos and an Apply button. Unlimited applications.',
     img: ['landlord', 1920, 1280, '22% 35%', 'A landlord with a clipboard shaking hands with her new tenants in the kitchen of a rental'],
     cards: [
       ['Listed in minutes.', 'Photos, rent and an Apply button. Fair Housing wording checks as you write.'],
-      ['Applications by text.', 'Send the application to anyone who asks. Unlimited.'],
+      ['Unlimited applications.', 'Send an application from the app to anyone who asks. Applying is free for your applicant.'],
       ['Down when it’s rented.', 'The listing comes down when a lease is signed.'],
       ['Ready for next time.', 'After move-out, the next listing is drafted for you.'],
     ],
@@ -209,7 +210,7 @@ const LANDLORD = [
 
 const LANDLORD_LABEL = {
   'rent-collection': ['Rent collection', 'Paid by bank, straight to you'],
-  'tenant-screening': ['Tenant screening', 'No fake paperwork'],
+  'tenant-screening': ['Tenant screening', 'Coming soon'],
   'lease-signing': ['Leases and move-ins', 'E-sign and condition reports'],
   'rental-listings': ['Rental listings', 'Photos, an Apply button, unlimited applications'],
   maintenance: ['Maintenance', 'Requests, pros and receipts'],
@@ -308,7 +309,7 @@ function opening({ trail, h1, soon, sub, actions, shot }) {
   return `    <section class="opening">
       <div class="copy">
         ${crumbs(trail)}
-        <h1>${text(h1)}${soon ? `<span class="soon" data-feature-off="${soon}">Coming soon</span>` : ''}</h1>
+        <h1>${text(h1)}${soon ? '<span class="soon">Coming soon</span>' : ''}</h1>
         <p class="sub">${text(sub)}</p>
         <div class="actions">
           ${actions}
@@ -498,9 +499,9 @@ function landlordPage(t) {
       actions: `${BADGES(false)}\n          <a class="textlink" href="https://business.nohm.app/">Sign in on the web</a>`,
       shot: photo(`/img/${img}-960.jpg`, w, h, pos, alt),
     }),
-    section('What you get.', cards(t.cards)),
   ];
-  if (t.steps) parts.push(section('How it works.', steps(t.steps) + `\n      <p class="fine">The <span data-rental="application">$50</span> applies only where state and local law allow it; NOHM applies the limit before checkout. NOHM never asks for W-2s or bank statements.</p>`));
+  if (t.cards) parts.push(section('What you get.', cards(t.cards)));
+  if (t.steps) parts.push(section(t.stepsTitle || 'How it works.', steps(t.steps)));
   if (t.specs) parts.push(section(t.specsTitle, specs(t.specs)));
   if (t.specsLede) parts.push(`    <section class="sec wrap">
       <h2>${text(t.specsTitle)}</h2>
@@ -509,8 +510,8 @@ function landlordPage(t) {
   if (t.speeds) parts.push(section(t.specsTitle, SPEEDS));
   // The plan, as /landlords says it (owner, 2026-11-16): one price per landlord
   // account however many rentals, first month free, and the tenant's bank fee
-  // and the application unchanged. "Free" attaches to a landlord only as the
-  // first month; no Founding Partner wording (the program is closed).
+  // unchanged. "Free" attaches to a landlord only as the first month; no
+  // Founding Partner wording (the program is closed).
   const PLAN_LEDE = `${PLAN_SPAN} a month per landlord account, for as many rentals as you add. First month free. Cancel any time.`;
   if (t.price === 'rent' || t.price === 'books') {
     parts.push(section('One plan. Every rental.', `      <ul class="plans plans--2">
@@ -553,9 +554,7 @@ function landlordPage(t) {
   parts.push(more('Everything else for landlords.', [...LANDLORD.filter((o) => o !== t).map((o) => [`/landlords/${o.slug}/`, ...LANDLORD_LABEL[o.slug]]), FORMS_LINK]));
   parts.push(final('Got rentals? NOHM it.', PLAN_ASK, `${BADGES(true)}\n        <a class="textlink" href="https://business.nohm.app/" style="color:#fff">Sign in on the web</a>`));
   const ld = { '@context': 'https://schema.org', '@graph': [breadcrumbLd(trail, url)] };
-  const scripts = ['/pricing.js'];
-  if (t.soon) scripts.push('/for/live.js');
-  return [url, page({ url, title: t.title, desc: t.desc, ogImage: `/img/${img}-960.jpg`, ogAlt: alt, ld, body: parts.join('\n\n'), scripts })];
+  return [url, page({ url, title: t.title, desc: t.desc, ogImage: `/img/${img}-960.jpg`, ogAlt: alt, ld, body: parts.join('\n\n'), scripts: ['/pricing.js'] })];
 }
 
 function readyNowPage() {

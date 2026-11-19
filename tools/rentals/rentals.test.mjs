@@ -107,12 +107,15 @@ test('highlights, features and costs come only from the listing; never an estima
   assert.deepEqual(costRows(LISTING), [
     { label: 'Monthly rent', value: '$1,550' },
     { label: 'Security deposit', value: '$1,550' },
-    { label: 'Application fee', value: '$50', note: 'Paid when you apply on NOHM, for the background check.' },
+    { label: 'Application fee', value: '$50', note: 'Paid when you apply on NOHM.' },
     { label: 'Other fees', value: CONTACT_FOR_DETAILS },
   ]);
   const unknown = costRows({ rentCents: 100000, depositCents: null, applicationFeeCents: null });
   assert.deepEqual(unknown.map((r) => r.value), ['$1,000', CONTACT_FOR_DETAILS, CONTACT_FOR_DETAILS, CONTACT_FOR_DETAILS]);
   assert.equal(costRows({ ...LISTING, applicationFeeCents: 0 })[2].value, 'No fee');
+  assert.equal(costRows({ ...LISTING, applicationFeeCents: 0 })[2].note, 'Applying is free.');
+  // Background checks are not live: no row says a fee pays for one.
+  for (const l of [LISTING, { ...LISTING, applicationFeeCents: 0 }]) for (const r of costRows(l)) assert.doesNotMatch(`${r.label} ${r.value} ${r.note || ''}`, /background check/i);
   assert.equal(costRows({ ...LISTING, asksApplication: false, applicationFeeCents: null })[2].value, 'No application');
   for (const r of costRows(LISTING)) assert.doesNotMatch(r.value, /–|-\s*\$|estimate|about|~/i);
 });
