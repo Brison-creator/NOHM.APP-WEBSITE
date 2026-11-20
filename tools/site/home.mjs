@@ -12,7 +12,8 @@
 //   - the "You're invited" share picture and Apple's app bar, because the
 //     app's family invite text links https://nohm.app itself;
 //   - the site's Organization / WebSite / app data for search engines;
-//   - one quiet row under the photo for everyone who is not a landlord.
+//   - two cards under the opening, Homeowner and Contractor, and a line for
+//     renters: the way out of the landlord pages for everyone else.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,21 +59,45 @@ const APP_BAR = `  <!-- Safari on iPhone shows Apple's "NOHM – GET" bar (OPEN 
 `;
 
 const OTHERS_STYLE = `  <style>
-    /* Home page only: the way in for everyone who is not a landlord. */
-    .others { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 0; padding: 14px 16px 16px; background: #f4f4f4; font-size: 15px; line-height: 1.3; color: #5c5e62; }
-    .others span { flex: 0 0 100%; text-align: center; }
-    .others a { padding: 8px 14px; white-space: nowrap; border-radius: 999px; border: 1px solid rgba(0, 0, 0, 0.12); background: #fff; color: #171a20; text-decoration: none; font-weight: var(--weight-ui-strong); }
-    @media (min-width: 700px) { .others span { flex: 0 0 auto; margin-right: 6px; } }
+    /* Home page only: the way out of the landlord pages for homeowners and
+       pros (owner, 2026-11-20: "put homeowner and contractor cards so they
+       can click it out of that area"). A photo each, of them. */
+    .others { max-width: 1040px; margin: 0 auto; padding: 28px 22px 0; }
+    .others h2 { margin: 0 0 14px; font-size: 15px; line-height: 1.3; font-weight: var(--weight-ui-strong); color: #5c5e62; }
+    .others-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .others a.card { position: relative; display: block; overflow: hidden; border-radius: 16px; aspect-ratio: 4 / 3; background: #16171a; color: #fff; text-decoration: none; }
+    .others a.card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .others a.card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.1) 62%); }
+    .others a.card span { position: absolute; z-index: 1; left: 14px; right: 14px; bottom: 12px; }
+    .others a.card b { display: block; font-family: var(--font-display); font-weight: var(--weight-heading); font-size: clamp(18px, 2.4vw, 26px); line-height: 1.15; letter-spacing: var(--tracking-headline); }
+    .others a.card i { display: block; margin-top: 3px; font-style: normal; font-size: 14px; line-height: 1.3; }
+    .others p { margin: 12px 0 0; font-size: 15px; color: #5c5e62; }
+    .others p a { color: #171a20; font-weight: var(--weight-ui-strong); text-underline-offset: 3px; }
+    @media (min-width: 900px) { .others { padding-top: 40px; } .others-row { gap: 20px; } .others a.card { aspect-ratio: 16 / 7; } .others a.card span { left: 24px; bottom: 20px; } .others a.card i { font-size: 16px; } }
   </style>
 `;
 
 const OTHERS = `
-    <nav class="others" aria-label="Not a landlord?">
-      <span>Not a landlord?</span>
-      <a href="/renters/">Renter</a>
-      <a href="/homeowners/">Homeowner</a>
-      <a href="/pros/">Service pro</a>
-    </nav>
+    <section class="others" aria-labelledby="others-title">
+      <h2 id="others-title">Not a landlord?</h2>
+      <div class="others-row">
+        <a class="card" href="/homeowners/">
+          <picture>
+            <source type="image/webp" srcset="/img/ready-960.webp" />
+            <img src="/img/ready-960.jpg" width="960" height="640" loading="lazy" style="object-position:30% 35%" alt="A homeowner in her kitchen, phone in hand, as a NOHM pro arrives at the door" />
+          </picture>
+          <span><b>Homeowner</b><i>Something broke? Book a local pro.</i></span>
+        </a>
+        <a class="card" href="/pros/">
+          <picture>
+            <source type="image/webp" srcset="/img/prep-960.webp" />
+            <img src="/img/prep-960.jpg" width="960" height="640" loading="lazy" style="object-position:40% 35%" alt="A contractor in his work van, getting ready for the next job" />
+          </picture>
+          <span><b>Contractor</b><i>Get repair jobs near you.</i></span>
+        </a>
+      </div>
+      <p>Renting? <a href="/renters/">See what tenants get.</a></p>
+    </section>
 `;
 
 // Replaces exactly one match, and says so loudly when /landlords changed

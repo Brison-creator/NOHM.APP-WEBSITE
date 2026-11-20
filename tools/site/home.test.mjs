@@ -23,6 +23,6 @@ test('the home page says what the landlord page says, at its own address', () =>
   assert.ok(home.includes('<meta name="apple-itunes-app" content="app-id=6761128513" />'));
   assert.ok(home.includes('"@id":"https://nohm.app/#org"'), "the site's Organization data");
   for (const href of ['/renters/', '/homeowners/', '/pros/']) {
-    assert.ok(new RegExp(`<nav class="others"[^]*?href="${href}"`).test(home), `the row for people who are not landlords links ${href}`);
+    assert.ok(new RegExp(`<section class="others"[^]*?href="${href}"`).test(home), `the cards for people who are not landlords link ${href}`);
   }
 });

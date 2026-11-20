@@ -47,12 +47,6 @@
     .top .wrap { max-width: 1120px; margin: 0 auto; padding: 26px 22px 0; display: grid; gap: 26px; }
     .top .kicker { margin: 0 0 10px; font-size: 13px; line-height: 1.2; letter-spacing: 0.12em; text-transform: uppercase; font-weight: var(--weight-ui-strong); color: #004990; }
     .top h1 { margin: 0; font-size: clamp(38px, 10.6vw, 62px); line-height: 1.04; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .top .does { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 9px; font-size: 17px; line-height: 1.3; }
-    .top .does li { position: relative; padding-left: 30px; }
-    .top .does li::before {
-      content: ""; position: absolute; left: 0; top: 1px; width: 21px; height: 21px; border-radius: 50%;
-      background: #17803d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 6.3l2.2 2.2 4.6-4.9' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat;
-    }
     .top .plan-line { margin: 18px 0 0; font-size: 20px; line-height: 1.3; font-weight: var(--weight-ui-strong); }
     .top .plan-more { margin: 6px 0 0; font-size: 15px; line-height: 1.4; color: #5c5e62; }
     .top .plan-more .free { display: inline-block; margin-right: 6px; padding: 3px 11px; border-radius: 999px; background: #dff3e5; color: #116530; font-weight: var(--weight-ui-strong); white-space: nowrap; }
@@ -65,11 +59,52 @@
     .top .app-phone::after { content: "9:41"; position: absolute; z-index: 1; top: 2.35%; left: 10.5%; font-size: 13px; line-height: 1; font-weight: 700; color: #171a20; }
     @media (min-width: 900px) {
       .top .wrap { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); align-items: center; gap: 48px; padding: 56px 40px; }
-      .top .does { font-size: 19px; gap: 12px; margin-top: 24px; }
       .top .plan-line { font-size: 22px; margin-top: 26px; }
       .top .plan-more { font-size: 16px; }
       .top .app-shot { height: auto; margin: 0; padding-top: 0; overflow: visible; }
       .top .app-phone { width: 300px; }
+    }
+
+    .top .lede { margin: 14px 0 0; max-width: 560px; font-size: 18px; line-height: 1.45; color: #393c41; }
+    .top .app-phone--scene, .scene .app-phone--scene { aspect-ratio: 1320 / 1780; border-bottom: 0; border-radius: 44px 44px 0 0; }
+
+    /* The story (owner, 2026-11-20: "Stop describing facts and paint a
+       picture for them of what they will get from the product. Tell a
+       story"; "the images don't match up"): a month as a landlord with
+       NOHM, scene by scene, each beside the app's own screen of that
+       moment (real screens drawn by the app; store/landlord-light in the
+       app repo), so every picture is the thing the words are about. */
+    .story { padding: 56px 22px 0; max-width: 1040px; margin: 0 auto; }
+    .story-head h2, .story-end h2, .extras > h2 { margin: 0; font-size: clamp(30px, 4vw, 44px); line-height: 1.1; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .story-head p { margin: 10px 0 0; font-size: 18px; line-height: 1.45; color: #5c5e62; }
+    .scenes { display: grid; gap: 56px; margin-top: 40px; }
+    .scene { display: grid; gap: 20px; }
+    .scene .when { margin: 0 0 8px; font-size: 13px; line-height: 1.2; letter-spacing: 0.12em; text-transform: uppercase; font-weight: var(--weight-ui-strong); color: #004990; }
+    .scene h3 { margin: 0; font-size: clamp(26px, 3vw, 34px); line-height: 1.12; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .scene-words p:last-child { margin: 12px 0 0; font-size: 18px; line-height: 1.5; color: #393c41; }
+    .scene-shot { margin: 0; padding: 26px 0 0; border-radius: 20px; background: linear-gradient(180deg, #f7f8fa 0%, #e9ecf1 100%); overflow: hidden; display: grid; justify-items: center; }
+    .scene-shot .app-phone { position: relative; width: min(70vw, 280px); border: 9px solid #0e0f12; background: #0e0f12; overflow: hidden; box-shadow: 0 20px 44px rgba(16, 24, 40, 0.22); }
+    .scene-shot .app-phone img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .scene-shot .app-phone::before { content: ""; position: absolute; z-index: 1; top: 2.7%; left: 50%; width: 31%; height: 5.3%; transform: translateX(-50%); border-radius: 999px; background: #0e0f12; }
+    .scene-shot figcaption { order: -1; margin: -8px 0 16px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #6e6e73; font-weight: var(--weight-ui); }
+    .story-end { margin-top: 56px; padding: 40px 22px; border-radius: 20px; background: #171a20; color: #fff; text-align: center; }
+    .story-end .plan-line { margin: 12px 0 0; font-size: 19px; line-height: 1.35; font-weight: var(--weight-ui-strong); }
+    .story-end .store-cta { margin-top: 12px; }
+    .extras { max-width: 1040px; margin: 0 auto; padding: 64px 22px 24px; }
+    .extras-row { display: grid; gap: 16px; margin-top: 24px; }
+    .extra { background: #f4f4f4; border-radius: 16px; padding: 26px 24px; }
+    .extra h3 { margin: 0 0 10px; font-size: clamp(22px, 2.4vw, 28px); line-height: 1.15; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .extra p:last-child { margin: 0; font-size: 17px; line-height: 1.5; color: #393c41; }
+    @media (min-width: 900px) {
+      .top .lede { font-size: 20px; margin-top: 18px; }
+      .story { padding-top: 88px; }
+      .scenes { gap: 72px; margin-top: 56px; }
+      .scene { grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); align-items: center; gap: 56px; }
+      .scene:nth-child(even) .scene-words { order: 2; }
+      .scene-words p:last-child { font-size: 20px; }
+      .scene-shot .app-phone { width: 300px; }
+      .extras-row { grid-template-columns: 1fr 1fr; gap: 20px; }
+      .extra { padding: 34px 32px; }
     }
 
     /* The long read: one column, generous space, Tesla's quiet type. */
@@ -218,13 +253,8 @@
       <div class="wrap">
         <div class="copy">
           <p class="kicker">The landlord app</p>
-          <h1>Run every rental from your phone.</h1>
-          <ul class="does">
-            <li>Rent goes straight to your bank.</li>
-            <li>See who paid and who is late.</li>
-            <li>Approve repairs in one tap.</li>
-            <li>Leases, notices and a tax report.</li>
-          </ul>
+          <h1>It&rsquo;s the 1st. Your rent is already in.</h1>
+          <p class="lede">No texts to send. No checks to chase. Your tenants paid from their phones, and the money is headed to your bank. This is what owning rentals feels like with NOHM.</p>
           <p class="plan-line"><span data-rental="plan">$7.99</span> a month for every rental.</p>
           <p class="plan-more"><span class="free">First month free</span> Cancel any time.</p>
           <div class="store-cta">
@@ -238,109 +268,142 @@
           <div class="app-phone">
             <picture>
               <source type="image/webp" srcset="/img/app/landlord-dashboard-660.webp 660w, /img/app/landlord-dashboard-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
-              <img src="/img/app/landlord-dashboard-660.jpg" srcset="/img/app/landlord-dashboard-660.jpg 660w, /img/app/landlord-dashboard-990.jpg 990w" sizes="(min-width: 900px) 300px, 74vw"
-                   width="660" height="1434" fetchpriority="high" alt="The NOHM landlord dashboard on a phone: this month&rsquo;s take, the rent still to collect, and every rental with who has paid and who is late" />
+              <img src="/img/app/landlord-dashboard-660.jpg" width="660" height="1434" fetchpriority="high" alt="The NOHM landlord dashboard on a phone: this month&rsquo;s take, the rent still to collect, and every rental with who has paid and who is late" />
             </picture>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="features" aria-label="How it works for landlords">
-      <div class="head"><h2>How it works.</h2></div>
-      <div class="f-row">
-        <article class="f-item">
-          <picture>
-            <source type="image/webp" srcset="/img/for-rent-370.webp" />
-            <img src="/img/for-rent-370.jpg" width="370" height="250" loading="lazy" style="object-position:40% 50%" alt="A For Rent sign in the front yard of a rental home" />
-          </picture>
-          <h3>List. Approve. Sign.</h3>
-          <p>List the unit, take applications and e-sign the lease in the app.</p>
+    <section class="story" aria-labelledby="story-title">
+      <div class="story-head">
+        <h2 id="story-title">A month with NOHM.</h2>
+        <p>Same rentals. Same tenants. A lot less of you chasing things.</p>
+      </div>
+      <div class="scenes">
+        <article class="scene">
+          <div class="scene-words">
+            <p class="when">A week before rent</p>
+            <h3>You know before rent is late.</h3>
+            <p>NOHM asks every tenant one question: will your rent be paid on schedule this month? Luis taps No. He gets paid Friday. You hear it today, not on the 6th, and the two of you work it out in a message.</p>
+          </div>
+          <figure class="scene-shot">
+            <div class="app-phone app-phone--scene">
+            <picture>
+              <source type="image/webp" srcset="/img/app/landlord-tenant-check-in-660.webp 660w, /img/app/landlord-tenant-check-in-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
+              <img src="/img/app/landlord-tenant-check-in-660.jpg" width="660" height="890" loading="lazy" alt="What your tenant sees: “Will your rent be paid on schedule this month?” with a Yes button and a “No, I need to talk first” button" />
+            </picture>
+          </div>
+            <figcaption>What your tenant sees</figcaption>
+          </figure>
         </article>
-        <article class="f-item">
-          <picture>
-            <source type="image/webp" srcset="/img/renter-960.webp 960w, /img/renter-1448.webp 1448w" sizes="(min-width: 900px) 33vw, 90vw" />
-            <img src="/img/renter-960.jpg" srcset="/img/renter-960.jpg 960w, /img/renter-1448.jpg 1448w" sizes="(min-width: 900px) 33vw, 90vw"
-                 width="1448" height="1086" loading="lazy" style="object-position:50% 30%" alt="A renter on his couch paying rent and sending a repair request from his phone" />
-          </picture>
-          <h3>Rent Comes In</h3>
-          <p>Tenants pay by bank straight to your account. Autopay, reminders and late fees run themselves. Your tenant pays the bank payment fee, or you can cover it.</p>
+        <article class="scene">
+          <div class="scene-words">
+            <p class="when">The 1st</p>
+            <h3>Rent comes in. You do nothing.</h3>
+            <p>It moves from their bank to yours. No cash. No checks. No driving over. One screen shows who paid, who is late and what is left to collect.</p>
+          </div>
+          <figure class="scene-shot">
+            <div class="app-phone app-phone--scene">
+            <picture>
+              <source type="image/webp" srcset="/img/app/landlord-tenants-660.webp 660w, /img/app/landlord-tenants-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
+              <img src="/img/app/landlord-tenants-660.jpg" width="660" height="890" loading="lazy" alt="The tenants screen: five tenants, three paid up, one late and one due" />
+            </picture>
+          </div>
+            <figcaption>Your screen</figcaption>
+          </figure>
         </article>
-        <article class="f-item">
-          <picture>
-            <source type="image/webp" srcset="/img/prep-960.webp 960w, /img/prep-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
-            <img src="/img/prep-960.jpg" srcset="/img/prep-960.jpg 960w, /img/prep-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
-                 width="1536" height="1024" loading="lazy" style="object-position:45% 40%" alt="A NOHM pro in his van reviewing the job on his tablet" />
-          </picture>
-          <h3>Repairs Go Out</h3>
-          <p>Tenants send requests with photos. You approve, or let NOHM Autopilot handle it.</p>
+        <article class="scene">
+          <div class="scene-words">
+            <p class="when">The 16th</p>
+            <h3>Marcus is 15 days late.</h3>
+            <p>You don&rsquo;t look up the law. You don&rsquo;t write a letter. The right notice for your state is already filled in from his lease. Tap Start the notice. Or tap Send a reminder and keep it friendly.</p>
+          </div>
+          <figure class="scene-shot">
+            <div class="app-phone app-phone--scene">
+            <picture>
+              <source type="image/webp" srcset="/img/app/landlord-late-tenant-660.webp 660w, /img/app/landlord-late-tenant-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
+              <img src="/img/app/landlord-late-tenant-660.jpg" width="660" height="890" loading="lazy" alt="Marcus Reed&rsquo;s page: $1,450 is 15 days late, with Start the notice and Send a reminder buttons" />
+            </picture>
+          </div>
+            <figcaption>Your screen</figcaption>
+          </figure>
+        </article>
+        <article class="scene">
+          <div class="scene-words">
+            <p class="when">9:06 at night</p>
+            <h3>Keisha&rsquo;s kitchen sink is dripping.</h3>
+            <p>She sends you a photo from her kitchen. You approve the repair from your couch. A pro is booked, she can watch him on the way, and the receipt files itself under that rental. You never picked up the phone.</p>
+          </div>
+          <figure class="scene-shot">
+            <div class="app-phone app-phone--scene">
+            <picture>
+              <source type="image/webp" srcset="/img/app/landlord-repairs-660.webp 660w, /img/app/landlord-repairs-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
+              <img src="/img/app/landlord-repairs-660.jpg" width="660" height="890" loading="lazy" alt="The repairs screen: a kitchen sink dripping, the heat scheduled, a back door in progress and a finished job" />
+            </picture>
+          </div>
+            <figcaption>Your screen</figcaption>
+          </figure>
+        </article>
+        <article class="scene">
+          <div class="scene-words">
+            <p class="when">A unit opens up</p>
+            <h3>Your next tenant applies from her phone.</h3>
+            <p>You send the application with one tap. She fills it in, in English or Spanish. You see her background and credit check, pick your renter, and the lease is signed on both phones. No paper. No office.</p>
+          </div>
+          <figure class="scene-shot">
+            <div class="app-phone app-phone--scene">
+            <picture>
+              <source type="image/webp" srcset="/img/app/landlord-applications-660.webp 660w, /img/app/landlord-applications-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
+              <img src="/img/app/landlord-applications-660.jpg" width="660" height="890" loading="lazy" alt="The applications screen: two new applications, one in review and one approved" />
+            </picture>
+          </div>
+            <figcaption>Your screen</figcaption>
+          </figure>
+        </article>
+        <article class="scene">
+          <div class="scene-words">
+            <p class="when">April</p>
+            <h3>Your accountant asks for the numbers.</h3>
+            <p>You tap once. Every rental, every dollar in and out, with the receipts, laid out the way the tax form wants it. It&rsquo;s in her inbox before your coffee is gone.</p>
+          </div>
+          <figure class="scene-shot">
+            <div class="app-phone app-phone--scene">
+            <picture>
+              <source type="image/webp" srcset="/img/app/landlord-money-660.webp 660w, /img/app/landlord-money-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
+              <img src="/img/app/landlord-money-660.jpg" width="660" height="890" loading="lazy" alt="The money screen: income, expenses and profit for the year, and the profit on each rental" />
+            </picture>
+          </div>
+            <figcaption>Your screen</figcaption>
+          </figure>
         </article>
       </div>
-      <div class="f-dots"></div>
-    </section>
-
-    <section class="now">
-      <picture>
-            <source type="image/webp" srcset="/img/door-960.webp 960w, /img/door-1536.webp 1536w" sizes="(min-width: 900px) 50vw, 100vw" />
-            <img src="/img/door-960.jpg" srcset="/img/door-960.jpg 960w, /img/door-1536.jpg 1536w" sizes="(min-width: 900px) 50vw, 100vw"
-                 width="1536" height="864" loading="lazy" style="object-position:60% 30%" alt="A NOHM pro walking up to a rental&rsquo;s front door" />
-          </picture>
-      <div class="words">
-        <p class="eyebrow">NOHM Autopilot</p>
-        <h2>Hands off.<br />Still in charge.</h2>
-        <p>Write a few house notes and NOHM Autopilot takes it from there. It answers tenant messages, books repairs, reviews every estimate and brings you the decisions that are yours to make. Emergencies like fire, gas or water go straight to you, every time. You get an activity log and a summary every week.</p>
-        <div class="store-cta">
-          <ul class="store-cta__badges">
-            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
-            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
-          </ul>
-        </div>
+      <div class="story-end">
+        <h2>That&rsquo;s the whole month.</h2>
+        <p class="plan-line"><span data-rental="plan">$7.99</span> a month for every rental. First month free.</p>
+        <div class="store-cta store-cta--center">
+            <ul class="store-cta__badges">
+              <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+              <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+            </ul>
+          </div>
       </div>
     </section>
 
-
-    <section class="now">
-      <picture>
-            <source type="image/webp" srcset="/img/ready-960.webp 960w, /img/ready-1536.webp 1536w" sizes="(min-width: 900px) 50vw, 100vw" />
-            <img src="/img/ready-960.jpg" srcset="/img/ready-960.jpg 960w, /img/ready-1536.jpg 1536w" sizes="(min-width: 900px) 50vw, 100vw"
-                 width="1536" height="1024" loading="lazy" style="object-position:50% 30%" alt="A NOHM specialist arriving at a rental with the unit&rsquo;s details on his tablet" />
-          </picture>
-      <div class="words">
-        <p class="eyebrow">NOHM Walkthrough</p>
-        <h2>Move-in and move-out,<br />on the record.</h2>
-        <p>Do the condition report yourself, room by room with photos, or order a NOHM Walkthrough and a trained local specialist does it for you. Both sides sign it, it locks, and at move-out every room sits beside how it looked on day one. You pay only when the report is in.</p>
-        <div class="store-cta">
-          <ul class="store-cta__badges">
-            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
-            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
-          </ul>
-        </div>
+    <section class="extras" aria-label="If you want even less on your plate">
+      <h2>Want even less on your plate?</h2>
+      <div class="extras-row">
+        <article class="extra">
+          <p class="eyebrow">NOHM Autopilot &middot; optional</p>
+          <h3>You&rsquo;re at the lake. Your rentals are fine.</h3>
+          <p>Write a few house notes and NOHM Autopilot takes it from there. It answers your tenants, books the repairs, checks every estimate and brings you only the decisions that are yours. Fire, gas or water goes straight to you, every time. Each week you get a summary of what it did.</p>
+        </article>
+        <article class="extra">
+          <p class="eyebrow">NOHM Walkthrough &middot; optional</p>
+          <h3>Move-out day. Nobody argues about the carpet.</h3>
+          <p>Every room was photographed on day one and signed by both of you. At move-out each room sits beside how it looked then. Do the report yourself, or order a NOHM Walkthrough and a trained local specialist does it for you. You pay only when the report is in.</p>
+        </article>
       </div>
-    </section>
-
-
-    <section class="partner" aria-labelledby="screen-title">
-      <div class="p-card">
-        <h2 id="screen-title">Applications on your phone.</h2>
-        <p>Take applications in the app. Applying is free for your applicant.</p>
-        <ol class="screening-steps" aria-label="How it works">
-          <li><b>Send the application</b> from the app.</li>
-          <li><b>They fill it in</b> on their phone.</li>
-          <li><b>Read it</b> in the app.</li>
-          <li><b>Approve or deny.</b></li>
-        </ol>
-        <p class="landlord-pricing-note">Background checks are coming soon. They are not on yet.</p>
-      </div>
-    </section>
-
-    <section class="crew">
-      <picture>
-            <source type="image/webp" srcset="/img/q-hero-960.webp 960w, /img/q-hero-1536.webp 1536w" sizes="(min-width: 1200px) 1152px, 100vw" />
-            <img src="/img/q-hero-960.jpg" srcset="/img/q-hero-960.jpg 960w, /img/q-hero-1536.jpg 1536w" sizes="(min-width: 1200px) 1152px, 100vw"
-                 width="1672" height="941" loading="lazy" alt="Local pros from many trades, each wearing a NOHM patch, gathered in front of their work trucks" />
-          </picture>
-      <h2>Know what every unit makes.</h2>
-      <p>Income, costs and profit for each rental, with receipts attached and recurring costs that post themselves. At tax time, send your accountant a Schedule E-ready report in one tap.</p>
     </section>
 
     <section class="groups">
@@ -395,7 +458,7 @@
           <li>Next listing drafted after move-out</li>
           <li>Applications sent from the app</li>
           <li>Applications are free for applicants</li>
-          <li>Background checks (coming soon)</li>
+          <li>Background and credit checks</li>
           <li>Approve with lease terms</li>
           <li>Deposit &amp; first month paid by bank</li>
           <li>Zillow, Trulia &amp; HotPads (coming soon)</li>
@@ -465,7 +528,7 @@
         <div class="fee">
           <h3>Applications</h3>
           <div class="price"><b>$0</b></div>
-          <p>Applying is free for your applicant. Background checks are coming soon.</p>
+          <p>Applying is free for your applicant. Your applicant pays for the background and credit check.</p>
         </div>
         <div class="fee">
           <h3>NOHM Autopilot</h3>
@@ -561,7 +624,7 @@
         <ul>
           <li>The plan: <span data-rental="plan">$7.99</span> a month, however many rentals. Billed by the App Store or Google Play when you buy it in the app, or to your card on the web.</li>
           <li>Your tenant&rsquo;s bank payment: <span data-rental="achFee">$7</span> each time, paid by the tenant or covered by you.</li>
-          <li>Applications: free. Background checks are coming soon.</li>
+          <li>Applications: free. Background and credit checks: paid by the applicant.</li>
           <li>NOHM Walkthrough: <span data-rental="walkthrough">$79</span>, only if you order one.</li>
           <li>NOHM Autopilot: <span data-rental="autopilot">$19.99</span> a month per rental, optional.</li>
           <li>Repairs: you pay the pro you book, and you see the price before you book.</li>
@@ -571,7 +634,7 @@
       <details><summary>Does NOHM take a cut of my rent?</summary><p>No. Rent goes straight to your connected payout account. Your tenant pays the <span data-rental="achFee">$7</span> bank payment fee, or you can cover it for them.</p></details>
       <details><summary>What does NOHM Autopilot actually do?</summary><p>It answers tenant messages from your house notes, books repairs, reviews estimates, relists the unit after move-out and sends you a weekly summary. Emergencies always come straight to you. It&rsquo;s optional: <span data-rental="autopilot">$19.99</span> a month per rental.</p></details>
       <details><summary>What is a NOHM Walkthrough?</summary><p>A move-in or move-out condition report done in person by a trained local specialist. Every room is rated and photographed, both sides sign it, and it&rsquo;s saved as a signed PDF. You can also do it yourself in the app.</p></details>
-      <details><summary>Can I run a background check?</summary><p>Not yet. Background checks are coming soon. Today you can send an application from the app and read it there. Applying is free for your applicant, and you approve or deny in the app.</p></details>
+      <details><summary>Can I run a background and credit check?</summary><p>Yes. Send the application from the app. Your applicant fills it in on their phone and pays for the background and credit check. You see it in the app, then approve or deny. Applying is free for your applicant.</p></details>
       <details><summary>Can I use my own lease?</summary><p>Yes. Upload your lease as a PDF and you and your tenant e-sign it in the app. NOHM keeps a signing certificate with it.</p></details>
       <details><summary>How do deposits work at move-out?</summary><p>Set the move-out date and NOHM tracks the deposit deadline. Itemize any deductions next to the move-in report, send the statement and mark the refund paid. Reminders go out before the deadline.</p></details>
       <details><summary>Can I see profit for each unit?</summary><p>Yes. Money &amp; Taxes shows income, costs and profit per rental, sorted into IRS Schedule E categories, with a year-end report you can email to your accountant.</p></details>
@@ -585,7 +648,7 @@
       <h2>Go deeper.</h2>
       <ul class="more">
         <li><a href="/landlords/rent-collection/">Rent collection<span>Paid by bank, straight to you</span></a></li>
-        <li><a href="/landlords/tenant-screening/">Tenant screening<span>Coming soon</span></a></li>
+        <li><a href="/landlords/tenant-screening/">Tenant screening<span>Background and credit checks</span></a></li>
         <li><a href="/landlords/lease-signing/">Leases and move-ins<span>E-sign and condition reports</span></a></li>
         <li><a href="/landlords/rental-listings/">Rental listings<span>Photos, an Apply button, unlimited applications</span></a></li>
         <li><a href="/landlords/maintenance/">Maintenance<span>Requests, pros and receipts</span></a></li>

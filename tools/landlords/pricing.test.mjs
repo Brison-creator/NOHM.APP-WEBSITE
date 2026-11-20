@@ -135,10 +135,10 @@ test('/landlords, /for/landlords and /go/landlords say what the plan is, how it 
   assert.match(role, /when they pay rent by bank \(or you can cover it for them\)/i);
   assert.match(role, /About \$5 of it is the bank processor&rsquo;s cost\. NOHM keeps about \$2\./);
   assert.match(ad, /About \$5 of it is the bank processor&rsquo;s cost, and NOHM keeps about \$2\./);
-  assert.match(landlords, /<h3>Applications<\/h3>\s*<div class="price"><b>\$0<\/b><\/div>\s*<p>Applying is free for your applicant\. Background checks are coming soon\.<\/p>/);
-  assert.match(role, /<p class="name">Applications<\/p>\s*<p class="price">\$0<\/p>\s*<p class="per">for you and for your applicant<\/p>\s*<p>Background checks are coming soon\.<\/p>/);
-  assert.match(ad, /<dt>Applications<\/dt><dd>Free for you and free for your applicant\. Background checks are coming soon\. They are not on yet\.<\/dd>/);
-  assert.match(adOld, /<dt>Applications<\/dt><dd>Free for you and free for your applicant\. Background checks are coming soon\.<\/dd>/);
+  assert.match(landlords, /<h3>Applications<\/h3>\s*<div class="price"><b>\$0<\/b><\/div>\s*<p>Applying is free for your applicant\. Your applicant pays for the background and credit check\.<\/p>/);
+  assert.match(role, /<p class="name">Applications<\/p>\s*<p class="price">\$0<\/p>\s*<p class="per">for you and for your applicant<\/p>\s*<p>Your applicant pays for the background and credit check\.<\/p>/);
+  assert.match(ad, /<dt>Applications<\/dt><dd>Applying is free for you and for your applicant\. Your applicant pays for the background and credit check\.<\/dd>/);
+  assert.match(adOld, /<dt>Applications<\/dt><dd>Applying is free for you and for your applicant\. Your applicant pays for the background and credit check\.<\/dd>/);
   // A returned bank payment, in the words of the app's own plan terms.
   for (const [name, page] of [['/landlords', landlords], ['/go/landlords', ad]]) {
     assert.match(page, /If a tenant&rsquo;s bank payment is returned, the bank&rsquo;s return fee \(about \$4\) is taken from your next payout\./, name);
@@ -158,7 +158,7 @@ test('"What does it cost?": the plan, the free month, cancel any time, and the u
     assert.match(faq, /<span data-rental="plan">\$7\.99<\/span> a month per landlord account, for as many rentals as you add\. Your first month is free, and you can cancel any time\./, name);
     assert.match(faq, /<li>The plan: <span data-rental="plan">\$7\.99<\/span> a month, however many rentals\./, name);
     assert.match(faq, /<li>Your tenant&rsquo;s bank payment: <span data-(rental|price)="(achFee|ACH_RENT_FEE)">\$7<\/span> each time, paid by the tenant or covered by you\./, name);
-    assert.match(faq, /<li>Applications: free\. Background checks are coming soon\.<\/li>/, name);
+    assert.match(faq, /<li>Applications: free\. Background and credit checks: paid by the applicant\.<\/li>/, name);
     assert.match(faq, /<li>NOHM Walkthrough: <span data-rental="walkthrough">\$79<\/span>, only if you order one\./, name);
     assert.match(faq, /<li>NOHM Autopilot: <span data-(rental|price)="(autopilot|RENTAL_AUTOPILOT_PER_RENTAL_MONTHLY)">\$19\.99<\/span> a month per rental, optional\./, name);
   }
@@ -234,11 +234,11 @@ test('landlord page shows customer prices and comparison sources', () => {
   assert.doesNotMatch(landlords, /0\.8%|data-rental="membership"|data-rental="manager"|data-rental="free"/);
   assert.match(landlords, /Your tenant pays the <span data-rental="achFee">\$7<\/span> bank payment fee, or you can cover it for them\./);
   assert.doesNotMatch(landlords, /wholesale cost|platform margin/i);
-  // Applications, in the order the app runs them: sent from the app, filled in
-  // on the applicant's phone, read in the app, approved or denied.
-  assert.match(landlords, /<h2 id="screen-title">Applications on your phone\.<\/h2>/);
-  assert.match(landlords, /<li><b>Send the application<\/b> from the app\.<\/li>\s*<li><b>They fill it in<\/b> on their phone\.<\/li>\s*<li><b>Read it<\/b> in the app\.<\/li>\s*<li><b>Approve or deny\.<\/b><\/li>/);
-  assert.match(landlords, /<li>Applications are free for applicants<\/li>\s*<li>Background checks \(coming soon\)<\/li>/);
+  // Applications, told as the story's scene, in the order the app runs them:
+  // sent from the app, filled in on the applicant's phone, the check seen in
+  // the app, the renter picked, the lease signed.
+  assert.match(landlords, /<h3>Your next tenant applies from her phone\.<\/h3>\s*<p>You send the application with one tap\. She fills it in, in English or Spanish\. You see her background and credit check, pick your renter, and the lease is signed on both phones\./);
+  assert.match(landlords, /<li>Applications are free for applicants<\/li>\s*<li>Background and credit checks<\/li>/);
   assert.doesNotMatch(landlords, /Instant Income|applicationIncome|applicationPremium/);
 });
 
@@ -292,10 +292,10 @@ test('the comparison: paid plans only, each competitor figure with its own prici
   }
 });
 
-test('renter page: applying is free, the bank fee is said, and no background check is priced or run', () => {
+test('renter page: applying is free, the bank fee is said, and the background and credit check is not priced', () => {
   assert.match(renters, /<span data-rental="achFee">\$7<\/span> bank payment fee, shown before you pay; your landlord may cover it\. Applying is free\. Your landlord pays for the repairs they approve\./);
   assert.match(renters, /<summary>How much is a rental application\?<\/summary><p>Nothing\. Applying is free\.<\/p>/);
-  assert.match(renters, /<summary>Is there a background check\?<\/summary><p>Not yet\. Background checks are coming soon\./);
+  assert.match(renters, /<summary>Is there a background and credit check\?<\/summary><p>Your landlord can ask for one with your application\. You fill in the application on your phone and pay for the background and credit check there\./);
   assert.doesNotMatch(renters, /your landlord pays for it/);
   assert.doesNotMatch(renters, /Instant Income|applicationIncome|applicationPremium/);
   assert.doesNotMatch(renters, /wholesale cost|platform margin/i);
@@ -361,42 +361,41 @@ test('the founding-partner line is on no page of the site except the SMS, privac
   for (const f of allowed) assert.match(await read(f), /Founding Partner/, f);
 });
 
-// Background checks (Certn) are not live for real renters, and neither is the
-// income check (2026-11-19). A page may say background checks are coming soon,
-// in these words only, and nothing else about them: no price, no provider, no
-// "paid by the applicant", no bank or income check. The Terms' section C.2
+// Background and credit checks (owner, 2026-11-20: "On the site just put
+// background and credit check it's ok we will get it done before the signup
+// starts don't want to forget to go back"). The site said "coming soon" from
+// 2026-11-19, while they were not live for real renters; it now says a
+// landlord gets a background and credit check, in those words, paid by the
+// applicant, and nothing more: no price, no provider, no income or bank
+// check. THEY MUST BE ON before sign-ups and ads start; if they are not, the
+// "coming soon" wording comes back (git show 3d4c1e3). The Terms' section C.2
 // ("NOHM may offer ... background checks of service providers") and the
 // Privacy Policy's Plaid section are legal wording, not marketing.
-const COMING_SOON = [
-  /Background checks are coming soon\./g,
-  /Background checks are not on yet\./g,
-  /Background checks \(coming soon\)/g,
-  /Background checks for rental applicants are coming soon to NOHM\./g,
-  /Can I run a background check\?/g,
-  /Is there a background check\?/g,
-];
-const NOT_LIVE = /Certn|RENTAL_APPLICATION_FEE|data-rental="application"|paidScreening|Income Check|W-2|credit (check|and criminal)|checks the bank|fake paperwork|adverse-action/i;
+const SAID = [/background and credit checks?/gi];
+const NOT_SAID = /Certn|RENTAL_APPLICATION_FEE|data-rental="application"|paidScreening|Income Check|W-2|credit and criminal|checks the bank|fake paperwork|adverse-action|coming soon to NOHM|Background checks are (coming soon|not on yet)/i;
 
-test('background checks are not live: every page that names one says "coming soon", and none prices or runs one', async () => {
+test('background and credit checks: said in those words, with no price, provider or income check', async () => {
   const legal = new Set(['terms/index.html', 'privacy/index.html']);
   const files = (await walk('')).filter((f) => !f.startsWith('vendor/') && !f.startsWith('landlords/forms/') && !f.startsWith('landlords/guides/'));
   for (const f of files) {
     if (legal.has(f)) continue;
     let page = await read(f);
-    assert.doesNotMatch(page, NOT_LIVE, f);
-    for (const re of COMING_SOON) page = page.replace(re, '');
-    assert.doesNotMatch(page, /background check/i, `${f}: a background check said some other way`);
+    assert.doesNotMatch(page, NOT_SAID, f);
+    for (const re of SAID) page = page.replace(re, '');
+    assert.doesNotMatch(page, /background check|credit check/i, `${f}: said some other way`);
   }
   // No $50 on a landlord or renter page (it was the background check's price).
   for (const f of [...HAND, 'renters/index.html', 'for/renters/index.html', 'landlords/tenant-screening/index.html', 'landlords/rental-listings/index.html']) {
     assert.doesNotMatch(await read(f), /\$50\b/, f);
   }
-  // The topic page keeps its address and says so up front; the tiles follow.
+  // The topic page keeps its address; the tiles follow.
   const topic = await read('landlords/tenant-screening/index.html');
-  assert.match(topic, /<title>Tenant Screening for Landlords: Coming Soon \| NOHM<\/title>/);
-  assert.match(topic, /<h1>Tenant screening\.<span class="soon">Coming soon<\/span><\/h1>/);
-  assert.match(landlords, /<li><a href="\/landlords\/tenant-screening\/">Tenant screening<span>Coming soon<\/span><\/a><\/li>/);
-  assert.match(role, /<h3>Screen applicants\.<span class="soon">Coming soon<\/span><\/h3>\s*<p>Background checks are not on yet\. Today you can take free applications in the app\.<\/p>/);
+  assert.match(topic, /<title>Tenant Screening for Landlords: Background and Credit Checks \| NOHM<\/title>/);
+  assert.match(topic, /<h1>Tenant screening\.<\/h1>/);
+  assert.match(landlords, /<li><a href="\/landlords\/tenant-screening\/">Tenant screening<span>Background and credit checks<\/span><\/a><\/li>/);
+  assert.match(role, /<h3>Screen applicants\.<\/h3>\s*<p>They apply on their phone\. You see their background and credit check in the app\.<\/p>/);
+  // The landlord page's story names it where the next tenant applies.
+  assert.match(landlords, /You see her background and credit check, pick your renter/);
   // The ad page shows two app pictures; the third said "Rent collection is free".
   assert.equal([...ad.matchAll(/<figure>/g)].length, 2);
   assert.doesNotMatch(ad, /tools\.webp/);

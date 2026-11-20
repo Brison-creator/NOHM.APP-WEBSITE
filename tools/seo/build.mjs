@@ -97,23 +97,25 @@ const LANDLORD = [
     ],
     price: 'rent',
   },
-  // Background checks are not live for renters (2026-11-19), so this page says
-  // "coming soon" and only what a landlord can do today: send an application
-  // from the app, read it there, approve or deny. Applying is free. It keeps
-  // its address. When background checks go live, write the page again from
-  // what the app then does: no price, provider or income check before that.
+  // Background and credit checks (owner, 2026-11-20: "On the site just put
+  // background and credit check it's ok we will get it done before the signup
+  // starts don't want to forget to go back"). The site said "coming soon"
+  // from 2026-11-19 while the checks were not live for renters; it now says
+  // what a landlord gets, with no price or provider named. THEY MUST BE ON
+  // before sign-ups and ads start: if they are not, this page, the landlord
+  // page's lines and its question go back to "coming soon".
   {
     slug: 'tenant-screening',
-    title: 'Tenant Screening for Landlords: Coming Soon | NOHM',
-    desc: 'Background checks for rental applicants are coming soon to NOHM. Today you can send an application from the app, read it there, and approve or deny.',
+    title: 'Tenant Screening for Landlords: Background and Credit Checks | NOHM',
+    desc: 'Screen rental applicants from your phone: send the application, see the background and credit check in the app, then approve or deny.',
     h1: 'Tenant screening.',
-    soon: true,
-    sub: 'Background checks are coming soon. They are not on yet. Today you can take applications in the app, and applying is free for your applicant.',
+    sub: 'Send the application from the app. Your applicant fills it in on their phone and pays for the background and credit check. You see it in the app, then approve or deny.',
     img: ['door', 1536, 864, '60% 30%', 'A NOHM pro walking up to a rental’s front door'],
-    stepsTitle: 'What you can do today.',
+    stepsTitle: 'How it works.',
     steps: [
       ['Send the application.', 'Send it from the app.'],
-      ['They fill it in.', 'Your applicant fills it in on their phone. Applying is free.'],
+      ['They apply.', 'Your applicant fills it in on their phone and pays for the background and credit check. Applying is free.'],
+      ['See the check.', 'The background and credit check shows up in the app.'],
       ['Approve or deny.', 'Read it in the app and decide.'],
     ],
   },
@@ -210,7 +212,7 @@ const LANDLORD = [
 
 const LANDLORD_LABEL = {
   'rent-collection': ['Rent collection', 'Paid by bank, straight to you'],
-  'tenant-screening': ['Tenant screening', 'Coming soon'],
+  'tenant-screening': ['Tenant screening', 'Background and credit checks'],
   'lease-signing': ['Leases and move-ins', 'E-sign and condition reports'],
   'rental-listings': ['Rental listings', 'Photos, an Apply button, unlimited applications'],
   maintenance: ['Maintenance', 'Requests, pros and receipts'],
