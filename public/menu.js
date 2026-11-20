@@ -49,6 +49,7 @@
     '</button></div>' +
     '<ul>' +
     '<li><a href="/">Home</a></li>' +
+    '<li><a href="/home-repairs">Home Repairs</a></li>' +
     '<li><a href="/book">Book a Pro</a></li>' +
     '<li><a href="/how-it-works">How It Works</a></li>' +
     '<li><a href="/homeowners">Homeowners</a></li>' +

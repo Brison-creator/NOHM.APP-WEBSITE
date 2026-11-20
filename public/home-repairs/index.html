@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>document.documentElement.classList.add('js')</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Home Repairs: Book a Local Pro | NOHM</title>
+  <meta name="description" content="It's always something. NOHM it. Find and book a local pro for home repairs." />
+  <link rel="canonical" href="https://nohm.app/home-repairs/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="NOHM" />
+  <meta property="og:title" content="Home Repairs: Book a Local Pro | NOHM" />
+  <meta property="og:description" content="It's always something. NOHM it. Find and book a local pro for home repairs." />
+  <meta property="og:url" content="https://nohm.app/home-repairs/" />
+  <meta property="og:image" content="https://nohm.app/img/q-hero-1536.jpg" />
+  <meta property="og:image:width" content="1536" />
+  <meta property="og:image:height" content="1024" />
+  <meta property="og:image:alt" content="A NOHM pro delivering a new AC unit to a homeowner" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/favicon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/sora/sora-latin-700-800.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/manrope/manrope-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/type.css" />
+  <!-- "NOHM it." is the one place Panchang is used: a protected brand
+       treatment (see .mark), never for anything else. Free for commercial use
+       under the ITF Free Font License, which forbids redistributing the files,
+       so it loads from Fontshare rather than living in this public repo. -->
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=panchang@600&display=swap" />
+  <link rel="stylesheet" href="/bar.css" />
+  <link rel="stylesheet" href="/screens.css" />
+  <link rel="stylesheet" href="/features.css" />
+  <link rel="stylesheet" href="/store-cta.css" />
+  <style>
+    /* Laid out like tesla.com: a full-screen photo carousel with the title
+       and the store badges on it, the bar floating clear over the photo,
+       gray cards underneath, and the visitor's store badge pinned to the
+       bottom on phones. */
+    html, body { margin: 0; background: #fff; }
+    body {
+      font-family: var(--font-text);
+      -webkit-font-smoothing: antialiased;
+      color: #171a20;
+    }
+
+    /* The bar starts clear over the photo and turns solid once you scroll
+       past it. */
+    .bar {
+      position: fixed; left: 0; right: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+    .bar.clear {
+      background: transparent;
+      border-bottom-color: transparent;
+    }
+
+    /* Same height as Tesla's phone hero: about 59% of the screen, so the next
+       section peeks up underneath. Taller when a slide's words need it: each
+       slide lays its words out below the top bar and above the dots, and the
+       hero grows rather than letting them run under either. */
+    .hero { position: relative; display: grid; min-height: max(420px, calc(100svh - 170px)); background: #16171a; }
+    .slides {
+      display: flex;
+      overflow-x: auto; overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .slides::-webkit-scrollbar { display: none; }
+    .slide {
+      position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden;
+      display: flex; flex-direction: column; box-sizing: border-box; padding: 52px 0 44px;
+    }
+    .slide img, .slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .slide .narrow-only { display: block; }
+    .slide .wide-only { display: none; }
+    .slide .washer { object-position: 50% 0%; }
+    .slide .pro { object-position: 50% 0%; }
+    /* This slide's phone photo has his face up top, so its words sit low. */
+    .slide .copy.low { margin: auto 0 0; }
+    .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
+    .slide .fixed { object-position: 44% 50%; }
+    /* Shade the top of the photo so the white words read on any picture,
+       and a touch at the bottom behind the dots. */
+    .slide::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.34) 40%, rgba(0, 0, 0, 0) 62%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0) 14%);
+    }
+    /* Slide 4, the mission: a temporary background of drifting NOHM-blue
+       light over a faint grid, words centred. */
+    .mission { background: #0d0e10; }
+    .mission-bg { position: absolute; inset: 0; overflow: hidden; }
+    .mission-bg::before {
+      content: ""; position: absolute; inset: -20%;
+      background:
+        radial-gradient(40% 45% at 25% 30%, rgba(53, 108, 163, .55), transparent 70%),
+        radial-gradient(35% 40% at 78% 70%, rgba(53, 108, 163, .38), transparent 70%),
+        radial-gradient(30% 30% at 60% 20%, rgba(255, 255, 255, .06), transparent 70%);
+      animation: mission-drift 18s ease-in-out infinite alternate;
+    }
+    .mission-bg::after {
+      content: ""; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 75%);
+              mask-image: radial-gradient(ellipse at center, #000 20%, transparent 75%);
+    }
+    @keyframes mission-drift { to { transform: translate(6%, -4%) rotate(8deg) scale(1.08); } }
+    @media (prefers-reduced-motion: reduce) { .mission-bg::before { animation: none; } }
+    .slide.mission::after { background: linear-gradient(to top, rgba(0, 0, 0, .3), rgba(0, 0, 0, 0) 14%); }
+    .slide .copy {
+      position: relative; z-index: 1; margin: 10svh 0 auto;
+      padding: 0 24px;
+      text-align: center; color: #fff;
+    }
+    .slide h1, .slide h2 {
+      margin: 0;
+      font-size: clamp(34px, 4vw, 48px);
+      line-height: 1.1;
+      text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3); font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline);
+    }
+    .slide h1:not(.mark), .slide h2 { word-spacing: var(--word-spacing-headline); }
+    .slide h1.mark {
+      font-family: "Panchang", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 600; letter-spacing: 0;
+      font-size: clamp(32px, 4vw, 52px);
+    }
+    .lede {
+      margin: 10px 0 22px;
+      font-size: clamp(16px, 1.4vw, 19px);
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
+    }
+    /* Opening video: the water rolls out, then the tagline fades in (3s),
+       then NOHM it. and the buttons (4s). Without JS or with reduced motion
+       everything simply shows. */
+    .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .store-cta { opacity: 0; transform: translateY(10px); transition: opacity .7s ease, transform .7s ease; }
+    .js #leak-copy .lede { transform: scale(.85); transition: opacity .5s ease, transform .6s cubic-bezier(.2, 1.6, .4, 1); }
+    .js #leak-copy.s1 .lede, .js #leak-copy.s2 h1, .js #leak-copy.s3 .store-cta { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .js #leak-copy .lede, .js #leak-copy h1, .js #leak-copy .store-cta { opacity: 1; transform: none; transition: none; } }
+    #leak-copy .lede.above { font-size: clamp(20px, 2vw, 26px); line-height: 1.2; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    /* The setup line sits above the wordmark on the first slide. */
+    .lede.above { margin: 0 0 10px; }
+    .lede.above + h1 { margin-bottom: 22px; }
+
+    /* Tesla's pair of buttons, side by side: the main one NOHM blue, the
+       second one white. */
+    .pair {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      max-width: 540px; margin: 0 auto;
+    }
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      height: 44px; padding: 0 12px; border-radius: 4px;
+      font-size: var(--size-button); text-decoration: none; white-space: nowrap; font-weight: var(--weight-ui);
+    }
+    .btn.main { background: #356CA3; color: #fff; }
+    .btn.main:hover { background: #2b5885; }
+    .btn.plain { background: #fff; color: #393c41; }
+    .btn.plain:hover { background: #eeeeee; }
+
+    .dots {
+      position: absolute; z-index: 2; left: 0; right: 0; bottom: 20px;
+      display: flex; justify-content: center; gap: 10px;
+    }
+    .dots button {
+      width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.45); cursor: pointer;
+    }
+    .dots button[aria-current="true"] { background: #fff; }
+
+
+    /* Services: the come-fix-done trades as gray tiles with a line icon. */
+    .services, .quotes { max-width: 1200px; margin: 0 auto; padding: 48px 24px 64px; }
+    .services h2, .quotes h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .svc-lede { margin: 8px 0 22px; font-size: 18px; color: #5c5e62; }
+
+    /* NOHM is advanced: a square loop of the dispatch engine, from orbit to the door. */
+    .advanced { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; display: grid; gap: 20px; }
+    .advanced h2 { margin: 0; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; }
+    .advanced .adv-copy { margin: 16px 0 0; max-width: 520px; font-size: clamp(17px, 1.4vw, 19px); line-height: 1.55; color: #393c41; }
+    .advanced .adv-close { margin: 12px 0 0; font-size: clamp(17px, 1.4vw, 19px); font-weight: var(--weight-ui); color: #171a20; }
+    .advanced .live-link { display: inline-block; margin-top: 12px; font-size: 15px; font-weight: var(--weight-ui); color: #171a20; text-decoration: underline; text-underline-offset: 3px; }
+    .advanced video { display: block; width: 100%; max-width: 560px; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; background: #05070B; }
+    .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    /* White cards with a photo slot. To fill one, add public/img/services/<trade>.jpg
+       (e.g. plumbing.jpg, garage-door.jpg); until then the slot shows the icon. */
+    .svc { background: #fff; border: 1px solid #e3e4e6; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .svc-img { position: relative; aspect-ratio: 4 / 3; background: #f4f4f4; display: grid; place-items: center; }
+    .svc-img svg { width: 30px; height: 30px; fill: none; stroke: #b8b9bc; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .svc-img img, .svc-img video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .svc-img video { object-position: 70% 40%; }
+    .svc b { padding: 12px 14px 2px; font-size: 16px; font-weight: var(--weight-ui); }
+    .svc span { padding: 0 14px 14px; font-size: 13px; line-height: 1.35; color: #5c5e62; }
+
+    .svc-all {
+      display: flex; align-items: center; justify-content: center; max-width: 320px;
+      height: 44px; margin-top: 16px; border-radius: 4px; background: #e6e7e9; color: #171a20;
+      font-size: var(--size-button); font-weight: var(--weight-ui); text-decoration: none;
+    }
+    .svc-all:hover { background: #d9dadd; }
+    /* Bookable trades are links into /book; the card's look doesn't change. */
+    .svc-link { display: flex; flex-direction: column; flex: 1; color: inherit; text-decoration: none; }
+    .svc-link:hover b { color: #356CA3; }
+    .svc-more { display: inline-block; margin-top: 16px; font-size: 14px; color: #5c5e62; text-decoration: underline; text-underline-offset: 3px; }
+    .svc-more:hover { color: #171a20; }
+
+    /* Get Quotes: three promises as big numbers, like Tesla's stats. */
+    .quotes { padding-top: 56px; }
+    .q-points { list-style: none; margin: 24px 0 18px; padding: 0; display: grid; gap: 14px; }
+    .q-points li { display: flex; align-items: center; gap: 16px; }
+    .q-points b { flex: 0 0 56px; font-size: 48px; line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .q-points span { font-size: 17px; color: #393c41; }
+    .q-img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 55% 50%; border-radius: 12px; margin-bottom: 24px; }
+    .q-trades { margin: 0 0 24px; font-size: 15px; color: #5c5e62; }
+
+    /* NOHM NOW reel, like Tesla's Full Self-Driving section: a gray panel,
+       a two-tone title, then photos and videos that slide sideways with a
+       caption under the one in the middle. */
+    .reel { margin: 24px 12px 0; padding: 48px 0 36px; background: #f4f4f4; border-radius: 12px; overflow: hidden; }
+    .reel .head { padding: 0 24px 32px; max-width: 1200px; margin: 0 auto; }
+    .reel h2 {
+      margin: 0; font-size: clamp(40px, 5vw, 64px); line-height: 1.02;
+      background: linear-gradient(100deg, #171a20 20%, #356CA3 60%, #171a20 95%);
+      -webkit-background-clip: text; background-clip: text; color: transparent; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline);
+    }
+    .reel .head p { margin: 12px 0 0; font-size: clamp(17px, 1.6vw, 21px); line-height: 1.45; color: #5c5e62; }
+    .reel-row {
+      display: flex; gap: 12px; padding: 0 calc(50% - 36vw);
+      overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+    }
+    .reel-row::-webkit-scrollbar { display: none; }
+    .reel-item { flex: 0 0 72vw; scroll-snap-align: center; margin: 0; }
+    .reel-item .media { position: relative; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #dcdde0; transform: scale(0.88); transition: transform .6s ease; }
+    .reel-item.on .media { transform: scale(1); }
+    .reel-item img, .reel-item video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .reel-item figcaption { margin-top: 18px; text-align: center; font-size: 16px; font-weight: var(--weight-body-strong); color: #171a20; opacity: 0; transition: opacity .5s; }
+    .reel-item.on figcaption { opacity: 1; }
+    /* Controls: dots under the reel everywhere; arrows on wider screens,
+       where there's no swipe. A side card can be clicked too. */
+    .reel-wrap { position: relative; }
+    .reel-dots { display: flex; justify-content: center; gap: 10px; margin-top: 22px; }
+    .reel-dots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #b8b9bc; cursor: pointer; }
+    .reel-dots button[aria-current="true"] { background: #171a20; }
+    .reel-arrow {
+      display: none; position: absolute; top: calc(50% - 40px); z-index: 2;
+      width: 44px; height: 44px; border: 0; border-radius: 50%;
+      background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(0,0,0,.16);
+      cursor: pointer; place-items: center;
+    }
+    .reel-arrow:hover { background: #fff; }
+    .reel-arrow.prev { left: 24px; }
+    .reel-arrow.next { right: 24px; }
+    .reel-item:not(.on) { cursor: pointer; }
+    @media (min-width: 900px) {
+      .reel-arrow { display: grid; }
+      .reel { margin: 24px 32px 0; }
+      .reel-row { padding: 0 calc(50% - min(360px, 26vw)); gap: 20px; }
+      .reel-item { flex-basis: min(720px, 52vw); }
+      .reel-item .media { aspect-ratio: 16 / 10; }
+    }
+
+    /* The NOHM Promise: big numbers like Tesla's stats. */
+    .promise { max-width: 1200px; margin: 0 auto; padding: 48px 24px 64px; }
+    .privacy { margin: 24px 12px 0; padding: 40px 16px; display: grid; gap: 20px; background: #171a20; border-radius: 12px; color: #fff; }
+    .privacy h2 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.04; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .privacy .privacy-lede { margin: 16px 0 0; font-size: clamp(20px, 2vw, 26px); line-height: 1.3; font-weight: var(--weight-body-strong); color: #d0d1d2; }
+    .privacy .copy p { margin: 0 0 14px; font-size: 17px; line-height: 1.55; color: #d0d1d2; }
+    .privacy .copy p.close { margin: 0; color: #fff; font-weight: var(--weight-ui); }
+    @media (min-width: 900px) {
+      .privacy { margin: 24px 32px 0; padding: 72px 64px; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: end; }
+      .privacy .copy p { font-size: 18px; }
+    }
+    .promise h2 { margin: 0 0 28px; font-size: clamp(38px, 4.4vw, 56px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; margin-bottom: 34px; }
+    .p b { display: block; font-size: clamp(52px, 5.6vw, 72px); line-height: 1; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .p span { display: block; margin-top: 8px; font-size: 16px; line-height: 1.4; color: #393c41; }
+    .markets { margin: 18px 0 0; font-size: 13px; color: #6e6e73; }
+    .btn.black { background: #356CA3; color: #fff; }
+    .btn.black:hover { background: #2b5885; }
+
+    /* Full-width video card right under the hero, Tesla style. */
+    /* What NOHM is, in one card between the hero and the first video. */
+    .os { margin: 24px 12px 0; padding: 40px 16px 40px; display: grid; gap: 20px; background: #f4f4f4; border-radius: 12px; color: #171a20; }
+    .os h2 { margin: 0; font-size: clamp(36px, 5vw, 64px); line-height: 1.02; font-weight: var(--weight-hero); }
+    .os .os-lede { margin: 16px 0 0; font-size: clamp(20px, 2vw, 26px); line-height: 1.3; font-weight: var(--weight-body-strong); }
+    .os .copy p { margin: 0 0 14px; font-size: 17px; line-height: 1.55; color: #393c41; }
+    .os .copy p.close { margin: 0; color: #171a20; font-weight: var(--weight-ui); }
+    .vcard { position: relative; margin: 24px 12px 0; height: min(72svh, 620px); min-height: 420px; border-radius: 12px; overflow: hidden; background: #16171a; }
+    .vcard video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 80% 30%; }
+    .vcard::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.28) 40%, rgba(0,0,0,0) 62%); }
+    .vcard .body { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; padding: 0 16px 24px; color: #fff; }
+    .vcard h2 { margin: 0; font-size: clamp(34px, 3.6vw, 48px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .vcard p { margin: 8px 0 20px; font-size: clamp(17px, 1.4vw, 19px); }
+    @media (min-width: 900px) {
+      .os { margin: 24px 32px 0; padding: 72px 64px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: end; }
+      .os .copy p { font-size: 18px; }
+      .vcard { margin: 24px 32px 0; height: min(80svh, 720px); }
+      .vcard video { object-position: 50% 15%; }
+      .vcard .body { padding: 0 40px 40px; }
+    }
+
+    /* Full-screen trade panels, stacked like Tesla's model sections: one
+       photo per trade, title and two buttons at the top. Add a trade by
+       copying a <section class="panel">. */
+    .panel { position: relative; height: calc(100svh - 110px); min-height: 480px; margin: 24px 12px 0; border-radius: 12px; overflow: hidden; background: #16171a; }
+    .panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .panel::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25) 36%, rgba(0, 0, 0, 0) 58%);
+    }
+    .panel .copy { position: absolute; z-index: 1; left: 0; right: 0; top: 8svh; padding: 0 24px; text-align: center; color: #fff; }
+    .panel h2 { margin: 0; font-size: clamp(34px, 4vw, 48px); line-height: 1.1; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3); font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .panel .lede { margin: 10px 0 22px; }
+    .panel img.pro-now { object-position: 50% 45%; }
+    /* Depth on the bottom two sections (the card row and For Local Pros):
+       each photo is a little taller than its frame and drifts slower than
+       the page as it scrolls past. Set by the drift script at the bottom;
+       off for anyone who prefers reduced motion. */
+    .js .card > picture img, .js .card > video, .js .panel > picture img {
+      top: -8%; bottom: auto; height: 116%; will-change: transform;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .js .card > picture img, .js .card > video, .js .panel > picture img { top: 0; height: 100%; transform: none !important; }
+    }
+    /* Photo cards that slide sideways, like Tesla's Solar Panels row: the
+       next card peeks in from the right, words and buttons sit on the bottom
+       of the photo, dots underneath. */
+    .cards { padding: 24px 0 0; }
+    .card-row {
+      display: flex; gap: 16px;
+      padding: 0 12px;
+      overflow-x: auto; overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory; scroll-padding: 0 12px;
+      scrollbar-width: none;
+    }
+    .card-row::-webkit-scrollbar { display: none; }
+    .card {
+      position: relative; flex: 0 0 calc(100% - 21px);
+      height: min(72svh, 640px); min-height: 460px;
+      border-radius: 12px; overflow: hidden; background: #16171a;
+      scroll-snap-align: start;
+    }
+    .card img, .card video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .card img.family, .card video.family { object-position: 45% 40%; }
+    .card img.pro { object-position: 34% 30%; }
+    .card img.washer { object-position: 78% 50%; }
+    .card img.ready { object-position: 34% 40%; }
+    .card img.now { object-position: 18% 20%; }
+    .card img.crew { object-position: 50% 30%; }
+    .card::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0) 62%);
+    }
+    .card .body { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; padding: 0 16px 24px; color: #fff; }
+    .card h2 { margin: 0; font-size: clamp(34px, 3.4vw, 44px); line-height: 1.05; font-family: var(--font-display); font-weight: var(--weight-heading); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .card p { margin: 8px 0 20px; font-size: clamp(17px, 1.4vw, 19px); line-height: 1.35; }
+    .card-dots { display: flex; justify-content: center; gap: 10px; padding: 20px 0 0; }
+    .card-dots button {
+      width: 10px; height: 10px; padding: 0; border: 0; border-radius: 50%;
+      background: #b8b9bc; cursor: pointer;
+    }
+    .card-dots button[aria-current="true"] { background: #171a20; }
+
+    /* Pinned to the bottom on every screen (owner, 2026-10-27: the badges
+       come off the hero's photos and stay here): support chat on the left
+       and both store badges on the right (/store-cta.css). The badges are 44px tall
+       when they fit and shrink together on narrower phones, never below
+       40px; their clear space is a quarter of their height. Under 360px
+       the chat button gives up its room (Support stays in the menu and
+       the footer). */
+    .dock {
+      --store-badge-h: min(44px, calc((100vw - 92px) / 6.7));
+      position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, 0.94);
+      -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .dock .chat { display: flex; align-items: center; justify-content: center;
+      flex: 0 0 44px; height: 44px; border-radius: 50%; background: #f4f4f4; transition: background 0.3s; }
+    .dock .chat:hover { background: #e9e9ea; }
+    .dock .chat:focus-visible { outline: 2px solid #004990; outline-offset: 2px; }
+    .dock .badges { display: flex; align-items: center; gap: calc(var(--store-badge-h) / 4); }
+    .dock .store-badge { flex: none; }
+    /* The dock never covers the footer. */
+    body { padding-bottom: calc(68px + env(safe-area-inset-bottom) + 16px); }
+    @media (max-width: 359px) {
+      .dock { --store-badge-h: min(44px, calc((100vw - 36px) / 6.7)); justify-content: center; }
+      .dock .chat { display: none; }
+    }
+
+    @media (min-width: 900px) {
+      .hero { min-height: 100svh; }
+      .slide .washer { object-position: 50% 45%; }
+      .slide .copy { margin: 5svh 0 auto; }
+      .slide .pro { object-position: 50% 0%; }
+      .slide .copy.low { margin: 5svh 0 auto; }
+      .slide:has(.copy.low)::after { background: linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.34) 40%, rgba(0,0,0,0) 62%), linear-gradient(to top, rgba(0,0,0,.3), rgba(0,0,0,0) 14%); }
+      /* The door photo has his face where the words would go, so they sit low. */
+      .slide .copy.base { margin: auto 0 20px; }
+      .slide:has(.copy.base)::after { background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 18%), linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 58%); }
+      .cards { padding: 24px 0 0; }
+      /* Wider screens fit two cards and a peek of the third. */
+      .card-row { padding: 0 32px; scroll-padding: 0 32px; gap: 16px; }
+      .card { flex-basis: calc((100% - 32px) / 2.15); height: min(70svh, 620px); }
+      .card .body { padding: 0 28px 28px; }
+      .panel { height: 100svh; margin: 24px 32px 0; }
+      .panel .copy { top: calc(52px + 9svh); }
+      .svc-grid { grid-template-columns: repeat(4, 1fr); }
+      .advanced { grid-template-columns: minmax(0, 1fr) minmax(0, 560px); align-items: center; gap: 48px; }
+      .q-points { grid-template-columns: repeat(3, 1fr); }
+      .q-img { aspect-ratio: 16 / 7; object-position: 50% 0%; }
+      .p-grid { grid-template-columns: repeat(4, 1fr); }
+      .slide .narrow-only { display: none; }
+      .slide .wide-only { display: block; }
+    }
+    .slide .copy.mid { margin: auto; width: 100%; max-width: 860px; box-sizing: border-box; padding: 20px 24px; }
+    .slide .copy.mid h2 { font-size: clamp(26px, 3.4vw, 44px); }
+    .slide .copy.mid .lede { max-width: 640px; margin: 16px auto 26px; color: rgba(255, 255, 255, .82); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <header class="bar clear"><a href="/">NOHM</a></header>
+  <main>
+    <section class="hero" aria-roledescription="carousel" aria-label="NOHM">
+      <div class="slides" id="slides">
+        <article class="slide" aria-roledescription="slide" aria-label="1 of 4">
+          <video class="washer" id="leak" muted playsinline preload="auto" poster="/video/leak-poster.jpg"
+                 aria-label="Water rolls out from under a washer while the homeowner crouches beside it, calmly booking help on his phone">
+            <source media="(max-width: 899px)" src="/video/leak-720.mp4" type="video/mp4" />
+            <source media="(max-width: 899px)" src="/video/leak-720.webm" type="video/webm" />
+            <source src="/video/leak-1168.mp4" type="video/mp4" />
+            <source src="/video/leak-1168.webm" type="video/webm" />
+          </video>
+          <div class="copy low" id="leak-copy">
+            <p class="lede above">It&rsquo;s always something.</p>
+            <h1 class="mark">NOHM it.</h1>
+            <div class="store-cta store-cta--center store-cta--on-dark">
+              <a class="store-cta__more" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="slide" aria-roledescription="slide" aria-label="2 of 4">
+          <video class="fixed once" muted playsinline preload="metadata" poster="/video/handled-poster.jpg"
+                 aria-label="The homeowner, washer fixed, shaking hands with a pro from Larry&rsquo;s Appliance wearing a NOHM patch">
+            <source media="(max-width: 899px)" src="/video/handled-720.mp4" type="video/mp4" />
+            <source media="(max-width: 899px)" src="/video/handled-720.webm" type="video/webm" />
+            <source src="/video/handled.mp4" type="video/mp4" />
+            <source src="/video/handled.webm" type="video/webm" />
+          </video>
+          <div class="copy low">
+            <h2>Handled.</h2>
+            <p class="lede">A local pro fixed it. The repair is saved in your app.</p>
+            <div class="store-cta store-cta--center store-cta--on-dark">
+              <a class="store-cta__more" href="/local-pros">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="slide" aria-roledescription="slide" aria-label="3 of 4">
+          <picture class="wide-only">
+            <source type="image/webp" srcset="/img/door-960.webp 960w, /img/door-1536.webp 1536w" sizes="100vw" />
+            <img class="pro" src="/img/door-1536.jpg" srcset="/img/door-960.jpg 960w, /img/door-1536.jpg 1536w" sizes="100vw"
+                 width="1536" height="864"
+                 alt="A Clide HVAC pro with a NOHM patch on his backpack, smiling as he walks up to a homeowner at her front door" />
+          </picture>
+          <video class="pro narrow-only once" muted playsinline preload="none" poster="/video/door-poster.jpg"
+                 aria-label="A Jet HVAC pro with a NOHM patch walks up to the front door, waves and shakes the homeowner&rsquo;s hand">
+            <source src="/video/door-720.mp4" type="video/mp4" />
+            <source src="/video/door-720.webm" type="video/webm" />
+          </video>
+          <div class="copy low base">
+            <h2>Need a home repair?</h2>
+            <p class="lede">Find and book a local pro.</p>
+            <div class="store-cta store-cta--center store-cta--on-dark">
+              <a class="store-cta__more" href="/local-pros">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="slide mission" data-hold="5000" aria-roledescription="slide" aria-label="4 of 4">
+          <!-- Temporary background until a photo or video is made for this slide. -->
+          <div class="mission-bg" aria-hidden="true"></div>
+          <div class="copy mid">
+            <h2>NOHM is reinventing how we manage our homes for the 21st century and beyond.</h2>
+            <p class="lede">Putting power back into the hands of homeowners and contractors while bypassing Google, paid ads, lead sellers, and every other middleman standing between you and the help you need.</p>
+            <div class="store-cta store-cta--center store-cta--on-dark">
+              <a class="store-cta__more" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="dots" id="dots">
+        <button type="button" aria-label="Show slide 1" aria-current="true"></button>
+        <button type="button" aria-label="Show slide 2" aria-current="false"></button>
+        <button type="button" aria-label="Show slide 3" aria-current="false"></button>
+        <button type="button" aria-label="Show slide 4" aria-current="false"></button>
+      </div>
+    </section>
+
+    <section class="os" aria-labelledby="os-title">
+      <div>
+        <h2 id="os-title">The Home Operating System.</h2>
+        <p class="os-lede">No calling around. No wondering who to trust.</p>
+      </div>
+      <div class="copy">
+        <p>NOHM connects homeowners with trusted local companies and keeps every repair in one permanent home record. Contractors keep their own name and get real work.</p>
+        <p class="close">No games. Just your home, inside NOHM, handled.</p>
+      </div>
+    </section>
+
+    <section class="vcard" aria-label="Heating and air">
+      <video autoplay muted loop playsinline preload="metadata" poster="/video/furnace-poster.jpg"
+             aria-label="A NOHM HVAC pro laughing with a homeowner while repairing his furnace">
+        <source media="(max-width: 899px)" src="/video/furnace-720.mp4" type="video/mp4" />
+        <source media="(max-width: 899px)" src="/video/furnace-720.webm" type="video/webm" />
+        <source src="/video/furnace-1168.mp4" type="video/mp4" />
+        <source src="/video/furnace-1168.webm" type="video/webm" />
+      </video>
+      <div class="body">
+        <h2>No heat? Handled.</h2>
+        <p>A local pro today, or at your door within 60 minutes.</p>
+        <div class="store-cta store-cta--on-dark">
+          <ul class="store-cta__badges">
+            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+          </ul>
+          <a class="store-cta__more" href="/homeowners">Learn More</a>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="features">
+      <div class="free">
+        <p class="free-title">Best of all, NOHM is FREE for homeowners to join and use.</p>
+        <p>You pay the contractor only for the service or repair you approve&mdash;just like you always have. The difference? Your payment is secured through NOHM, and every photo, video, finding, estimate and completed repair becomes part of your home&rsquo;s permanent record.</p>
+      </div>
+      <div class="head"><h2>Local pros.<br />One standard.</h2></div>
+      <div class="f-row">
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/door-960.webp 960w, /img/door-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/door-960.jpg" srcset="/img/door-960.jpg 960w, /img/door-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="864" loading="lazy" style="object-position:60% 30%" alt="A Clide HVAC pro with a NOHM patch on his backpack walking up to a homeowner&rsquo;s front door" />
+          </picture>
+          <h3>Owner-Operated</h3>
+          <p>Local businesses. Their name is on the truck.</p>
+        </article>
+        <article class="f-item">
+          <video autoplay muted loop playsinline preload="metadata" poster="/video/standard-poster.jpg" style="object-position:50% 40%"
+                 aria-label="Two different local companies, Diaz Plumbing and Express Plumbing, each pro wearing a NOHM patch and checking the job on his phone at a homeowner&rsquo;s door">
+            <source media="(max-width: 899px)" src="/video/standard-720.mp4" type="video/mp4" />
+            <source media="(max-width: 899px)" src="/video/standard-720.webm" type="video/webm" />
+            <source src="/video/standard-1168.mp4" type="video/mp4" />
+            <source src="/video/standard-1168.webm" type="video/webm" />
+          </video>
+          <h3>One Standard</h3>
+          <p>Two companies. Same system. Same experience.</p>
+        </article>
+        <article class="f-item">
+          <picture>
+            <source type="image/webp" srcset="/img/prep-960.webp 960w, /img/prep-1536.webp 1536w" sizes="(min-width: 900px) 33vw, 90vw" />
+            <img src="/img/prep-960.jpg" srcset="/img/prep-960.jpg 960w, /img/prep-1536.jpg 1536w" sizes="(min-width: 900px) 33vw, 90vw"
+                 width="1536" height="1024" loading="lazy" style="object-position:45% 40%" alt="A NOHM pro in his van reviewing the home&rsquo;s equipment and past repairs on his tablet before heading to the job" />
+          </picture>
+          <h3>Ready Before They Arrive</h3>
+          <p>With your permission, pros see your equipment and past repairs first.</p>
+        </article>
+      </div>
+      <div class="f-dots"></div>
+      <div class="after"><a class="btn black" href="/local-pros">Learn More</a></div>
+    </section>
+
+    <section class="services" aria-labelledby="svc-title">
+      <h2 id="svc-title">Services</h2>
+      <p class="svc-lede">Come. Fix. Done.</p>
+      <div class="svc-grid">
+        <div class="svc"><a class="svc-link" href="/book?trade=plumbing" aria-label="Book Plumbing">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 9 7 12 3z"/></svg><img src="/img/services/plumbing.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/plumbing.jpg" aria-hidden="true" style="object-position: 50% 0%"><source src="/video/plumbing-720.mp4" type="video/mp4" /><source src="/video/plumbing-720.webm" type="video/webm" /></video></div>
+          <b>Plumbing</b><span>Leaks, clogs, water heaters</span></a>
+        </div>
+        <div class="svc"><a class="svc-link" href="/book?trade=hvac" aria-label="Book HVAC">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.2 7l15.6 10M4.2 17L19.8 7"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5"/></svg><img src="/img/services/hvac.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>HVAC</b><span>No heat, no AC</span></a>
+        </div>
+        <div class="svc"><a class="svc-link" href="/book?trade=electrical" aria-label="Book Electrical">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13.5h6L10 22l8-11.5h-6L13 2z"/></svg><img src="/img/services/electrical.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Electrical</b><span>Outages, outlets, breakers</span></a>
+        </div>
+        <div class="svc"><a class="svc-link" href="/book?trade=appliance" aria-label="Book Appliance">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2"/><circle cx="12" cy="13.5" r="4.5"/><path d="M7.5 6h.01M10.5 6h.01"/></svg><img src="/img/services/appliance.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/appliance.jpg" aria-hidden="true" style="object-position: 50% 30%"><source src="/video/appliance-720.mp4" type="video/mp4" /><source src="/video/appliance-720.webm" type="video/webm" /></video></div>
+          <b>Appliance</b><span>Washers, dryers, fridges</span></a>
+        </div>
+        <div class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5l4 4-9.5 9.5-4-4z"/><path d="M13 4l2-2 7 7-2 2"/><path d="M5 15l-2.5 2.5 4 4L9 19"/></svg><img src="/img/services/handyman.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Handyman</b><span>Small fixes, drywall patches</span>
+        </div>
+        <div class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M17 6l2.5 2.5M15 8l2 2"/></svg><img src="/img/services/locksmith.jpg" alt="" loading="lazy" onerror="this.remove()" /><video autoplay muted loop playsinline preload="metadata" poster="/img/services/locksmith.jpg" aria-hidden="true"><source src="/video/locksmith-720.mp4" type="video/mp4" /><source src="/video/locksmith-720.webm" type="video/webm" /></video></div>
+          <b>Locksmith</b><span>Locked out, rekeys</span>
+        </div>
+        <div class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"/><path d="M6.5 21v-9h11v9M6.5 15h11M6.5 18h11"/></svg><img src="/img/services/garage-door.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Garage Door</b><span>Stuck doors, springs</span>
+        </div>
+        <div class="svc">
+          <div class="svc-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h9l3-3h3v6h-3l-3-3"/><path d="M18 10h3"/><path d="M7 10v4a2 2 0 0 0 2 2h1"/><path d="M19 14l2 3M17 15l1 4M21 12l2 1"/></svg><img src="/img/services/pressure-washing.jpg" alt="" loading="lazy" onerror="this.remove()" /></div>
+          <b>Pressure Washing</b><span>Driveways, siding, decks</span>
+        </div>
+      </div>
+      <a class="svc-all" href="/services">Browse All Services</a>
+      <a class="svc-more" href="mailto:admin@nohm.app?subject=Service%20request&amp;body=What%20do%20you%20need%20done%3F%0A%0ACity%20and%20state%3A%20">don&rsquo;t see what you need? click here</a>
+    </section>
+
+    <section class="advanced" aria-labelledby="adv-title">
+      <div>
+        <h2 id="adv-title">NOHM is advanced.</h2>
+        <p class="adv-copy">Speed is the name of the game. You want it fixed as fast as possible, with as little headache as possible. That&rsquo;s where NOHM comes in: we make it happen.</p>
+        <p class="adv-close">Join the future of home.</p>
+        <a class="live-link" href="/dispatch">See it live</a>
+      </div>
+      <video autoplay muted loop playsinline preload="metadata" poster="/video/advanced-poster.jpg"
+             aria-label="Animation: from orbit, NOHM pings verified pros, sends one to an emergency, dives down into the pro's van and follows the route to the homeowner's door">
+        <source media="(max-width: 899px)" src="/video/advanced-720.mp4" type="video/mp4" />
+        <source media="(max-width: 899px)" src="/video/advanced-720.webm" type="video/webm" />
+        <source src="/video/advanced-1080.mp4" type="video/mp4" />
+        <source src="/video/advanced-1080.webm" type="video/webm" />
+      </video>
+    </section>
+
+    <section class="reel" aria-labelledby="reel-title">
+      <div class="head">
+        <h2 id="reel-title">NOHM NOW</h2>
+        <p>60 for 60: a pro at your door within 60 minutes of booking, or you don&rsquo;t pay the NOW fee.</p>
+      </div>
+      <div class="reel-wrap">
+      <button class="reel-arrow prev" type="button" aria-label="Previous" data-reel="-1">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M11.5 3.5L6 9l5.5 5.5" fill="none" stroke="#171a20" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="reel-arrow next" type="button" aria-label="Next" data-reel="1">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M6.5 3.5L12 9l-5.5 5.5" fill="none" stroke="#171a20" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="reel-row" id="reel-row">
+        <figure class="reel-item">
+          <div class="media"><img src="/img/pro-now-720.jpg" srcset="/img/pro-now-720.jpg 720w, /img/pro-now-1122.jpg 1122w" sizes="(min-width: 900px) 36vw, 70vw" width="1122" height="1402" loading="lazy" style="object-position:70% 40%" alt="A NOHM pro in his truck starting the NOHM NOW countdown" /></div>
+          <figcaption>A pro accepts. The clock starts.</figcaption>
+        </figure>
+        <figure class="reel-item">
+          <div class="media"><img src="/img/now-720.jpg" srcset="/img/now-720.jpg 720w, /img/now-1122.jpg 1122w" sizes="(min-width: 900px) 36vw, 70vw" width="1122" height="1402" loading="lazy" style="object-position:20% 30%" alt="A homeowner holding up his phone showing the NOHM NOW countdown" /></div>
+          <figcaption>You watch them coming.</figcaption>
+        </figure>
+        <figure class="reel-item">
+          <div class="media"><img src="/img/hvac-tall-720.jpg" srcset="/img/hvac-tall-720.jpg 720w, /img/hvac-tall-941.jpg 941w" sizes="(min-width: 900px) 36vw, 70vw" width="941" height="1672" loading="lazy" style="object-position:50% 30%" alt="A Jet HVAC pro waving as he walks up to the front door" /></div>
+          <figcaption>At your door.</figcaption>
+        </figure>
+        <figure class="reel-item">
+          <div class="media"><video autoplay muted loop playsinline preload="metadata" poster="/video/handled-poster.jpg" aria-label="The homeowner shaking hands with the pro who fixed his washer">
+            <source src="/video/handled-720.mp4" type="video/mp4" /><source src="/video/handled-720.webm" type="video/webm" />
+          </video></div>
+          <figcaption>Fixed. Saved to your home.</figcaption>
+        </figure>
+      </div>
+      </div>
+      <div class="reel-dots" id="reel-dots" aria-label="Choose a card"></div>
+    </section>
+
+    <section class="promise" aria-labelledby="promise-title">
+      <h2 id="promise-title">The NOHM Promise</h2>
+      <div class="p-grid">
+        <div class="p"><b>60</b><span>Minutes for a NOHM NOW pro to head your way, or no NOW fee</span></div>
+        <div class="p"><b>$0</b><span>To use NOHM with Standard</span></div>
+        <div class="p"><b>1</b><span>Standard for every pro</span></div>
+        <div class="p"><b>3</b><span><a href="/quotes" style="color:inherit">Quotes on a replacement</a>, side by side, no pressure</span></div>
+      </div>
+      <div class="store-cta">
+        <ul class="store-cta__badges">
+          <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+          <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+        </ul>
+        <a class="store-cta__more" href="/homeowners">Learn More</a>
+      </div>
+      <p class="markets">Available wherever local pros have joined NOHM.</p>
+    </section>
+
+    <section class="cards" aria-label="More from NOHM">
+      <div class="card-row" id="card-row">
+        <article class="card">
+          <video class="family" autoplay muted loop playsinline preload="metadata" poster="/video/family-poster.jpg"
+                 aria-label="A family laughing together over a game of chess on the living room floor">
+            <source media="(max-width: 899px)" src="/video/family-720.mp4" type="video/mp4" />
+            <source media="(max-width: 899px)" src="/video/family-720.webm" type="video/webm" />
+            <source src="/video/family-1168.mp4" type="video/mp4" />
+            <source src="/video/family-1168.webm" type="video/webm" />
+          </video>
+          <div class="body">
+            <h2>Home is for living.</h2>
+            <p>NOHM handles the rest.</p>
+            <div class="store-cta store-cta--on-dark">
+              <ul class="store-cta__badges">
+                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+              </ul>
+              <a class="store-cta__more" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <picture>
+            <source type="image/webp" srcset="/img/ready-960.webp 960w, /img/ready-1536.webp 1536w" sizes="(min-width: 900px) 46vw, 90vw" />
+            <img class="ready" src="/img/ready-960.jpg" srcset="/img/ready-960.jpg 960w, /img/ready-1536.jpg 1536w" sizes="(min-width: 900px) 46vw, 90vw"
+                 width="1536" height="1024" loading="lazy" alt="A relaxed homeowner smiling at her phone while a NOHM pro arrives at the door with her home&rsquo;s details on his tablet" />
+          </picture>
+          <div class="body">
+            <h2>Every Repair, Saved.</h2>
+            <p>Your home&rsquo;s repairs live in the app. No digging for receipts or warranty paperwork.</p>
+            <div class="store-cta store-cta--on-dark">
+              <ul class="store-cta__badges">
+                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+              </ul>
+              <a class="store-cta__more" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <picture>
+            <source type="image/webp" srcset="/img/now-720.webp 720w, /img/now-1122.webp 1122w" sizes="(min-width: 900px) 46vw, 90vw" />
+            <img class="now" src="/img/now-720.jpg" srcset="/img/now-720.jpg 720w, /img/now-1122.jpg 1122w" sizes="(min-width: 900px) 46vw, 90vw"
+                 width="1122" height="1402" loading="lazy" alt="A homeowner smiling and holding up his phone showing the NOHM NOW countdown, 59:42, pro arriving" />
+          </picture>
+          <div class="body">
+            <h2>NOHM NOW.</h2>
+            <p>60 for 60. A pro at your door within 60 minutes.</p>
+            <div class="store-cta store-cta--on-dark">
+              <ul class="store-cta__badges">
+                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+              </ul>
+              <a class="store-cta__more" href="/homeowners">Learn More</a>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <picture>
+            <source type="image/webp" srcset="/img/pro-960.webp 960w, /img/pro-1536.webp 1536w" sizes="(min-width: 900px) 46vw, 90vw" />
+            <img class="pro" src="/img/pro-960.jpg" srcset="/img/pro-960.jpg 960w, /img/pro-1536.jpg 1536w" sizes="(min-width: 900px) 46vw, 90vw"
+                 width="1536" height="1024" loading="lazy" alt="A Speedy Plumbing pro with a NOHM patch on his sleeve at a homeowner&rsquo;s front door" />
+          </picture>
+          <div class="body">
+            <h2>Local Pros</h2>
+            <p>Owner-operated. Held to one standard.</p>
+            <div class="store-cta store-cta--on-dark">
+              <ul class="store-cta__badges">
+                <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+                <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+              </ul>
+              <a class="store-cta__more" href="/local-pros">Learn More</a>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="card-dots" id="card-dots">
+        <button type="button" aria-label="Show card 1" aria-current="true"></button>
+        <button type="button" aria-label="Show card 2" aria-current="false"></button>
+        <button type="button" aria-label="Show card 3" aria-current="false"></button>
+        <button type="button" aria-label="Show card 4" aria-current="false"></button>
+      </div>
+    </section>
+
+    <section class="privacy" aria-labelledby="privacy-title">
+      <div>
+        <h2 id="privacy-title">Your information is never for sale.</h2>
+        <p class="privacy-lede">No selling. No spam. Ever.</p>
+      </div>
+      <div class="copy">
+        <p>Search online for a repair and you&rsquo;re being tracked, and your information is sold to whoever pays for it.</p>
+        <p>NOHM never sells your information and never lets anyone spam you. Inside NOHM, you&rsquo;re secure and private.</p>
+        <p class="close">That&rsquo;s how it will stay.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="For pros">
+      <picture>
+        <source type="image/webp" srcset="/img/pro-now-720.webp 720w, /img/pro-now-1122.webp 1122w" sizes="100vw" />
+        <img class="pro-now" src="/img/pro-now-1122.jpg" srcset="/img/pro-now-720.jpg 720w, /img/pro-now-1122.jpg 1122w" sizes="100vw"
+             width="1122" height="1402" loading="lazy"
+             alt="A NOHM pro in his truck starting the NOHM NOW countdown on his dashboard phone" />
+      </picture>
+      <div class="copy">
+        <h2>For Local Pros</h2>
+        <p class="lede">No ads. No chasing leads. Join the future of home service.</p>
+        <div class="pair">
+          <a class="btn main" href="/pros#join">Request to Join</a>
+          <a class="btn plain" href="/pros">Learn More</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>NOHM&trade; &copy; 2026</span>
+    <span class="eho" style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 100 84" width="21" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M50 0 100 30v10l-8-5v49H8V35l-8 5V30zm0 11L16 31.5V76h68V31.5zM34.5 40h31v9h-31zm0 15h31v9h-31z"/></svg>Equal Housing Opportunity</span>
+    <a href="/homeowners">Homeowners</a>
+    <a href="/local-pros">Local Pros</a>
+    <a href="/pros">For Pros</a>
+    <a href="/financing">Financing</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/support">Support</a>
+    <a href="/founder">Founder</a>
+    <a href="https://business.nohm.app/">PM Professional Sign In</a>
+    <a href="https://business.nohm.app/">Landlord Sign In</a>
+    <a href="tel:+18882306646">888-230-NOHM</a>
+  </footer>
+
+  <div class="dock">
+    <a class="chat" href="/support" aria-label="Support">
+      <svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M4 1h16a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H11l-5 4.5V16H4a3 3 0 0 1-3-3V4a3 3 0 0 1 3-3z" fill="#393c41"/><circle cx="7.5" cy="8.5" r="1.4" fill="#fff"/><circle cx="12" cy="8.5" r="1.4" fill="#fff"/><circle cx="16.5" cy="8.5" r="1.4" fill="#fff"/></svg>
+    </a>
+    <div class="badges">
+      <a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="132" height="44" alt="" /></a>
+      <a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="148" height="44" alt="" /></a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var slides = document.getElementById('slides');
+      var dots = [].slice.call(document.querySelectorAll('#dots button'));
+      var bar = document.querySelector('.bar');
+      var hero = document.querySelector('.hero');
+      var current = 0, auto = null;
+
+      function show(i, smooth) {
+        slides.scrollTo({ left: i * slides.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+      }
+      // Slides are stills that come to life once: when a slide becomes the
+      // current one, its clip plays from the start and holds on the last frame.
+      function wake(i) {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var v = slides.children[i] && slides.children[i].querySelector('video.once');
+        if (!v || getComputedStyle(v).display === 'none') return;
+        if (v.preload === 'none') v.preload = 'auto';
+        try { v.currentTime = 0; } catch (e) {}
+        var p = v.play(); if (p && p.catch) p.catch(function () {});
+      }
+      function mark(i) {
+        if (i !== current) wake(i);
+        current = i;
+        dots.forEach(function (d, k) { d.setAttribute('aria-current', String(k === i)); });
+      }
+      slides.addEventListener('scroll', function () {
+        mark(Math.round(slides.scrollLeft / slides.clientWidth));
+      }, { passive: true });
+      dots.forEach(function (d, i) {
+        d.addEventListener('click', function () { stop(); show(i, true); });
+      });
+
+      // Advance on its own like Tesla's, until someone touches it.
+      function stop() { clearTimeout(auto); auto = null; }
+      var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var touched = false;
+      function startAuto(from) {
+        if (still || touched || auto) return;
+        next(from == null ? current : from);
+      }
+      // 7s a slide, plus any extra a slide asks for with data-hold (ms).
+      function next(i) {
+        var hold = 7000 + (parseInt(slides.children[i].getAttribute('data-hold'), 10) || 0);
+        auto = setTimeout(function () {
+          if (touched || !auto) return;
+          var n = (i + 1) % dots.length;
+          show(n, true);
+          next(n);
+        }, hold);
+      }
+      ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (t) {
+        slides.addEventListener(t, function () { touched = true; stop(); }, { passive: true });
+      });
+
+      // Opening video: plays once and holds its last frame. The words fade in
+      // as the water finishes rolling out; the slideshow waits for the end.
+      var leak = document.getElementById('leak'), copy = document.getElementById('leak-copy');
+      function reveal(step) { for (var i = 1; i <= step; i++) copy.classList.add('s' + i); }
+      if (still) {
+        reveal(3); leak.poster = '/video/leak-end.jpg';
+      } else {
+        // Two seconds apart, timed from when the video starts playing:
+        // tagline at 2s, NOHM it. at 4s, the buttons at 6s, then the
+        // slideshow starts moving at 8s.
+        var timed = false;
+        function schedule() {
+          if (timed) return; timed = true;
+          setTimeout(function () { reveal(1); }, 2000);
+          setTimeout(function () { reveal(2); }, 4000);
+          setTimeout(function () { reveal(3); }, 6000);
+          setTimeout(function () { if (!touched) { show(1, true); startAuto(1); } }, 8000);
+        }
+        leak.addEventListener('playing', schedule);
+        var p = leak.play();
+        if (p && p.catch) p.catch(schedule);
+        // If the video is slow or blocked (e.g. Low Power Mode), still run the timing.
+        setTimeout(schedule, 1500);
+      }
+
+      var row = document.getElementById('card-row');
+      var cdots = [].slice.call(document.querySelectorAll('#card-dots button'));
+      function cardStep() { var c = row.querySelector('.card'); return c.offsetWidth + parseFloat(getComputedStyle(row).columnGap || 12); }
+      row.addEventListener('scroll', function () {
+        var i = Math.round(row.scrollLeft / cardStep());
+        if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 4) i = cdots.length - 1;
+        cdots.forEach(function (d, k) { d.setAttribute('aria-current', String(k === i)); });
+      }, { passive: true });
+      cdots.forEach(function (d, i) {
+        d.addEventListener('click', function () { row.scrollTo({ left: i * cardStep(), behavior: 'smooth' }); });
+      });
+
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.slide video:not(#leak), .vcard video, .advanced video, .svc-img video').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+      }
+
+      // NOHM NOW reel, in its own scope: its names (mark, dots, current,
+      // still…) must not replace the hero carousel's, which share this
+      // function. When they did, the hero's slides 2 and 3 never played.
+      (function () {
+      // NOHM NOW reel: the card nearest the middle is "on" (full size, caption shown).
+      var reel = document.getElementById('reel-row');
+      if (reel) {
+        var items = [].slice.call(reel.querySelectorAll('.reel-item'));
+        var pick = function () {
+          var mid = reel.scrollLeft + reel.clientWidth / 2, best = 0, d = Infinity;
+          items.forEach(function (it, i) { var c = it.offsetLeft + it.offsetWidth / 2, x = Math.abs(c - mid); if (x < d) { d = x; best = i; } });
+          items.forEach(function (it, i) { it.classList.toggle('on', i === best); });
+        };
+        var dotsBox = document.getElementById('reel-dots');
+        var dots = items.map(function (_, i) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.setAttribute('aria-label', 'Show card ' + (i + 1));
+          dotsBox.appendChild(b); return b;
+        });
+        var current = function () {
+          var i = items.findIndex(function (it) { return it.classList.contains('on'); });
+          return i < 0 ? 0 : i;
+        };
+        var mark = function () {
+          pick();
+          var c = current();
+          dots.forEach(function (d, i) { d.setAttribute('aria-current', i === c ? 'true' : 'false'); });
+        };
+        reel.addEventListener('scroll', mark, { passive: true });
+        addEventListener('resize', mark); mark();
+
+        var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var gliding = false;
+        var glide = function (i) {
+          i = (i + items.length) % items.length;
+          var from = reel.scrollLeft;
+          var to = items[i].offsetLeft + items[i].offsetWidth / 2 - reel.clientWidth / 2;
+          if (still) { reel.scrollLeft = to; mark(); return; }
+          var t0 = performance.now(), dur = 700;
+          gliding = true; reel.style.scrollSnapType = 'none';
+          (function step(now) {
+            var k = Math.min(1, (now - t0) / dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+            reel.scrollLeft = from + (to - from) * e;
+            if (k < 1) requestAnimationFrame(step); else { reel.style.scrollSnapType = ''; gliding = false; mark(); }
+          })(t0);
+        };
+
+        // Arrows, dots and side cards move it by hand, on any screen, and
+        // restart the 3s count so it doesn't jump right after a click.
+        var lastTouch = 0;
+        var go = function (i) { lastTouch = Date.now(); glide(i); };
+        document.querySelectorAll('.reel-arrow').forEach(function (b) {
+          b.addEventListener('click', function () { go(current() + Number(b.dataset.reel)); });
+        });
+        dots.forEach(function (d, i) { d.addEventListener('click', function () { go(i); }); });
+        items.forEach(function (it, i) {
+          it.addEventListener('click', function () { if (!it.classList.contains('on')) go(i); });
+        });
+
+        // Auto-advance one card every 3s with an eased glide, looping back to
+        // the first, while the reel is on screen. A finger on it (phones)
+        // holds it; a mouse resting over it does not, since on a desktop
+        // the cursor often just sits there. Reduced motion: no auto-advance,
+        // the controls still work.
+        if (!still && items.length > 1) {
+          var held = false, seen = false;
+          setInterval(function () {
+            if (held || !seen || gliding || document.hidden || Date.now() - lastTouch < 3000) return;
+            glide(current() + 1);
+          }, 3000);
+          new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }, { threshold: 0.4 }).observe(reel);
+          reel.addEventListener('touchstart', function () { held = true; }, { passive: true });
+          reel.addEventListener('touchend', function () { held = false; lastTouch = Date.now(); }, { passive: true });
+        }
+      }
+      })();
+
+      function clear() { bar.classList.toggle('clear', scrollY <= hero.offsetHeight - bar.offsetHeight); }
+      addEventListener('scroll', clear, { passive: true });
+      clear();
+    })();
+  </script>
+  <script>
+    // Depth on the bottom two sections: their photos drift slower than the
+    // page (up to 6% of the photo's height, inside the 8% it overhangs its
+    // frame on each side), so they never show an edge.
+    (function () {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var items = [];
+      document.querySelectorAll('.card, .panel').forEach(function (frame) {
+        var media = frame.querySelector(':scope > picture img, :scope > video');
+        if (media) items.push({ frame: frame, media: media });
+      });
+      var queued = false;
+      function update() {
+        queued = false;
+        var vh = innerHeight;
+        items.forEach(function (it) {
+          var r = it.frame.getBoundingClientRect();
+          if (r.bottom < -100 || r.top > vh + 100) return;
+          // -1 as the frame's bottom leaves the top of the screen, +1 as its top enters at the bottom.
+          var p = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+          p = Math.max(-1, Math.min(1, p));
+          it.media.style.transform = 'translate3d(0,' + (p * 6).toFixed(2) + '%,0)';
+        });
+      }
+      function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+      addEventListener('scroll', queue, { passive: true });
+      addEventListener('resize', queue);
+      update();
+    })();
+  </script>
+  <script src="/features.js" defer></script>
+  <script src="/menu.js" defer></script>
+</body>
+</html>
