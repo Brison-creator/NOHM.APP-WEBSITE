@@ -37,20 +37,40 @@
       color: #171a20;
     }
 
-    /* Opening: the pro at the door, the promise over it. */
-    .top { position: relative; height: min(78svh, 720px); min-height: 480px; background: #16171a; }
-    .top img, .top video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% 30%; }
-    .top::after {
-      content: ""; position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 70%);
+    /* Opening (owner, 2026-11-20: "The most important part is the top and
+       it's not good enough sell this app now man landlords make this work").
+       It sells in one screen: who it is for, what it does in three plain
+       lines, the price, the store badges, and the app's own dashboard in a
+       phone (a real screen, drawn by the app: store/landlord-light in the
+       app repo). Words first on a phone; side by side on a computer. */
+    .top { position: relative; overflow: hidden; background: linear-gradient(180deg, #f7f8fa 0%, #e9ecf1 100%); color: #171a20; }
+    .top .wrap { max-width: 1120px; margin: 0 auto; padding: 26px 22px 0; display: grid; gap: 26px; }
+    .top .kicker { margin: 0 0 10px; font-size: 13px; line-height: 1.2; letter-spacing: 0.12em; text-transform: uppercase; font-weight: var(--weight-ui-strong); color: #004990; }
+    .top h1 { margin: 0; font-size: clamp(38px, 10.6vw, 62px); line-height: 1.04; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
+    .top .does { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 9px; font-size: 17px; line-height: 1.3; }
+    .top .does li { position: relative; padding-left: 30px; }
+    .top .does li::before {
+      content: ""; position: absolute; left: 0; top: 1px; width: 21px; height: 21px; border-radius: 50%;
+      background: #17803d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 6.3l2.2 2.2 4.6-4.9' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat;
     }
-    .top .copy { position: absolute; z-index: 1; left: 0; right: 0; bottom: 40px; padding: 0 24px; text-align: center; color: #fff; }
-    .top h1 { margin: 0; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.08; font-family: var(--font-display); font-weight: var(--weight-hero); letter-spacing: var(--tracking-headline); word-spacing: var(--word-spacing-headline); }
-    .top p { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
-    .top p.plan-line { margin-top: 6px; font-weight: var(--weight-ui-strong); }
-    .top .store-cta { margin-top: 10px; }
-    .top p.try-line { margin-top: 14px; }
-    .top p.try-line a { color: inherit; font-weight: var(--weight-ui-strong); text-decoration: underline; text-underline-offset: 3px; }
+    .top .plan-line { margin: 18px 0 0; font-size: 20px; line-height: 1.3; font-weight: var(--weight-ui-strong); }
+    .top .plan-more { margin: 6px 0 0; font-size: 15px; line-height: 1.4; color: #5c5e62; }
+    .top .plan-more .free { display: inline-block; margin-right: 6px; padding: 3px 11px; border-radius: 999px; background: #dff3e5; color: #116530; font-weight: var(--weight-ui-strong); white-space: nowrap; }
+    .top .store-cta { margin-top: 8px; }
+    /* The phone runs off the bottom edge on a phone: there is more below. */
+    .top .app-shot { display: flex; justify-content: center; align-items: flex-start; height: clamp(360px, 104vw, 450px); margin: -34px -22px 0; padding-top: 40px; overflow: hidden; }
+    .top .app-phone { position: relative; flex: none; width: min(74vw, 300px); aspect-ratio: 1320 / 2868; border: 9px solid #0e0f12; border-radius: 44px; background: #0e0f12; overflow: hidden; box-shadow: 0 26px 60px rgba(16, 24, 40, 0.28); }
+    .top .app-phone img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .top .app-phone::before { content: ""; position: absolute; z-index: 1; top: 1.7%; left: 50%; width: 31%; height: 3.3%; transform: translateX(-50%); border-radius: 999px; background: #0e0f12; }
+    .top .app-phone::after { content: "9:41"; position: absolute; z-index: 1; top: 2.35%; left: 10.5%; font-size: 13px; line-height: 1; font-weight: 700; color: #171a20; }
+    @media (min-width: 900px) {
+      .top .wrap { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); align-items: center; gap: 48px; padding: 56px 40px; }
+      .top .does { font-size: 19px; gap: 12px; margin-top: 24px; }
+      .top .plan-line { font-size: 22px; margin-top: 26px; }
+      .top .plan-more { font-size: 16px; }
+      .top .app-shot { height: auto; margin: 0; padding-top: 0; overflow: visible; }
+      .top .app-phone { width: 300px; }
+    }
 
     /* The long read: one column, generous space, Tesla's quiet type. */
     .read { max-width: 760px; margin: 0 auto; padding: 16px 24px 24px; }
@@ -195,22 +215,34 @@
   <header class="bar"><a href="/">NOHM</a></header>
   <main>
     <section class="top">
-      <picture>
-            <source type="image/webp" srcset="/img/landlord-960.webp 960w, /img/landlord-1920.webp 1920w" sizes="100vw" />
-            <img src="/img/landlord-960.jpg" srcset="/img/landlord-960.jpg 960w, /img/landlord-1920.jpg 1920w" sizes="100vw"
-                 width="1920" height="1280" fetchpriority="high" style="object-position:22% 35%" alt="A landlord with a clipboard shaking hands with her new tenants in the kitchen of a rental" />
-          </picture>
-      <div class="copy">
-        <h1>Rentals, handled.</h1>
-        <p>Rent, repairs, leases, walkthroughs and the books. Every unit, one app.</p>
-        <p class="plan-line"><span data-rental="plan">$7.99</span> a month for every rental. First month free.</p>
-        <div class="store-cta store-cta--center store-cta--on-dark">
-          <ul class="store-cta__badges">
-            <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
-            <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+      <div class="wrap">
+        <div class="copy">
+          <p class="kicker">The landlord app</p>
+          <h1>Run every rental from your phone.</h1>
+          <ul class="does">
+            <li>Rent goes straight to your bank.</li>
+            <li>See who paid and who is late.</li>
+            <li>Approve repairs in one tap.</li>
+            <li>Leases, notices and a tax report.</li>
           </ul>
+          <p class="plan-line"><span data-rental="plan">$7.99</span> a month for every rental.</p>
+          <p class="plan-more"><span class="free">First month free</span> Cancel any time.</p>
+          <div class="store-cta">
+            <ul class="store-cta__badges">
+              <li><a class="store-badge store-badge--app-store" href="https://apps.apple.com/us/app/nohm-app/id6761128513" aria-label="Download NOHM on the App Store"><img src="/img/badges/app-store.svg" width="144" height="48" alt="" /></a></li>
+              <li><a class="store-badge store-badge--google-play" href="https://play.google.com/store/apps/details?id=com.nohm.app" aria-label="Get NOHM on Google Play"><img src="/img/badges/google-play.png" width="161" height="48" alt="" /></a></li>
+            </ul>
+          </div>
         </div>
-        <p class="try-line"><a href="/demo/">Try it in your browser first. Nothing is real.</a></p>
+        <div class="app-shot">
+          <div class="app-phone">
+            <picture>
+              <source type="image/webp" srcset="/img/app/landlord-dashboard-660.webp 660w, /img/app/landlord-dashboard-990.webp 990w" sizes="(min-width: 900px) 300px, 74vw" />
+              <img src="/img/app/landlord-dashboard-660.jpg" srcset="/img/app/landlord-dashboard-660.jpg 660w, /img/app/landlord-dashboard-990.jpg 990w" sizes="(min-width: 900px) 300px, 74vw"
+                   width="660" height="1434" fetchpriority="high" alt="The NOHM landlord dashboard on a phone: this month&rsquo;s take, the rent still to collect, and every rental with who has paid and who is late" />
+            </picture>
+          </div>
+        </div>
       </div>
     </section>
 
