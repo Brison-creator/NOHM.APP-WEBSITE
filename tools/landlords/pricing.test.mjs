@@ -183,7 +183,7 @@ test('the ad pages: the button says "Start your free month", and the sign-up tag
 });
 
 test('the role page and /landlords: "One plan. Every rental.", the plan card, and the vent box with no perk wording', () => {
-  assert.match(role, /<p class="sub"><span data-rental="plan">\$7\.99<\/span> a month for every rental\. First month free\.<\/p>/);
+  assert.match(role, /<p class="sub"><span data-rental="plan">\$7\.99<\/span>\/month\. Unlimited rentals\. First month free\.<\/p>/);
   assert.match(role, /<h2>One plan\.<br \/>Every rental\.<\/h2>/);
   assert.match(role, /<p class="name">Your plan<\/p>/);
   assert.match(role, /<p class="name">Your tenant pays<\/p>/);
@@ -195,7 +195,7 @@ test('the role page and /landlords: "One plan. Every rental.", the plan card, an
 });
 
 test('the landlord topic pages and every forms and guide page end on the plan, built from pricing.js', async () => {
-  const ASK = `<p><span data-rental="plan">${PLAN_TEXT}</span> a month for every rental. First month free.</p>`;
+  const ASK = `<p><span data-rental="plan">${PLAN_TEXT}</span>/month. Unlimited rentals. First month free.</p>`;
   for (const slug of ['rent-collection', 'tenant-screening', 'lease-signing', 'rental-listings', 'maintenance', 'accounting', 'autopilot']) {
     const page = await read(`landlords/${slug}/index.html`);
     assert.ok(page.includes(ASK), slug);

@@ -69,7 +69,7 @@ const QUOTES = {
 // ── Landlord topics ───────────────────────────────────────────────
 // Each says only what /landlords and /for/landlords say.
 // The ask at the foot of every landlord page.
-const PLAN_ASK = `${PLAN_SPAN} a month for every rental. First month free.`;
+const PLAN_ASK = `${PLAN_SPAN}/month. Unlimited rentals. First month free.`;
 
 const LANDLORD = [
   {
@@ -520,7 +520,7 @@ function landlordPage(t) {
         <li class="plan plan--lead">
           <p class="name">Your plan</p>
           <p class="price">${PLAN_SPAN}</p>
-          <p class="per">a month, for every rental</p>
+          <p class="per">a month, unlimited rentals</p>
           <p>Rent collection and tracking, ledgers and financial records, payment reminders and financial reporting on every rental you add. Your first month is free.</p>
         </li>
         <li class="plan">
@@ -546,7 +546,7 @@ function landlordPage(t) {
         <li class="plan">
           <p class="name">Your plan</p>
           <p class="price">${PLAN_SPAN}</p>
-          <p class="per">a month, for every rental</p>
+          <p class="per">a month, unlimited rentals</p>
           <p>Rent collection and tracking, ledgers, reminders and reports. Your first month is free. Autopilot is on top, on the rentals you choose.</p>
         </li>
       </ul>
