@@ -8,6 +8,7 @@ import {
   activeFilters, BED_STEPS, PETS, PRICE_STEPS, readSearch, searchPath, searchQueryString, SORTS, validZip, ZIP_PROBLEM, listingHref,
 } from '../lib/search.js';
 import { mapPoint, rentLine, factsLine, streetLine, placeLine } from '../lib/listing.js';
+import { exampleIntro, examplesFor, LIST_YOURS, showExamples } from '../lib/examples.js';
 import { rentalCard } from './card.js';
 import { showMap } from './map.js';
 import { icon, ICONS } from './parts.js';
@@ -94,7 +95,9 @@ export function searchView(root, api, { onChange = () => {} } = {}) {
     clear(results);
     clear(pager);
     if (!path) {
-      status.textContent = 'Enter a ZIP code to see rentals listed on NOHM.';
+      ++seq;
+      last = null;
+      if (!drawExamples()) status.textContent = 'Enter a ZIP code to see rentals listed on NOHM.';
       return;
     }
     const mine = ++seq;
@@ -119,6 +122,22 @@ export function searchView(root, api, { onChange = () => {} } = {}) {
     draw();
   }
 
+  /**
+   * Example homes in place of an empty page (lib/examples.js): said to be
+   * examples above the cards and on each one. False when the filters
+   * leave none.
+   */
+  function drawExamples() {
+    const list = examplesFor(state, location.origin);
+    if (!list.length) return false;
+    status.textContent = exampleIntro(state.zip);
+    results.append(
+      h('div.r-grid.r-examples', { 'aria-label': 'Example homes' }, list.map((l) => rentalCard(l))),
+      h('p.r-note.r-examples-note', [h('span', 'Own a rental? '), h('a', { href: LIST_YOURS.href }, LIST_YOURS.text), h('span', '.')]),
+    );
+    return true;
+  }
+
   function draw() {
     const res = last;
     clear(results);
@@ -126,6 +145,7 @@ export function searchView(root, api, { onChange = () => {} } = {}) {
     const list = Array.isArray(res && res.listings) ? res.listings : [];
     const page = Number(res && res.page) || 1;
     const more = Boolean(res && res.hasMore);
+    if (!list.length && showExamples(res, state) && drawExamples()) return;
     if (!list.length) {
       status.textContent = '';
       results.append(h('div.r-empty', [h('p.r-empty-title', page > 1 ? 'No more rentals here.' : EMPTY), h('p.r-note', 'Try another ZIP code, or fewer filters.')]));

@@ -241,6 +241,68 @@ test('a card is built from elements and text: a listing’s words can’t become
   assert.deepEqual(good.map((a) => [a.textContent, /\bsec\b/.test(a.className)]), [['Apply', true], ['Message', false]]);
 });
 
+test('example homes: said to be examples, with nothing a renter could act on', async () => {
+  const {
+    examples, examplesFor, exampleFor, isExample, showExamples, exampleIntro, EXAMPLE_PREFIX, EXAMPLE_NAME, EXAMPLE_NOTICE,
+  } = await import('../../public/rentals/lib/examples.js');
+  const all = examples('https://nohm.app');
+  assert.equal(all.length, 6);
+  for (const e of all) {
+    assert.ok(e.slug.startsWith(EXAMPLE_PREFIX) && route(`?l=${e.slug}`).view === 'listing', e.slug);
+    assert.equal(e.example, true);
+    assert.equal(streetLine(e), EXAMPLE_NAME, 'its name is "Example home", never an address');
+    assert.equal(placeLine(e), '', 'no city, state or ZIP');
+    assert.equal(availableLine(e), null, 'no date it is available');
+    assert.equal(mapPoint(e), null, 'no place on the map');
+    assert.equal(safeUrl(e.url), null, 'no page to apply on');
+    assert.match(e.description, /^Example: /);
+    assert.equal(e.photos.length, 3);
+    for (const src of e.photos) {
+      assert.match(src, /^https:\/\/nohm\.app\/img\/rental-examples\/[a-z-]+-[123]\.jpg$/);
+      assert.ok(fs.existsSync(path.join(ROOT, 'public', new URL(src).pathname)), src);
+    }
+  }
+  assert.ok(fs.existsSync(path.join(ROOT, 'public/img/rental-examples/CREDITS.txt')), 'where the photos are from');
+  assert.match(EXAMPLE_NOTICE, /example home, not a real rental/);
+  assert.match(exampleIntro('72019'), /^No rentals listed in 72019 yet\. These are example homes/);
+  assert.match(exampleIntro(null), /These are example homes/);
+  // Only in place of an empty first page: one real rental and none shows.
+  assert.equal(showExamples({ listings: [], page: 1 }, { zip: '72019' }), true);
+  assert.equal(showExamples({ listings: [LISTING], page: 1 }, { zip: '72701' }), false);
+  assert.equal(showExamples({ listings: [], page: 2 }, { zip: '72701' }), false);
+  assert.equal(showExamples(null, { zip: null }), true, 'before any search');
+  // The search's own filters apply to them.
+  assert.deepEqual(examplesFor({ minBeds: 4 }).map((e) => e.beds), [4]);
+  assert.ok(examplesFor({ maxRent: 1000 }).every((e) => e.rentCents <= 100000));
+  assert.deepEqual(examplesFor({ maxRent: 500 }), []);
+  assert.ok(examplesFor({ pets: 'dogs' }).every((e) => ['DOGS', 'CATS_AND_DOGS'].includes(e.pets)));
+  const byRent = examplesFor({ sort: 'rent' }).map((e) => e.rentCents);
+  assert.deepEqual(byRent, [...byRent].sort((a, b) => a - b));
+  assert.equal(isExample('example-ranch'), true);
+  assert.equal(isExample('412-maple-ave-a1b2c3'), false);
+  assert.equal(isExample(LISTING), false);
+  assert.equal(exampleFor('example-ranch').beds, 3);
+  assert.equal(exampleFor('example-nothing'), null);
+  // Its card: "Example" on it, one way on (its own page), nothing to apply for, message or share.
+  const dom = fakeDom();
+  globalThis.Node = dom.Node;
+  globalThis.document = dom.document;
+  const { rentalCard } = await import('../../public/rentals/ui/card.js');
+  const el = rentalCard(exampleFor('example-ranch', 'https://nohm.app'), { origin: 'https://nohm.app' });
+  assert.ok(el.textContent.includes('Example'));
+  assert.ok(el.textContent.includes('$1,495/mo'));
+  const kids = el.all();
+  assert.ok(kids.some((n) => /\br-example-tag\b/.test(n.className) && n.textContent === 'Example'));
+  assert.ok(!kids.some((n) => n.tagName === 'BUTTON' && /share/i.test(n.attributes?.['aria-label'] || '')));
+  const btns = kids.filter((n) => n.tagName === 'A' && /\br-btn\b/.test(n.className));
+  assert.deepEqual(btns.map((a) => a.textContent), ['See this example']);
+  assert.equal(btns[0].href ?? btns[0].attributes.href, '/rentals/?l=example-ranch');
+  // The server is never asked about one, and nothing is sent to one.
+  const app = fs.readFileSync(path.join(ROOT, 'public/rentals/app.js'), 'utf8');
+  assert.match(app, /listing: \(slug\) => \(isExample\(slug\)/);
+  assert.match(app, /inquire: \(slug, body\) => \(isExample\(slug\)\s*\? Promise\.reject/);
+});
+
 test('no /rentals file writes HTML strings, and Leaflet only gets elements', () => {
   const dir = path.join(ROOT, 'public/rentals');
   const files = fs.readdirSync(dir, { recursive: true }).filter((f) => f.endsWith('.js')).map((f) => path.join(dir, f));

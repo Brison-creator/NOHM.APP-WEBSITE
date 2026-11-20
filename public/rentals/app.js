@@ -9,6 +9,7 @@ import { createHttp } from '../nohm/http.js';
 import { apiBaseFor } from '../nohm/api.js';
 import { normalizeWebConfig } from '../nohm/web-config.js';
 import { rentalsOpen, route } from './lib/search.js';
+import { exampleFor, isExample } from './lib/examples.js';
 import { searchView } from './ui/search-view.js';
 import { listingView } from './ui/listing-view.js';
 
@@ -35,8 +36,14 @@ const http = createHttp({ baseUrl: apiBase, session: { accessToken: null, refres
 const api = {
   webConfig: () => http.get('/config/web', { auth: false }),
   search: (path) => http.get(path, { auth: false }),
-  listing: (slug) => http.get(`/listings/public/${encodeURIComponent(slug)}`, { auth: false }),
-  inquire: (slug, body) => http.post(`/listings/public/${encodeURIComponent(slug)}/inquire`, body, { auth: false }),
+  // An example home (lib/examples.js) is this page's own: the server is
+  // never asked about one, and nothing can be sent to one.
+  listing: (slug) => (isExample(slug)
+    ? (exampleFor(slug, location.origin) ? Promise.resolve(exampleFor(slug, location.origin)) : Promise.reject(Object.assign(new Error('Not Found'), { status: 404 })))
+    : http.get(`/listings/public/${encodeURIComponent(slug)}`, { auth: false })),
+  inquire: (slug, body) => (isExample(slug)
+    ? Promise.reject(Object.assign(new Error('Not Found'), { status: 404 }))
+    : http.post(`/listings/public/${encodeURIComponent(slug)}/inquire`, body, { auth: false })),
 };
 
 const raw = api.webConfig().catch(() => null);

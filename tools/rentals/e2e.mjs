@@ -57,6 +57,9 @@ async function open(ctxOpts, url) {
       body: 'window.turnstile={render:function(h,o){h.textContent="I am human (stub)";window.__ts=o;setTimeout(function(){o.callback("stub-token")},0);return 1},reset:function(){setTimeout(function(){window.__ts.callback("stub-token")},0)}};',
     }),
   );
+  // The fixtures' dates ("Available Nov 1") are read against this day, not
+  // the day the run happens to be on. Timers keep running.
+  await ctx.clock.setFixedTime(new Date('2026-09-15T15:00:00Z'));
   const p = await ctx.newPage();
   const errors = [];
   p.on('pageerror', (e) => errors.push(String(e)));
@@ -131,8 +134,36 @@ try {
     await p.fill('#r-zip', '72702');
     await p.click('.r-search-btn');
     await settle(p);
-    assert.match(await p.textContent('.r-results'), /No rentals listed in this ZIP yet\./);
+    // Nothing listed there: example homes, said to be examples (lib/examples.js).
+    assert.equal(await p.textContent('.r-status'), 'No rentals listed in 72702 yet. These are example homes, to show how a rental looks on NOHM.');
+    assert.equal(await p.locator('.r-grid.r-examples .r-card--example').count(), 6);
+    assert.deepEqual([...new Set(await p.locator('.r-card--example .r-example-tag').allTextContents())], ['Example']);
+    assert.deepEqual([...new Set(await p.locator('.r-card--example .r-card-actions a').allTextContents())], ['See this example']);
+    assert.deepEqual([...new Set(await p.locator('.r-card--example .r-street').allTextContents())], ['Example home']);
+    assert.equal(await p.locator('.r-card--example .r-place, .r-card--example .r-avail, .r-card--example .r-share').count(), 0, 'no place, no date, no Share');
+    await noStray(p);
     await snap(p, 'rentals-search-empty-desktop');
+    // Filters that leave no example: the plain empty page.
+    await p.selectOption('select[name="maxRent"]', '750');
+    await settle(p);
+    assert.match(await p.textContent('.r-results'), /No rentals listed in this ZIP yet\./);
+    assert.equal(await p.locator('.r-card--example').count(), 0);
+    await p.selectOption('select[name="maxRent"]', '');
+    await settle(p);
+    // An example's own page: says so first, nothing to apply for or message, never indexed.
+    await p.locator('.r-card--example .r-card-link').first().click();
+    await p.waitForSelector('.r-example-notice');
+    assert.match(await p.textContent('.r-example-notice'), /This is an example home, not a real rental\./);
+    assert.equal(await p.locator('form.r-contact, .r-eho, .r-share').count(), 0);
+    assert.deepEqual(await p.locator('.r-ov-actions a').allTextContents(), ['List your rental on NOHM']);
+    assert.equal(await p.locator('.r-ov-actions a').getAttribute('href'), '/landlords/');
+    assert.match(await p.textContent('#contact'), /no landlord to message and can’t be applied for/);
+    assert.match(await p.textContent('#location'), /An example home has no address\./);
+    assert.equal(await p.getAttribute('meta[name="robots"]', 'content'), 'noindex,follow');
+    assert.match(await p.title(), /^Example home · /);
+    await noStray(p);
+    await snap(p, 'rentals-example-desktop');
+    assert.ok(!(await log()).some((r) => /listings\/public\/example-/.test(r.path)), 'the server is never asked about an example');
     const asked = (await log()).filter((r) => r.path.startsWith('/api/v1/listings/public?'));
     assert.ok(asked.every((r) => /zip=\d{5}/.test(r.path) && /pageSize=24/.test(r.path)), 'every search sends a ZIP and 24 a page');
     assert.deepEqual(errors, []);

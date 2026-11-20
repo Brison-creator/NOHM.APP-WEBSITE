@@ -10,9 +10,10 @@ import { h, clear } from '../../nohm/dom.js';
 import { humanCheck, TICK_FIRST } from '../../nohm/human.js';
 import { addFormTrap } from '../../nohm/form-traps.js';
 import {
-  APPLY_TEXT_NOTE, availableLine, contactBody, contactError, contactOutcome, contactProblems, costRows, defaultMessage, factsLine,
+  APPLY_TEXT_NOTE, availableLine, CONTACT_FOR_DETAILS, contactBody, contactError, contactOutcome, contactProblems, costRows, defaultMessage, factsLine,
   featureGroups, fullAddress, highlights, listingHead, mapPoint, placeLine, PRIVACY_NOTE, rentLine, safeUrl, streetLine,
 } from '../lib/listing.js';
+import { EXAMPLE_NAME, EXAMPLE_NO_ADDRESS, EXAMPLE_NO_CONTACT, EXAMPLE_NOTICE, EXAMPLE_TAG, isExample, LIST_YOURS } from '../lib/examples.js';
 import { showMap } from './map.js';
 import { carousel, icon, ICONS, shareButton } from './parts.js';
 
@@ -82,7 +83,13 @@ export async function listingView(root, api, slug, webConfig) {
   const name = street || place;
   const here = `${location.origin}/rentals/?l=${encodeURIComponent(l.slug)}`;
   const applyUrl = safeUrl(l.url);
-  setHead(listingHead(l.slug, `${name} · ${rentLine(l)} | NOHM Rentals`, true, location.origin));
+  // An example home (lib/examples.js): this page says so first, offers
+  // nothing to apply for or message, and is never indexed.
+  const example = isExample(l);
+  const listYours = () => h('a.r-btn', { href: LIST_YOURS.href }, LIST_YOURS.text);
+  setHead(example
+    ? listingHead(l.slug, `${EXAMPLE_NAME} · ${rentLine(l)} | NOHM Rentals`, false, location.origin)
+    : listingHead(l.slug, `${name} · ${rentLine(l)} | NOHM Rentals`, true, location.origin));
 
   // ── Overview ──────────────────────────────────────────────
   const overview = h('section.r-overview', { id: 'overview', 'aria-label': 'Overview' }, [
@@ -92,7 +99,7 @@ export async function listingView(root, api, slug, webConfig) {
       h('h1.r-addr-h', [street ? h('span.r-street', street) : null, h('span.r-place', place)]),
       availableLine(l) ? h('p.r-avail', availableLine(l)) : null,
     ]),
-    h('div.r-ov-actions', [
+    h('div.r-ov-actions', example ? [listYours()] : [
       shareButton(here, name),
       applyUrl ? h('a.r-btn.sec', { href: applyUrl }, 'Request to Apply') : null,
       h('a.r-btn', { href: '#contact' }, 'Send Message'),
@@ -111,7 +118,9 @@ export async function listingView(root, api, slug, webConfig) {
   ]);
 
   // ── Contact ───────────────────────────────────────────────
-  const contactSec = section('contact', 'Contact', [contactForm(l, api, webConfig)]);
+  const contactSec = section('contact', 'Contact', example
+    ? [h('p.r-note', EXAMPLE_NO_CONTACT), h('p.r-note', [h('span', 'Own a rental? '), h('a', { href: LIST_YOURS.href }, LIST_YOURS.text), h('span', ' and renters message you here.')])]
+    : [contactForm(l, api, webConfig)]);
 
   // ── About ─────────────────────────────────────────────────
   const desc = String(l.description || '').trim();
@@ -130,7 +139,7 @@ export async function listingView(root, api, slug, webConfig) {
 
   // ── Costs & Fees ──────────────────────────────────────────
   const costsSec = section('costs', 'Costs & Fees', [
-    h('dl.r-costs', costRows(l).flatMap((r) => [h('dt', r.label), h('dd', [h('span', r.value), r.note ? h('small', r.note) : null])])),
+    h('dl.r-costs', costRows(l).filter((r) => !example || r.value !== CONTACT_FOR_DETAILS).flatMap((r) => [h('dt', r.label), h('dd', [h('span', r.value), r.note ? h('small', r.note) : null])])),
   ]);
 
   // ── Amenities & Features ──────────────────────────────────
@@ -145,23 +154,24 @@ export async function listingView(root, api, slug, webConfig) {
   const point = mapPoint(l);
   const mapHost = h('div.r-mapbox.r-mapbox-one');
   const locationSec = section('location', 'Location', [
-    h('p.r-loc', [icon(ICONS.pin, 18), h('span', fullAddress(l))]),
+    example ? h('p.r-note', EXAMPLE_NO_ADDRESS) : h('p.r-loc', [icon(ICONS.pin, 18), h('span', fullAddress(l))]),
     point ? mapHost : null,
   ]);
 
   // ── Phone bar ─────────────────────────────────────────────
-  const dock = h('div.r-dock', [
+  const dock = h('div.r-dock', example ? [listYours()] : [
     applyUrl ? h('a.r-btn.sec', { href: applyUrl }, 'Request to Apply') : null,
     h('a.r-btn', { href: '#contact' }, 'Send Message'),
   ]);
 
   clear(root).append(
     h('a.r-back', { href: backHref() }, [icon(ICONS.back, 16), h('span', 'Rentals')]),
-    h('div.r-gallery', [carousel(l.photos, name, { eager: true })]),
+    example ? h('p.r-example-notice', { role: 'note' }, [h('b', EXAMPLE_TAG), h('span', EXAMPLE_NOTICE)]) : null,
+    h('div.r-gallery', [carousel(l.photos, name, { eager: true }), example ? h('span.r-example-tag', EXAMPLE_TAG) : null]),
     overview,
     tabs,
     h('div.r-sections', [highlightsSec, contactSec, aboutSec, costsSec, amenitiesSec, locationSec]),
-    h('p.r-eho', 'Equal Housing Opportunity. This rental is offered without regard to race, color, religion, sex, disability, familial status, national origin, or any other status protected by law.'),
+    example ? null : h('p.r-eho', 'Equal Housing Opportunity. This rental is offered without regard to race, color, religion, sex, disability, familial status, national origin, or any other status protected by law.'),
     dock,
   );
   document.body.classList.add('r-has-dock');
