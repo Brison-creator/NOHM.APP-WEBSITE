@@ -18,6 +18,28 @@
 </head>
 <body>
   <div id="loading">Loading the demo…</div>
+  <script>
+    // What the site counts about this page (tools/ads/report.py reads these
+    // as HEADs to /demo/ in the access logs, like /go/landlords' track.js):
+    // opened, tapped something, and seconds on screen. No name, no id.
+    (function () {
+      var sent = {};
+      function count(k) {
+        if (sent[k]) return;
+        sent[k] = 1;
+        try { fetch('/demo/?' + k, { method: 'HEAD', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) { /* not counted */ }
+      }
+      count('seen=hero');
+      document.addEventListener('pointerdown', function () { count('seen=played'); }, { capture: true, passive: true });
+      var STAYS = [10, 30, 60, 120, 300], shown = 0;
+      var timer = setInterval(function () {
+        if (document.hidden) return;
+        shown += 1;
+        if (STAYS.indexOf(shown) !== -1) count('stay=' + shown);
+        if (shown >= 300) clearInterval(timer);
+      }, 1000);
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

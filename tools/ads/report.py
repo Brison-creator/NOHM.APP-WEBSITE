@@ -39,6 +39,11 @@ CT = ZoneInfo('America/Chicago')
 # Campaign pages, by path (no trailing slash), and what to call them.
 PAGES = {
     '/go/landlords': 'Landlord ad page',
+    # The landlord demo (owner, 2026-11-20: "make it the screen for ads"): a
+    # Flutter page, so its counts come from the page's own script
+    # (tools/build-demo-web.sh in the app repo writes it): opened, tapped
+    # something, seconds on screen, and the Get started hand-off to /get.
+    '/demo': 'Landlord demo (See if you like it mode)',
     # The plain 2026-11-03 page, kept as the control in the 2026-11 page test
     # (owner, 2026-11-14): the same ads send half the people here.
     '/go/landlords/old': 'Landlord ad page, old version (page test control)',
@@ -65,8 +70,8 @@ PARTS_NEW = [
     ('start', 'How to start'), ('email', 'Email form'), ('faq', 'Questions'), ('ps', 'P.S.'),
 ]
 # The landlord ad pages: the long page and the old one it is tested against.
-LANDING = ('/go/landlords', '/go/landlords/old')
-PARTS_BY_PATH = {'/go/landlords': PARTS_NEW, '/go/landlords/old': PARTS}
+LANDING = ('/go/landlords', '/go/landlords/old', '/demo')
+PARTS_BY_PATH = {'/go/landlords': PARTS_NEW, '/go/landlords/old': PARTS, '/demo': [('hero', 'Opened'), ('played', 'Tapped something')]}
 STAYS = (10, 30, 60, 120, 300)
 # The hero test's rule (owner, 2026-10-27: "what you will change automatic"):
 # a headline wins once each has been seen by this many people and it gets
@@ -305,8 +310,9 @@ def summarize(report, label):
         if path in LANDING:
             names = {'ios': 'App Store', 'android': 'Google Play', 'business': 'computer sign-in'}
             lines.append(f'  Tapped download: {tappers} of {len(people)}' + (' (' + ', '.join(f'{names.get(k, k)} {n}' for k, n in taps.items()) + ')' if taps else ''))
-            lines.append(f"  Opened sign up: {sum(1 for v in people if v['signup_opened'])} of {len(people)}")
-            lines.append(f"  Left their email: {sum(leads.values())}" + (' (' + ', '.join(f'{k} {n}' for k, n in leads.items()) + ')' if leads else '') + ' (each one is in the admin@nohm.app inbox)')
+            if path != '/demo':
+                lines.append(f"  Opened sign up: {sum(1 for v in people if v['signup_opened'])} of {len(people)}")
+                lines.append(f"  Left their email: {sum(leads.values())}" + (' (' + ', '.join(f'{k} {n}' for k, n in leads.items()) + ')' if leads else '') + ' (each one is in the admin@nohm.app inbox)')
             counted = [v for v in people if v['seen']]
             if counted:
                 got = [(name, sum(1 for v in counted if key in v['seen'])) for key, name in PARTS_BY_PATH[path]]
